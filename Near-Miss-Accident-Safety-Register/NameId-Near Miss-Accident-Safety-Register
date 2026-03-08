@@ -1,0 +1,173 @@
+{
+    "statusCode": 200,
+    "headers": {
+        "Cache-Control": "no-store, max-age=0, private",
+        "Transfer-Encoding": "chunked",
+        "Vary": "Origin,Accept-Encoding",
+        "Set-Cookie": "ARRAffinity=1bf1fa7ef58a2ee2d7a44c3046cbe5c763c69a7c47c896aacbb04ba8a00ffc3b;Path=/;HttpOnly;Secure;Domain=sharepointonline-ase.azconn-ase-001.p.azurewebsites.net,ARRAffinitySameSite=1bf1fa7ef58a2ee2d7a44c3046cbe5c763c69a7c47c896aacbb04ba8a00ffc3b;Path=/;HttpOnly;SameSite=None;Secure;Domain=sharepointonline-ase.azconn-ase-001.p.azurewebsites.net",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-NetworkStatistics": "0,4194444,0,0,140,25624,25624,2025",
+        "X-SharePointHealthScore": "3",
+        "X-SP-SERVERSTATE": "ReadOnly=0",
+        "DATASERVICEVERSION": "3.0",
+        "SPClientServiceRequestDuration": "117",
+        "IsOCDI": "0",
+        "X-DataBoundary": "NONE",
+        "X-1DSCollectorUrl": "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+        "X-AriaCollectorURL": "https://browser.pipe.aria.microsoft.com/Collector/3.0/",
+        "SPRequestGuid": "2668aea1-10b5-5000-7a1e-1e46ac6ffece",
+        "Request-Id": "2668aea1-10b5-5000-7a1e-1e46ac6ffece",
+        "MS-CV": "oa5oJrUQAFB6Hh5GrG/+zg.0",
+        "SPLogId": "2668aea1-10b5-5000-7a1e-1e46ac6ffece",
+        "X-Frame-Options": "SAMEORIGIN,DENY",
+        "Content-Security-Policy": "frame-ancestors 'self' teams.microsoft.com *.teams.microsoft.com *.skype.com *.teams.microsoft.us local.teams.office.com teams.cloud.microsoft *.office365.com goals.cloud.microsoft *.powerapps.com *.powerbi.com *.yammer.com engage.cloud.microsoft word.cloud.microsoft excel.cloud.microsoft powerpoint.cloud.microsoft *.officeapps.live.com *.office.com *.microsoft365.com m365.cloud.microsoft *.cloud.microsoft *.stream.azure-test.net *.dynamics.com *.microsoft.com onedrive.live.com *.onedrive.live.com securebroker.sharepointonline.com;",
+        "MicrosoftSharePointTeamServices": "16.0.0.26211",
+        "X-Content-Type-Options": "nosniff,nosniff",
+        "X-MS-InvokeApp": "1; RequireReadOnly",
+        "P3P": "CP=\"ALL IND DSP COR ADM CONo CUR CUSo IVAo IVDo PSA PSD TAI TELo OUR SAMo CNT COM INT NAV ONL PHY PRE PUR UNI\"",
+        "X-AspNet-Version": "4.0.30319",
+        "X-Powered-By": "ASP.NET",
+        "x-ms-request-id": "2668aea1-10b5-5000-7a1e-1e46ac6ffece",
+        "x-ms-environment-id": "default-9c9325a5-65f3-4a30-9c57-e857ca0dd71a",
+        "x-ms-tenant-id": "9c9325a5-65f3-4a30-9c57-e857ca0dd71a",
+        "x-ms-subscription-id": "Default-9c9325a5-65f3-4a30-9c57-e857ca0dd71a",
+        "x-ms-dlp-re": "-|-",
+        "x-ms-dlp-gu": "-|-",
+        "x-ms-dlp-ef": "-|-/-|-|-",
+        "x-ms-mip-sl": "-|-|-|-",
+        "Timing-Allow-Origin": "*",
+        "x-ms-apihub-cached-response": "true",
+        "x-ms-apihub-obo": "false",
+        "Date": "Fri, 04 Jul 2025 07:27:47 GMT",
+        "Content-Type": "application/json; odata=verbose; charset=utf-8",
+        "Content-Length": "3646",
+        "Expires": "Thu, 19 Jun 2025 07:27:47 GMT",
+        "Last-Modified": "Fri, 04 Jul 2025 07:27:47 GMT"
+    },
+    "body": {
+        "d": {
+            "results": [
+                {
+                    "__metadata": {
+                        "id": "0b84a533-cca0-46dd-958b-35eaa4463108",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(7)",
+                        "etag": "\"13\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 7,
+                    "Title": "Hand Injury from Broken Glass - Balustrade Disk Removal",
+                    "NameId": 14,
+                    "ID": 7
+                },
+                {
+                    "__metadata": {
+                        "id": "6a827af6-cfa1-46cc-8e54-673c127ac637",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(8)",
+                        "etag": "\"16\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 8,
+                    "Title": "Glass Handling Finger Cut - Safety Review Needed",
+                    "NameId": 15,
+                    "ID": 8
+                },
+                {
+                    "__metadata": {
+                        "id": "edf6b204-5174-45b1-9342-9e7c5f2d65e6",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(9)",
+                        "etag": "\"14\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 9,
+                    "Title": "Acorn Reflection Near Miss - Eye Safety Alert",
+                    "NameId": 14,
+                    "ID": 9
+                },
+                {
+                    "__metadata": {
+                        "id": "6c2685ef-112d-4a63-872e-66a6c45985a8",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(10)",
+                        "etag": "\"15\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 10,
+                    "Title": "Glove Failure Leads to Glass Splinter Near Miss",
+                    "NameId": 16,
+                    "ID": 10
+                },
+                {
+                    "__metadata": {
+                        "id": "02213632-96c3-432c-b29c-5fae02d91e51",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(11)",
+                        "etag": "\"17\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 11,
+                    "Title": "Vandalism Incident Post-Glazing at Cranfield Glass...",
+                    "NameId": 16,
+                    "ID": 11
+                },
+                {
+                    "__metadata": {
+                        "id": "71c90dc1-faac-4b85-be49-82e2832d37b0",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(12)",
+                        "etag": "\"19\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 12,
+                    "Title": "Weapons Incident Between Tenants at Jecks Place - Police Notified",
+                    "NameId": 17,
+                    "ID": 12
+                },
+                {
+                    "__metadata": {
+                        "id": "d72be2b7-f07c-4db5-ad0f-a239368b7fc9",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(13)",
+                        "etag": "\"14\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 13,
+                    "Title": "Near Miss: Measurement at Smashed Front Door Board-Up",
+                    "NameId": 16,
+                    "ID": 13
+                },
+                {
+                    "__metadata": {
+                        "id": "e94900e2-852e-4ccb-b367-27fec7875fb7",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(14)",
+                        "etag": "\"14\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 14,
+                    "Title": "Scaffold Misuse - Professional Setup Needed for Safety",
+                    "NameId": 24,
+                    "ID": 14
+                },
+                {
+                    "__metadata": {
+                        "id": "2dfd9b85-a6b4-4833-be87-0105244edfc1",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(15)",
+                        "etag": "\"27\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 15,
+                    "Title": "Ladder Safety Alert: Lightheadedness and Nausea Incident",
+                    "NameId": 25,
+                    "ID": 15
+                },
+                {
+                    "__metadata": {
+                        "id": "1205cbc6-ed4f-4c21-9a13-36586e233e5e",
+                        "uri": "https://cranfieldglass.sharepoint.com/sites/IncidentsReports/_api/Web/Lists(guid'eb87f527-20e6-4e64-a31e-09cd38a4b26e')/Items(19)",
+                        "etag": "\"11\"",
+                        "type": "SP.Data.Safety_x0020_Event_x0020_ReportsListItem"
+                    },
+                    "Id": 19,
+                    "Title": "Minor Sprain from Hidden Pothole on Deck",
+                    "NameId": 14,
+                    "ID": 19
+                }
+            ]
+        }
+    }
+}

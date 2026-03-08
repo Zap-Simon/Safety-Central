@@ -1,0 +1,56 @@
+staff-engagement-system.replit.app/:1 Refused to load the script 'https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js' because it violates the following Content Security Policy directive: "script-src 'self'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+
+staff-engagement-system.replit.app/:1 Refused to load the script 'https://replit.com/public/js/replit-dev-banner.js' because it violates the following Content Security Policy directive: "script-src 'self'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+ Cross-Origin-Opener-Policy policy would block the window.closed call.
+(anonymous) @ assets/index-CfZsnMEu.js:384
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='), or a nonce ('nonce-...') is required to enable inline execution.
+
+api/export-skills-matrix-html:1  Failed to load resource: the server responded with a status of 500 ()
+ Error generating HTML: Error: Failed to generate HTML
+    at P (assets/index-CfZsnMEu.js:761:74716)
+overrideMethod @ chrome-extension://f…ld/installHook.js:1
+ Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-vGQdhYJbTuF+M8iCn1IZCHpdkiICocWHDq4qnQF4Rjw='), or a nonce ('nonce-...') is required to enable inline execution.
+
+fv @ assets/index-CfZsnMEu.js:40
+ Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self' https:". Either the 'unsafe-inline' keyword, a hash ('sha256-vGQdhYJbTuF+M8iCn1IZCHpdkiICocWHDq4qnQF4Rjw='), or a nonce ('nonce-...') is required to enable inline execution.
+
+fv @ assets/index-CfZsnMEu.js:40

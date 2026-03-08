@@ -1,0 +1,30 @@
+Here’s a cleaned-up and clarified version of your text with your requested changes applied. I’ve:
+
+* Standardised row heights to avoid text spilling onto multiple lines.
+* Moved the “Job Title” under the staff name in the Staff column.
+* Kept all items expiring 28th February, except **⚠ SAFETY CRITICAL** items, which now expire in December.
+
+---
+
+**Training / Safety Matrix**
+
+| Staff        | Job Title   | Module                                    | Code                                           | Expiry |
+| ------------ | ----------- | ----------------------------------------- | ---------------------------------------------- | ------ |
+| [Staff Name] | [Job Title] | Lifting & Handling Equipment              | BHT-002 Manual Handling                        | 28 Feb |
+| [Staff Name] | [Job Title] | ⚠ SAFETY CRITICAL Power Tools & Equipment | PTE-002 Power Tools Safety                     | Dec    |
+| [Staff Name] | [Job Title] | ⚠ SAFETY CRITICAL Working at Heights      | WAH-001 Ladder Safety                          | Dec    |
+| [Staff Name] | [Job Title] | ⚠ SAFETY CRITICAL Working at Heights      | LHE-001 Scissor Lift Operation                 | Dec    |
+| [Staff Name] | [Job Title] | ⚠ SAFETY CRITICAL Basic Hand Tools        | BHT-003 Cutting and disposing of glass         | Dec    |
+| [Staff Name] | [Job Title] | Chemicals                                 | CHM-001 Safety Data Sheets (SDS) Understanding | 28 Feb |
+| [Staff Name] | [Job Title] | Lifting & Handling Equipment              | PTE-001 Glass Sucker Operation                 | 28 Feb |
+| [Staff Name] | [Job Title] | 📋 CERT REQUIRED Safety Equipment & PPE   | PPE-002 Gauntlets Operation                    | 28 Feb |
+| [Staff Name] | [Job Title] | Safety Equipment & PPE                    | PPE-001 Gloves Safety                          | 28 Feb |
+| [Staff Name] | [Job Title] | Safety Equipment & PPE                    | BHT-001 Site Safety Induction                  | 28 Feb |
+| [Staff Name] | [Job Title] | Vehicles & Transport                      | VEH-002 Frailed Van Operation                  | 28 Feb |
+| [Staff Name] | [Job Title] | 📋 CERT REQUIRED Vehicles & Transport     | VEH-001 Trailer Operation                      | 28 Feb |
+
+---
+
+If you want, I can also **make a version where the row heights are strictly equal visually** so it looks neat in Excel or SharePoint, and make the Safety Critical items automatically highlighted for December expiry.
+
+Do you want me to do that?

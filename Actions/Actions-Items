@@ -1,0 +1,2738 @@
+{
+    "foreachItems": [
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "17",
+            "ID": 17,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "Assigend_x0020_to": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Assigend_x0020_to#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "In progress / Assigned"
+            },
+            "Status#Id": 1,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-24T04:49:08Z",
+            "Created": "2025-06-24T04:23:04Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f17_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=17&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/17_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"58\"",
+            "ItemInternalId": "18",
+            "ID": 18,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=53",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|sam.chang@cranfield.co.nz",
+                "DisplayName": "Sam Chang",
+                "Email": "Sam.Chang@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Sam.Chang@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Transitional Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|sam.chang@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Order"
+            },
+            "IdeaType#Id": 4,
+            "IdeaDate": "2025-06-19",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Idea_x002f_Event": "Sam needs Gauntlets on next Glasscorp Order, Black Nylon, short large size\n\n",
+            "Modified": "2025-06-25T07:09:29Z",
+            "Created": "2025-06-24T04:23:04Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f18_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=18&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/18_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "58.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "19",
+            "ID": 19,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=14",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-02-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "In progress / Assigned"
+            },
+            "Status#Id": 1,
+            "Idea_x002f_Event": "Add SDS sheets to workshop where chemicals are present for those specific items.\n\n",
+            "Modified": "2025-06-25T07:09:07Z",
+            "Created": "2025-06-24T04:23:05Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f19_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=19&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/19_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"46\"",
+            "ItemInternalId": "20",
+            "ID": 20,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=11",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "IdeaType#Id": 1,
+            "IdeaDate": "2025-02-03",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "In progress / Assigned"
+            },
+            "Status#Id": 1,
+            "Notes_x0020__x002f__x0020_Commen": "Still needs to be done 24/06/2025",
+            "Idea_x002f_Event": "Move the hook on safety chain out further so it doesn’t hit the door stopper on\nthe external side right side. Saves the person shutting the door forgetting to\nmove the chain and then attempting to unhook the chain with the door still\nclosing as the door button gets stuck.\n\n",
+            "Modified": "2025-06-25T07:09:22Z",
+            "Created": "2025-06-24T04:23:05Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f20_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=20&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/20_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "46.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "21",
+            "ID": 21,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=15",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-02-12",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Awaiting Discussion"
+            },
+            "Status#Id": 3,
+            "Notes_x0020__x002f__x0020_Commen": "Sucker audit yet to be done, parts ordered and plungers replaced on Wayne's sucker",
+            "Idea_x002f_Event": "Lifting suckers. Wayne mentioned he requires a new pump for one of his suckers.\nSucker general chat required.\n\n",
+            "Modified": "2025-06-25T07:09:14Z",
+            "Created": "2025-06-24T04:23:05Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f21_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=21&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/21_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "22",
+            "ID": 22,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=49",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-05-28",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Awaiting Discussion"
+            },
+            "Status#Id": 3,
+            "Notes_x0020__x002f__x0020_Commen": "In discussion, pin racks, etc, schedule some time. Plywood storing, bin some ",
+            "Idea_x002f_Event": "Can we have an afternoon cleaning up the racks and workshop?\n\n",
+            "Modified": "2025-06-25T07:09:39Z",
+            "Created": "2025-06-24T04:23:05Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f22_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=22&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/22_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "23",
+            "ID": 23,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=52",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-04-15",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Awaiting Discussion"
+            },
+            "Status#Id": 3,
+            "Idea_x002f_Event": "James van roof to get fixed\n\n\n",
+            "Modified": "2025-06-25T07:09:43Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f23_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=23&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/23_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "24",
+            "ID": 24,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=53",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-04-15",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Awaiting Discussion"
+            },
+            "Status#Id": 3,
+            "Idea_x002f_Event": "Early finish for pizzas and beers\n\n\n",
+            "Modified": "2025-06-25T07:09:46Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f24_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=24&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/24_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "25",
+            "ID": 25,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=63",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-06-11",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Notes_x0020__x002f__x0020_Commen": "We will now accept Broad Reeded repairs for insurance, Make sure glaziers get the pattern around the right way, height then width, pattern vertical or horizontal. Glass patch, or replace in a different obscure, or replace in Broad Reeded. Prefer to replace same day. Don't use Broad Reeded as a matching option.",
+            "Idea_x002f_Event": "Discussion in next meeting about how we handle jobs that have broad reeded.\n\n",
+            "Modified": "2025-06-25T07:09:52Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f25_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=25&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/25_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "26",
+            "ID": 26,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=34",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|ryan@cranfield.co.nz",
+                "DisplayName": "Ryan Newman",
+                "Email": "Ryan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Ryan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Intermediate Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|ryan@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-03-03",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "In progress / Assigned"
+            },
+            "Status#Id": 1,
+            "Idea_x002f_Event": "Can I maybe get the sign writing on my van redone\n\n",
+            "Modified": "2025-06-25T07:09:59Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f26_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=26&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/26_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "27",
+            "ID": 27,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=68",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|hoani@cranfield.co.nz",
+                "DisplayName": "Hoani Hunt",
+                "Email": "Hoani@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Hoani@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Managing Director"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|hoani@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "In progress / Assigned"
+            },
+            "Status#Id": 1,
+            "Start_x0020_Date": "2025-06-24",
+            "Notes_x0020__x002f__x0020_Commen": "Songwriter visiting Cranfield Glass, Ryan's back window and side windows need the dot matrix replaced. Black vinyl used where its safe, dot matrix vinyl only lasts for two years. ",
+            "Idea_x002f_Event": "Ryan's Van - Back Window Vinyl Replacement\n\n\n",
+            "Modified": "2025-06-25T07:10:05Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f27_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=27&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/27_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"2\"",
+            "ItemInternalId": "28",
+            "ID": 28,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=31",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+                "DisplayName": "Struan O'Donnell",
+                "Email": "Struan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Struan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Apprentice Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-02-28",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "On Hold"
+            },
+            "Status#Id": 2,
+            "Idea_x002f_Event": "Can we get the compressor for the table fixed\n\n",
+            "Modified": "2025-06-25T07:10:07Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f28_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=28&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/28_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "2.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "29",
+            "ID": 29,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=48",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-04-08",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Idea_x002f_Event": "Can I have some laminated shower templates please (3 & 4 piece box, inline, door\nand slider)\n\n",
+            "Modified": "2025-06-25T07:10:14Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f29_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=29&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/29_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "30",
+            "ID": 30,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=38",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|hoani@cranfield.co.nz",
+                "DisplayName": "Hoani Hunt",
+                "Email": "Hoani@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Hoani@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Managing Director"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|hoani@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-03-06",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Notes_x0020__x002f__x0020_Commen": "\"what is the standard\" \"do what you think is best\", try not to fall into the trap of choosing for the customer. Measure from the FFL, to the bottom of the glass, if we aren't able to measure the pets chest. ",
+            "Idea_x002f_Event": "Pet doors. When measuring for a pet door, we must get the height and location of\nthe hole correct based on the individual pet, measure the pets chest hwight from\nfloor, ask the customer for thier opinion and make sure they agree on this\nheight (write that it was agreed upon in the notes) if you cannot access the pet\nor the owner, we need floor/ground height to the bottom edge of the glass so we\ncan make the call by discussing with the customer without the need for another\nvisit\n\n",
+            "Modified": "2025-06-25T07:10:16Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f30_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=30&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/30_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "31",
+            "ID": 31,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-04-15",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "On Hold"
+            },
+            "Status#Id": 2,
+            "Idea_x002f_Event": "General tidy up of sign writing on vans once Sams van claim is sorted\n\n\n",
+            "Modified": "2025-06-25T07:10:27Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f31_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=31&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/31_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "32",
+            "ID": 32,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=67",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaDate": "2025-06-19",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Idea_x002f_Event": "More paper rolls on next Glasscorp Order \"There's is only 1 roll of paper towel\nand a roll of film left in the workshop\"\n\n",
+            "Modified": "2025-06-25T07:10:30Z",
+            "Created": "2025-06-24T04:40:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f32_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=32&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/32_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "33",
+            "ID": 33,
+            "Title": "Apprentice Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=15",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+                "DisplayName": "Struan O'Donnell",
+                "Email": "Struan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Struan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Apprentice Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": -1,
+                "Value": "Hazard Report "
+            },
+            "IdeaType#Id": -1,
+            "IdeaDate": "2025-06-03",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I didn't notice anything suspicious when entering the property inside seemed\nnormal had noticed a warning when signing into BGIS. How It Happended? Was working off a ladder the following day when I felt light headed just before\nlunch thinking nothing of it but during lunch had head spins and vomiting.",
+            "Modified": "2025-06-24T04:42:29Z",
+            "Created": "2025-06-24T04:42:29Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f33_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=33&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Apprentice Glazier",
+            "{FilenameWithExtension}": "Apprentice Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/33_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "34",
+            "ID": 34,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Business%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "IdeaType#Id": 0,
+            "IdeaDate": "2025-04-15",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Business Idea"
+            },
+            "Catagorie#Id": 0,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Idea_x002f_Event": "General tidy up of sign writing on vans once Sams van claim is sorted\n\n\n",
+            "Modified": "2025-06-25T07:10:35Z",
+            "Created": "2025-06-24T23:35:36Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f34_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=34&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/34_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "35",
+            "ID": 35,
+            "Title": "Apprentice Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=15",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+                "DisplayName": "Struan O'Donnell",
+                "Email": "Struan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Struan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Apprentice Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 5,
+                "Value": "Hazard Report"
+            },
+            "IdeaType#Id": 5,
+            "IdeaDate": "2025-06-03",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I didn't notice anything suspicious when entering the property inside seemed\nnormal had noticed a warning when signing into BGIS. How It Happended? Was working off a ladder the following day when I felt light headed just before\nlunch thinking nothing of it but during lunch had head spins and vomiting.",
+            "Modified": "2025-06-26T05:28:56Z",
+            "Created": "2025-06-26T05:28:56Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f35_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=35&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Apprentice Glazier",
+            "{FilenameWithExtension}": "Apprentice Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/35_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "36",
+            "ID": 36,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-26T05:33:51Z",
+            "Created": "2025-06-26T05:33:51Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f36_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=36&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/36_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"3\"",
+            "ItemInternalId": "37",
+            "ID": 37,
+            "Title": "Apprentice Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=15",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+                "DisplayName": "Struan O'Donnell",
+                "Email": "Struan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Struan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Apprentice Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 5,
+                "Value": "Hazard Report"
+            },
+            "IdeaType#Id": 5,
+            "IdeaDate": "2025-06-03",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 4,
+                "Value": "Completed"
+            },
+            "Status#Id": 4,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I didn't notice anything suspicious when entering the property inside seemed\nnormal had noticed a warning when signing into BGIS. How It Happended? Was working off a ladder the following day when I felt light headed just before\nlunch thinking nothing of it but during lunch had head spins and vomiting.",
+            "Modified": "2025-06-26T06:08:11Z",
+            "Created": "2025-06-26T05:33:52Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f37_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=37&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Apprentice Glazier",
+            "{FilenameWithExtension}": "Apprentice Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/37_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "3.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "38",
+            "ID": 38,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-29T03:26:48Z",
+            "Created": "2025-06-29T03:26:48Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f38_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=38&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/38_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "39",
+            "ID": 39,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T03:28:34Z",
+            "Created": "2025-06-29T03:28:34Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f39_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=39&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/39_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "40",
+            "ID": 40,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-29T03:28:44Z",
+            "Created": "2025-06-29T03:28:44Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f40_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=40&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/40_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "41",
+            "ID": 41,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-29T03:36:36Z",
+            "Created": "2025-06-29T03:36:36Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f41_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=41&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/41_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "42",
+            "ID": 42,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T03:37:03Z",
+            "Created": "2025-06-29T03:37:03Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f42_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=42&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/42_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "43",
+            "ID": 43,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T03:37:03Z",
+            "Created": "2025-06-29T03:37:03Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f43_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=43&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/43_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "44",
+            "ID": 44,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T03:39:53Z",
+            "Created": "2025-06-29T03:39:53Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f44_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=44&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/44_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "45",
+            "ID": 45,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-29T03:40:34Z",
+            "Created": "2025-06-29T03:40:34Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f45_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=45&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/45_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "46",
+            "ID": 46,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T04:05:40Z",
+            "Created": "2025-06-29T04:05:40Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f46_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=46&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/46_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "47",
+            "ID": 47,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-29T04:35:36Z",
+            "Created": "2025-06-29T04:35:36Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f47_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=47&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/47_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "48",
+            "ID": 48,
+            "Link": "https://cranfieldglass.sharepoint.com/Lists/Safety%20Ideas/DispForm.aspx?ID=51",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Safety Update"
+            },
+            "IdeaType#Id": 3,
+            "IdeaDate": "2025-06-10",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Safety Idea"
+            },
+            "Catagorie#Id": 1,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Notes_x0020__x002f__x0020_Commen": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Idea_x002f_Event": "Review toolbox and tool list and Take 5 for Downer Prison Sites\n\n",
+            "Modified": "2025-06-29T13:36:15Z",
+            "Created": "2025-06-29T13:36:15Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f48_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=48&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/48_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "49",
+            "ID": 49,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-30T02:15:38Z",
+            "Created": "2025-06-30T02:15:38Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f49_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=49&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/49_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "50",
+            "ID": 50,
+            "Title": "Senior Glazier",
+            "Link": "https://cranfieldglass.sharepoint.com/sites/incidentsReports/Lists/Near%20Miss%20-%20Accident%20Safety%20Register/DispForm.aspx?ID=19",
+            "SubmittedBy": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "SubmittedBy#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "IdeaType": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 7,
+                "Value": "Harm Accident"
+            },
+            "IdeaType#Id": 7,
+            "IdeaDate": "2025-06-26",
+            "Catagorie": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Near Miss / Accident"
+            },
+            "Catagorie#Id": 2,
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Not Started"
+            },
+            "Status#Id": 0,
+            "Priority": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "High"
+            },
+            "Priority#Id": 2,
+            "Notes_x0020__x002f__x0020_Commen": "What Happened? I wasn’t looking directly down as I was stepping off their deck. How It Happended? Stepped off deck into a hidden pot hole. Done by a dog and had regrown its\ngrass. It’s a minor sprain.",
+            "Modified": "2025-06-30T02:18:57Z",
+            "Created": "2025-06-30T02:18:57Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fActions%252f50_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/sites/Team_Actions_Meetings/_layouts/15/listform.aspx?PageType=4&ListId=34d2a277%2D10f0%2D4d6e%2Da6d7%2D9804e2877061&ID=50&ContentTypeID=0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{Name}": "Senior Glazier",
+            "{FilenameWithExtension}": "Senior Glazier",
+            "{Path}": "Lists/Actions/",
+            "{FullPath}": "Lists/Actions/50_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100AC1E0A355C8D264A98EC1241F2B14BBD009C684C903537044DAA14CF346CAB0D5A",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        }
+    ]
+}

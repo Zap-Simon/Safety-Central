@@ -1,0 +1,83 @@
+Direct Client
+Simple direct client workflow
+Client
+Client (party being billed)
+Location
+Only for multiple addresses (moved home, rental properties)
+Location Contact
+When site contact differs from client
+Insurance – Master Glaziers
+Standard insurance claim workflow
+Parent Client
+Insurer (main biller)
+Child Client
+Insured (Homeowner) - excess / upgrade billing
+Location Contact
+When site contact differs from Child Client (tenant or onsite person)
+Reported By
+Property Manager (job logger)
+Government / Builders
+Council housing, housing organisations, prison, government & builder contracts
+Client
+Council/Housing Org/Government Agency (billing entity)
+Locations
+Under Client (site address)
+Location Contact
+Tenant, Homeowner or Facility Manager (main site contact)
+Reported By
+Site Foreman/Overseer/Site Coordinator (job requester)
+Property Management
+Residential & commercial property management, some social housing
+Client
+Rental Agency (only one client per agency)
+Location
+Property Address (under Rental Agency)
+Location Contact
+Tenant (on-site contact)
+Reported By
+Property Manager (job requester)
+Property Owner
+Custom Field: CareOfName (for "C/-" invoice line)
+
+Invoice Template & Email Setup
+Invoice Template
+Update your AroFlo invoice layout header section with:
+
+{{Client.Name}}
+C/- {{Task.CustomFields.CareOfName}}
+{{Location.Street}}, {{Location.Suburb}}, {{Location.Postcode}}
+Email Template
+To: {{Client.Email}}
+Cc: {{Task.ReportedBy.Email}}
+Subject: Invoice for {{Location.Street}}
+Hi {{Task.ReportedBy.FirstName}},
+
+Attached is the invoice for the completed works at {{Location.Street}}, {{Location.Suburb}}.
+
+Kind regards,
+[Your Company Name]
+Invoice Example Output
+Ray White Property Management
+C/- Jane and Peter Collins
+7/132 Wainoni Road
+Christchurch 8061
+Email:
+To: accounts@raywhite.co.nz
+Cc: michael.jones@raywhite.co.nz
+Summary Table
+Field
+Role
+Client
+Rental Agency
+Location
+Rental Property
+Location Contact
+Tenant
+Reported By
+Property Manager
+Custom Field: CareOfName
+Property Owner (for "C/-" line)
+Invoice To
+Rental Agency
+Invoice CC
+Property Manager via Reported By

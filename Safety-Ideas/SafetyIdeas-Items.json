@@ -1,0 +1,2669 @@
+{
+    "foreachItems": [
+        {
+            "@odata.etag": "\"18\"",
+            "ItemInternalId": "8",
+            "ID": 8,
+            "Title": "Improve Adhesive Quality for Kwikfix Film",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-01-31",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Meeting_x0020_Notes1": "\"Discussed the need to improve adhesive quality for Kwikfix Film. Committee has closed the item after determining current adhesive meets safety standards. However, further enhancement will be considered in future product evaluations. Maria to document findings and monitor for any new developments in adhesive technology. No immediate action required.\"",
+            "Modified": "2025-06-29T13:34:43Z",
+            "Created": "2025-01-31T01:34:53Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f8_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=8&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Improve Adhesive Quality for Kwikfix Film",
+            "{FilenameWithExtension}": "Improve Adhesive Quality for Kwikfix Film",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/8_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "18.0"
+        },
+        {
+            "@odata.etag": "\"12\"",
+            "ItemInternalId": "9",
+            "ID": 9,
+            "Title": "Include Sunblock in Workplace Safety Kits",
+            "SafetyIdea1": "<div class=\"ExternalClass01B488A3964241C5960E0C1C53AE0B66\"><p class=\"editor-paragraph\">Sunblock in H&amp;S kits, brought up in worksafe visit today.</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-01-31",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the suggestion to include sunblock in Health & Safety kits, noted during today's WorkSafe visit. Recognized as a proactive measure for outdoor glaziers. Decision made to trial sunblock availability on-site. Sarah to research suppliers and costs, and report findings at the next meeting.\"",
+            "Modified": "2025-06-29T13:34:45Z",
+            "Created": "2025-01-31T01:35:44Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f9_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=9&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Include Sunblock in Workplace Safety Kits",
+            "{FilenameWithExtension}": "Include Sunblock in Workplace Safety Kits",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/9_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"44\"",
+            "ItemInternalId": "10",
+            "ID": 10,
+            "Title": "Verify Fire Extinguisher Expiry in All Vans",
+            "SafetyIdea1": "<div class=\"ExternalClass302CDE1D6FB641E5BC6920BB47C47813\"><p class=\"editor-paragraph\">Check fire extinguishers expiry in all vans</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-01-31",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Meeting_x0020_Notes1": "\"Discussed the importance of checking fire extinguishers' expiry dates in all company vans to ensure compliance and safety. Committee agreed to implement a quarterly inspection schedule. Mark will oversee the initial audit next week and provide a report on the current status. Any necessary replacements are to be prioritized and coordinated through the procurement department.\"",
+            "Modified": "2025-06-29T13:34:48Z",
+            "Created": "2025-01-31T01:36:13Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f10_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=10&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Verify Fire Extinguisher Expiry in All Vans",
+            "{FilenameWithExtension}": "Verify Fire Extinguisher Expiry in All Vans",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/10_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "43.0"
+        },
+        {
+            "@odata.etag": "\"37\"",
+            "ItemInternalId": "11",
+            "ID": 11,
+            "Title": "Auto-updated from Actions",
+            "SafetyIdea1": "<div class=\"ExternalClass7260CA27CB2445019750D9063599F0D2\"><p class=\"editor-paragraph\">Move the hook on safety chain out further so it doesn’t hit the door stopper on the external side right side. Saves the person shutting the door forgetting to move the chain and then attempting to unhook the chain with the door still closing as the door button gets stuck. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-03",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Notes": "Still needs to be done 24/06/2025",
+            "Meeting_x0020_Notes1": "\"Reviewed proposal to reposition the hook on the safety chain to prevent interference with the door stopper. Committee agreed that the adjustment is necessary to enhance safety and prevent operational delays. Alex to coordinate with maintenance team to implement changes by next month. Further safety checks to be conducted post-implementation to ensure effectiveness.\"",
+            "Modified": "2025-06-29T13:34:50Z",
+            "Created": "2025-02-03T04:10:20Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f11_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=11&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Auto-updated from Actions",
+            "{FilenameWithExtension}": "Auto-updated from Actions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/11_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "37.0"
+        },
+        {
+            "@odata.etag": "\"14\"",
+            "ItemInternalId": "12",
+            "ID": 12,
+            "Title": "\"Signage for Safe Stock Placement on 5mm Rack\"",
+            "SafetyIdea1": "<div class=\"ExternalClass9FE4EFB735814C169A3C12F2AD599019\"><p class=\"editor-paragraph\">Can we put a sign above the 5mm rack asking truck drivers put obsc stock on it with smooth side out </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "Name#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-04",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Meeting_x0020_Notes1": "Safety idea regarding signage for 5mm rack was discussed. The proposal to add a sign instructing truck drivers to store obsc stock with the smooth side out was reviewed. The committee agreed to implement this change. Mike will oversee the creation and installation of the sign by the end of next week.",
+            "Modified": "2025-06-29T13:34:52Z",
+            "Created": "2025-02-03T18:46:54Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f12_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=12&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Signage for Safe Stock Placement on 5mm Rack\"",
+            "{FilenameWithExtension}": "\"Signage for Safe Stock Placement on 5mm Rack\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/12_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "14.0"
+        },
+        {
+            "@odata.etag": "\"17\"",
+            "ItemInternalId": "13",
+            "ID": 13,
+            "Title": "Ensure Availability of Plasters in First Aid Kits",
+            "SafetyIdea1": "<div class=\"ExternalClass5EFCFB0FDC56435085467FE335AB1F5A\"><p class=\"editor-paragraph\">Plasters required</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-04",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "\"Safety item regarding the need for plasters was discussed and closed. Committee agreed that first aid kits will be audited to ensure sufficient supplies, including plasters. Sarah will conduct the audit next week and report findings. Additionally, a reminder will be sent to all employees regarding the location of first aid kits within the facility.\"",
+            "Modified": "2025-06-30T02:03:41Z",
+            "Created": "2025-02-10T18:47:34Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f13_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=13&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Ensure Availability of Plasters in First Aid Kits",
+            "{FilenameWithExtension}": "Ensure Availability of Plasters in First Aid Kits",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/13_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "17.0"
+        },
+        {
+            "@odata.etag": "\"46\"",
+            "ItemInternalId": "14",
+            "ID": 14,
+            "Title": "Auto-updated from Actions",
+            "SafetyIdea1": "<div class=\"ExternalClass97100297C0B440AA81DFE1B8A94ED48D\"><p class=\"editor-paragraph\">Add SDS sheets to workshop where chemicals are present for those specific items. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-10",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Reviewed proposal to add SDS sheets in the workshop where chemicals are used. Committee approved implementation to enhance compliance and safety awareness. Mark to coordinate with the warehouse team to ensure all relevant SDS sheets are displayed by next month. Follow-up scheduled for the next meeting to confirm completion and address any issues.\"",
+            "Modified": "2025-06-30T02:03:53Z",
+            "Created": "2025-02-10T23:47:51Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f14_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=14&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Auto-updated from Actions",
+            "{FilenameWithExtension}": "Auto-updated from Actions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/14_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "46.0"
+        },
+        {
+            "@odata.etag": "\"46\"",
+            "ItemInternalId": "15",
+            "ID": 15,
+            "Title": "Auto-updated from Actions",
+            "SafetyIdea1": "<div class=\"ExternalClassC41377BFCC4941279AC7D040660F8017\"><p class=\"editor-paragraph\">Lifting suckers. Wayne mentioned he requires a new pump for one of his suckers. Sucker general chat required.</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-12",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-02-18",
+            "Notes": "Sucker audit yet to be done, parts ordered and plungers replaced on Wayne's sucker",
+            "Meeting_x0020_Notes1": "\"Wayne raised an issue with the lifting sucker, highlighting the need for a new pump. The committee discussed potential risks associated with faulty equipment and agreed on the necessity of a general review of all lifting devices. Wayne to assess the condition of current suckers and report back with recommendations for replacements or repairs by next meeting.\"",
+            "Modified": "2025-06-30T02:03:58Z",
+            "Created": "2025-02-12T19:47:31Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f15_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=15&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Auto-updated from Actions",
+            "{FilenameWithExtension}": "Auto-updated from Actions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/15_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "46.0"
+        },
+        {
+            "@odata.etag": "\"11\"",
+            "ItemInternalId": "16",
+            "ID": 16,
+            "Title": "Ensure Workshop Chain Barrier is Replaced After Use",
+            "SafetyIdea1": "<div class=\"ExternalClassDDA00552F56B45B79F00B885DC96D257\"><p class=\"editor-paragraph\">Reminder at next meeting, when leaving the workshop make our chain workshop door barrier is put back up. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-12",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Safety idea regarding workshop exit procedures was discussed. Committee emphasized the importance of reinstating the chain barrier at the workshop door upon departure to prevent unauthorized access. Agreed to include a reminder in the safety briefing at the start of each shift. Mark to update the safety briefing checklist and ensure compliance by next meeting.\"",
+            "Modified": "2025-06-30T02:04:03Z",
+            "Created": "2025-02-12T20:01:46Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f16_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=16&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Ensure Workshop Chain Barrier is Replaced After Use",
+            "{FilenameWithExtension}": "Ensure Workshop Chain Barrier is Replaced After Use",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/16_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "11.0"
+        },
+        {
+            "@odata.etag": "\"11\"",
+            "ItemInternalId": "17",
+            "ID": 17,
+            "Title": "Gauntlet Safety Discussion for Simon & James",
+            "SafetyIdea1": "<div class=\"ExternalClassDBD7D8D622314AEDB0DBCECB4D37E8AC\"><p class=\"editor-paragraph\">Simon &amp; James needs gauntlets - Let's have a gauntlet chat yay</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-12",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Reviewed need for gauntlets for Simon and James during glass handling operations. Committee confirmed the requirement to enhance hand protection and agreed to conduct a 'glove needs' assessment. Safety officer Megan to schedule discussions with suppliers to explore options and ensure compliance with industry standards. Follow-up planned for next meeting to finalize procurement.\"",
+            "Modified": "2025-06-30T02:04:09Z",
+            "Created": "2025-02-12T20:02:51Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f17_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=17&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Gauntlet Safety Discussion for Simon & James",
+            "{FilenameWithExtension}": "Gauntlet Safety Discussion for Simon & James",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/17_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "11.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "18",
+            "ID": 18,
+            "Title": "Order New Gloves for Enhanced Safety Compliance",
+            "SafetyIdea1": "<div class=\"ExternalClassB31CEAF748974FEF9C2ACC3966120455\"><p class=\"editor-paragraph\">Glove order required </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-12",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Item reviewed regarding the need for updated glove inventory. Committee acknowledged the importance of maintaining adequate PPE stock for handling glass safely. Decision made to place an immediate order for high-dexterity cut-resistant gloves. Maria to liaise with suppliers and confirm delivery timelines by next meeting.\"",
+            "Modified": "2025-06-30T02:04:14Z",
+            "Created": "2025-02-12T20:08:44Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f18_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=18&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Order New Gloves for Enhanced Safety Compliance",
+            "{FilenameWithExtension}": "Order New Gloves for Enhanced Safety Compliance",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/18_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "19",
+            "ID": 19,
+            "Title": "Onsite Laminated Cutting: Best Practices & Confidence...",
+            "SafetyIdea1": "<div class=\"ExternalClass8A7131DE581845E484FE57DE15419734\"><p class=\"editor-paragraph\">Laminated cutting, who is confident cutting, how do we cut onsite, what are are practices ? </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2024-03-24",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-05",
+            "Meeting_x0020_Notes1": "Safety concern regarding laminated glass cutting was discussed. The committee reviewed current onsite cutting practices and identified the need for additional training to ensure all team members are confident and compliant. Decision made for Mark to organize a training session focused on safe cutting techniques. Follow-up scheduled for next meeting to assess training effectiveness and any further requirements.",
+            "Modified": "2025-06-29T13:35:06Z",
+            "Created": "2025-02-12T20:38:48Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f19_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=19&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Onsite Laminated Cutting: Best Practices & Confidence...",
+            "{FilenameWithExtension}": "Onsite Laminated Cutting: Best Practices & Confidence...",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/19_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "20",
+            "ID": 20,
+            "Title": "\"Enhancing Safety with Work Phone Best Practices\"",
+            "SafetyIdea1": "<div class=\"ExternalClassB0BA4856534C4F72AD1B8599556B6CE3\"><p class=\"editor-paragraph\">Work phones</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-24",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-04-01",
+            "Meeting_x0020_Notes1": "\"Discussed the proposal to implement work phones for field glaziers to enhance communication and emergency response. Committee agreed the idea is beneficial but requires cost analysis. Mark to evaluate budget implications and connectivity options by next meeting. Implementation contingent on maintaining safety standards without compromising operational efficiency.\"",
+            "Modified": "2025-06-30T02:02:38Z",
+            "Created": "2025-02-12T20:46:53Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f20_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=20&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Enhancing Safety with Work Phone Best Practices\"",
+            "{FilenameWithExtension}": "\"Enhancing Safety with Work Phone Best Practices\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/20_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"18\"",
+            "ItemInternalId": "21",
+            "ID": 21,
+            "Title": "Streamline Tracking for Woolworths Work Apps",
+            "SafetyIdea1": "<div class=\"ExternalClassF4E87010B6E947418E2DCC368D9D23FA\"><p class=\"editor-paragraph\">From Kevin &quot;To work on Woolworths sites, there is another app required called ‘Woolworths group visitor’ takes about 10mins to create profile to sign in… manual signin book is gone&quot; How do we track all these work apps?&#160;</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-12",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Kevin raised the issue of managing multiple work apps, specifically the 'Woolworths group visitor' app required for site access. The committee noted the need for better tracking of such apps. Decided to create a centralized digital log for app management. Sarah will develop a draft process for review by next meeting to ensure all staff comply with site-specific requirements.\"",
+            "Modified": "2025-06-30T02:02:33Z",
+            "Created": "2025-02-12T22:42:08Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f21_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=21&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Streamline Tracking for Woolworths Work Apps",
+            "{FilenameWithExtension}": "Streamline Tracking for Woolworths Work Apps",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/21_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "18.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "22",
+            "ID": 22,
+            "Title": "Continuous Workshop Safety Improvement Initiative",
+            "SafetyIdea1": "<div class=\"ExternalClassC065D2A250F94A42B5C4DBD700E3BC34\"><p class=\"editor-paragraph\">There is always work to be done at the workshop\n</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-13",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Reviewed item concerning continuous work demands at the workshop. Committee acknowledged the potential for fatigue-related safety risks. Agreed to implement a rotating schedule to ensure adequate rest periods for staff. Sarah to draft a schedule proposal by next meeting. Emphasized the importance of maintaining high safety standards amidst ongoing operations.\"",
+            "Modified": "2025-06-30T02:02:29Z",
+            "Created": "2025-02-13T03:49:56Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f22_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=22&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Continuous Workshop Safety Improvement Initiative",
+            "{FilenameWithExtension}": "Continuous Workshop Safety Improvement Initiative",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/22_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"15\"",
+            "ItemInternalId": "24",
+            "ID": 24,
+            "Title": "\"Proper Tool Use for Safe Work at Heights\"",
+            "SafetyIdea1": "<div class=\"ExternalClass00AF75EFB4294EC2806024748AF5E3A9\"><p class=\"editor-paragraph\">Ensuring we are using the right tools when it comes to safety/working at heights for the right job. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|teresa@cranfield.co.nz",
+                "DisplayName": "Teresa Poole",
+                "Email": "Teresa@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Teresa@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": null
+            },
+            "Name#Claims": "i:0#.f|membership|teresa@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-18",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-02-18",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the importance of using appropriate equipment for working at heights. Consensus reached on auditing current tools for compliance with safety standards. Martin will conduct a thorough inventory check and report findings at the next meeting. Recommendations for any necessary equipment upgrades or replacements will be considered based on Martin's report.\"",
+            "Modified": "2025-06-30T02:02:25Z",
+            "Created": "2025-02-18T01:51:42Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f24_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=24&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Proper Tool Use for Safe Work at Heights\"",
+            "{FilenameWithExtension}": "\"Proper Tool Use for Safe Work at Heights\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/24_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "15.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "25",
+            "ID": 25,
+            "Title": "Optimize DGU Pile Management for Space Efficiency",
+            "SafetyIdea1": "<div class=\"ExternalClassE1D018ECDE9A410E9D9B7381D33DA456\"><p class=\"editor-paragraph\">Wayne  [Media] \nCan we start working on the dgu pile as we are running out of room</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-19",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "Safety Idea: Wayne raised the issue of limited space due to the accumulation of the DGU (double-glazed units) pile. The committee agreed this poses a potential safety hazard. Decision made to prioritize clearing and reorganizing storage areas. Wayne to assess current DGU inventory and collaborate with logistics to optimize stacking procedures. Follow-up scheduled for the next meeting to evaluate progress.",
+            "Modified": "2025-06-30T02:02:20Z",
+            "Created": "2025-02-19T19:45:12Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f25_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=25&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Optimize DGU Pile Management for Space Efficiency",
+            "{FilenameWithExtension}": "Optimize DGU Pile Management for Space Efficiency",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/25_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"12\"",
+            "ItemInternalId": "26",
+            "ID": 26,
+            "Title": "Ensure Non-Arissed Glass is Wrapped for Safety Compliance",
+            "SafetyIdea1": "<div class=\"ExternalClass656D035C4CE74663A6B2DFB094E77AB9\"><p class=\"editor-paragraph\">Supply only glass must be wrapped if its not arissed, according to consumer acts gurantee must be fit for purpose. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-20",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the issue of supply-only glass not being wrapped when unarissed, highlighting the importance of compliance with consumer guarantee standards. Agreed that all unarissed glass must be adequately wrapped to ensure it is fit for purpose. Mark will update handling procedures and liaise with suppliers to ensure adherence. Follow-up scheduled for next meeting to assess progress.\"",
+            "Modified": "2025-06-30T02:02:16Z",
+            "Created": "2025-02-20T03:47:35Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f26_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=26&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Ensure Non-Arissed Glass is Wrapped for Safety Compliance",
+            "{FilenameWithExtension}": "Ensure Non-Arissed Glass is Wrapped for Safety Compliance",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/26_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"12\"",
+            "ItemInternalId": "27",
+            "ID": 27,
+            "Title": "Safe Removal of Broken Glass from Window Sashes",
+            "SafetyIdea1": "<div class=\"ExternalClass88A54AE3A22A4F2AA481BBA1D6A94045\"><p class=\"editor-paragraph\">Best practices for bringing sash;'s back with broken glass. Remove glass from frame? </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-24",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "Safety idea regarding safe handling of sashes with broken glass discussed. Committee agreed that removing glass from frames before transport is best practice. Decision made to update safety protocols to reflect this. Mark to draft updated guidelines and coordinate a training session for all glaziers by the end of the month.",
+            "Modified": "2025-06-30T02:02:11Z",
+            "Created": "2025-02-24T21:49:48Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f27_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=27&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Safe Removal of Broken Glass from Window Sashes",
+            "{FilenameWithExtension}": "Safe Removal of Broken Glass from Window Sashes",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/27_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "28",
+            "ID": 28,
+            "Title": "Downers ATW & Hot Works Safety Requirements Discussion",
+            "SafetyIdea1": "<div class=\"ExternalClass9803A9EDAEC44C66BC63923CA4F7F28A\"><p class=\"editor-paragraph\">Discuss downers ATW and hot works requirements. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-02-27",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "\"Discussed downers ATW and hot works requirements. Committee agreed that current protocols need reinforcement to ensure compliance. All team leaders to conduct briefings on the updated protocols next week. Mark to draft a checklist for supervisors to monitor adherence during operations. Follow-up meeting scheduled in four weeks to evaluate implementation success and discuss any further adjustments.\"",
+            "Modified": "2025-06-30T02:02:06Z",
+            "Created": "2025-02-27T22:22:47Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f28_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=28&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Downers ATW & Hot Works Safety Requirements Discussion",
+            "{FilenameWithExtension}": "Downers ATW & Hot Works Safety Requirements Discussion",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/28_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "31",
+            "ID": 31,
+            "Title": "Maintain a Tidy Workshop for Enhanced Safety",
+            "SafetyIdea1": "<div class=\"ExternalClass45ABDAF84F3F4C0F83B87AE7BAE6679A\"><p class=\"editor-paragraph\">Keep workshop tidy</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|wayne@cranfield.co.nz",
+                "DisplayName": "Wayne  Joyce",
+                "Email": "Wayne@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Wayne@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "Name#Claims": "i:0#.f|membership|wayne@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-03",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the importance of maintaining a tidy workshop to ensure safety and efficiency. Agreed that regular audits will be conducted to enforce cleanliness standards. Oliver to develop a checklist for weekly inspections and liaise with team leaders to implement. Follow-up scheduled for next meeting to assess progress.\"",
+            "Modified": "2025-06-30T02:01:54Z",
+            "Created": "2025-03-03T19:13:58Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f31_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=31&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Maintain a Tidy Workshop for Enhanced Safety",
+            "{FilenameWithExtension}": "Maintain a Tidy Workshop for Enhanced Safety",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/31_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "13.0"
+        },
+        {
+            "@odata.etag": "\"14\"",
+            "ItemInternalId": "32",
+            "ID": 32,
+            "Title": "\"Ensure Eye Protection: Order Safety Glasses Now\"",
+            "SafetyIdea1": "<div class=\"ExternalClassADBBD5A9C2304A11AEC472878D5A2FC9\"><p class=\"editor-paragraph\">Order safety glasses </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-03",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "Item: Safety Ideas - Order Safety Glasses\n\nThe committee reviewed the proposal to order additional safety glasses. It was unanimously agreed that due to increased production demand, a new supply is essential to ensure compliance with safety standards. Sarah will liaise with suppliers to source cost-effective, high-impact resistant glasses. Delivery is expected by the end of the month, ensuring all team members are equipped.",
+            "Modified": "2025-06-30T02:01:49Z",
+            "Created": "2025-03-03T20:45:53Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f32_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=32&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Ensure Eye Protection: Order Safety Glasses Now\"",
+            "{FilenameWithExtension}": "\"Ensure Eye Protection: Order Safety Glasses Now\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/32_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "14.0"
+        },
+        {
+            "@odata.etag": "\"17\"",
+            "ItemInternalId": "33",
+            "ID": 33,
+            "Title": "Enhance Safety: Focus on Glasses & Hearing Protection",
+            "SafetyIdea1": "<div class=\"ExternalClass7CAD791E1D514F5FA0B2059E8BA10B71\"><p class=\"editor-paragraph\">Next meeting talk more about safety glasses and hearing protection </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-03",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-03-04",
+            "Meeting_x0020_Notes1": "Safety equipment discussion concluded with emphasis on improving safety glasses and hearing protection usage in the workshop. The committee agreed to assess current compliance levels and explore potential upgrades. Mark will survey team members on their current use and satisfaction with equipment. Findings to be presented at the next meeting for further action.",
+            "Modified": "2025-06-30T02:01:40Z",
+            "Created": "2025-03-03T20:46:23Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f33_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=33&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Enhance Safety: Focus on Glasses & Hearing Protection",
+            "{FilenameWithExtension}": "Enhance Safety: Focus on Glasses & Hearing Protection",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/33_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "17.0"
+        },
+        {
+            "@odata.etag": "\"10\"",
+            "ItemInternalId": "34",
+            "ID": 34,
+            "Title": "\"NZS:4223 Guidelines for Low-Level Glazing Safety\"",
+            "SafetyIdea1": "<div class=\"ExternalClass8A032BE6A5864B8E86684742DC1A0F7B\"><p class=\"editor-paragraph\">NZS&#58;4223 go over the rules for low level glazing and under 800mm FFL, and 800mm - 1000mm FFL \n</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-10",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-18",
+            "Meeting_x0020_Notes1": "Reviewed NZS 4223 standards for low-level glazing, specifically concerning installations under 800mm FFL and between 800mm - 1000mm FFL. Committee concluded that current practices align with regulations. No immediate changes required. To enhance compliance, Mark will organize a refresher workshop for installation teams next month.",
+            "Modified": "2025-06-30T02:01:28Z",
+            "Created": "2025-03-10T21:44:07Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f34_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=34&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"NZS:4223 Guidelines for Low-Level Glazing Safety\"",
+            "{FilenameWithExtension}": "\"NZS:4223 Guidelines for Low-Level Glazing Safety\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/34_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "10.0"
+        },
+        {
+            "@odata.etag": "\"10\"",
+            "ItemInternalId": "35",
+            "ID": 35,
+            "Title": "Glass Safety Protocols for Social Housing Sites",
+            "SafetyIdea1": "<div class=\"ExternalClass4423454791184A86BB5B7B42B43060EE\"><p class=\"editor-paragraph\">Glass in channels on sites, especially for social housing an particularly OT sites, discussion required. </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-03-17",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-03-18",
+            "Meeting_x0020_Notes1": "Safety concern regarding glass installation in channels, particularly on social housing and OT sites, was discussed. Committee agreed to conduct a risk assessment on current practices. Sarah will liaise with site managers to gather data on recent installations. Recommendations for improved safety measures to be prepared by next meeting.",
+            "Modified": "2025-06-30T02:01:22Z",
+            "Created": "2025-03-17T21:13:26Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f35_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=35&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Glass Safety Protocols for Social Housing Sites",
+            "{FilenameWithExtension}": "Glass Safety Protocols for Social Housing Sites",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/35_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "10.0"
+        },
+        {
+            "@odata.etag": "\"11\"",
+            "ItemInternalId": "36",
+            "ID": 36,
+            "Title": "\"Ensure Van First Aid Kits Are Fully Stocked and Equipped\"",
+            "SafetyIdea1": "<div class=\"ExternalClass4795B91D4F044B0D99F46A069CF1492B\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;color&#58;rgb(0, 0, 0);\">Check 1st aid kits in each van, top up whats missing.&#160;<span style=\"color&#58;rgb(52, 54, 58);font-family&#58;-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Helvetica Neue&quot;, &quot;Apple Color Emoji&quot;, sans-serif;font-size&#58;14px;background-color&#58;rgb(223, 225, 226);display&#58;inline !important;\">Eye wash baths and salin solution,&#160;<span style=\"font-family&#58;-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Helvetica Neue&quot;, &quot;Apple Color Emoji&quot;, sans-serif;background-color&#58;rgb(223, 225, 226);display&#58;inline !important;\">Splinter removal tools for first aid</span></span><br></div></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-04-15",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-04-15",
+            "Meeting_x0020_Notes1": "\"Reviewed the status of first aid kits in company vans. Committee noted the need to replenish eye wash baths and splinter removal tools. Agreed that all kits should be checked and restocked monthly. Michael to coordinate with team leaders to ensure compliance by next meeting.\"",
+            "Modified": "2025-06-29T13:35:34Z",
+            "Created": "2025-04-16T05:47:55Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f36_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=36&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Ensure Van First Aid Kits Are Fully Stocked and Equipped\"",
+            "{FilenameWithExtension}": "\"Ensure Van First Aid Kits Are Fully Stocked and Equipped\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/36_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "11.0"
+        },
+        {
+            "@odata.etag": "\"10\"",
+            "ItemInternalId": "37",
+            "ID": 37,
+            "Title": "\"Ensure Safety: Stock Handling Gloves Initiative\"",
+            "SafetyIdea1": "<div class=\"ExternalClass3FF97E0BFE874EEAA7E2D41EF065ECD0\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;color&#58;rgb(0, 0, 0);\"><span style=\"color&#58;rgb(52, 54, 58);font-family&#58;-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Helvetica Neue&quot;, &quot;Apple Color Emoji&quot;, sans-serif;font-size&#58;14px;background-color&#58;rgb(223, 225, 226);display&#58;inline !important;\">gloves for stock</span><br></div></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-04-15",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-04-15",
+            "Meeting_x0020_Notes1": "The committee addressed the proposal for providing gloves for stock handling. It was agreed that implementing this could enhance safety when managing glass materials. The item is now closed after approval. Operations Manager, Lisa, will oversee the procurement of appropriate gloves and ensure distribution to all relevant team members by the end of the month.",
+            "Modified": "2025-06-29T13:35:36Z",
+            "Created": "2025-04-16T05:48:51Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f37_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=37&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Ensure Safety: Stock Handling Gloves Initiative\"",
+            "{FilenameWithExtension}": "\"Ensure Safety: Stock Handling Gloves Initiative\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/37_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "10.0"
+        },
+        {
+            "@odata.etag": "\"12\"",
+            "ItemInternalId": "38",
+            "ID": 38,
+            "Title": "\"High-Visibility Rain Jacket for Enhanced Safety\"",
+            "SafetyIdea1": "<div class=\"ExternalClass5828EFA83D5647A59DAA2BF80D2D93F0\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;color&#58;rgb(0, 0, 0);\"><span style=\"color&#58;rgb(52, 54, 58);font-family&#58;-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Helvetica Neue&quot;, &quot;Apple Color Emoji&quot;, sans-serif;font-size&#58;14px;background-color&#58;rgb(223, 225, 226);display&#58;inline !important;\">Rain jacket</span><br></div></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-04-15",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-04-15",
+            "Meeting_x0020_Notes1": "Safety issue regarding the provision of rain jackets for field glaziers discussed. Committee agreed on the necessity to ensure all employees have proper weather gear to prevent slips and falls. Procurement to confirm current inventory and order additional jackets if needed. Michael to provide a cost estimate by next meeting.",
+            "Modified": "2025-06-29T13:35:39Z",
+            "Created": "2025-04-16T05:49:27Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f38_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=38&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"High-Visibility Rain Jacket for Enhanced Safety\"",
+            "{FilenameWithExtension}": "\"High-Visibility Rain Jacket for Enhanced Safety\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/38_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"9\"",
+            "ItemInternalId": "39",
+            "ID": 39,
+            "Title": "\"Enhanced Safety: Yellow Hi-Vis Long Sleeves for Prisons\"",
+            "SafetyIdea1": "<div class=\"ExternalClass6CBEA30431764960BB6371B5F17D4897\"><div style=\"font-family&#58;Calibri, Arial, Helvetica, sans-serif;font-size&#58;11pt;color&#58;rgb(0, 0, 0);\"><span style=\"color&#58;rgb(52, 54, 58);font-family&#58;-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Helvetica Neue&quot;, &quot;Apple Color Emoji&quot;, sans-serif;font-size&#58;14px;background-color&#58;rgb(223, 225, 226);display&#58;inline !important;\">long sleeve yellow hi vis for prison for everyone</span><br></div></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|james@cranfield.co.nz",
+                "DisplayName": "James Waites",
+                "Email": "james@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=james@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Field Supervisor"
+            },
+            "Name#Claims": "i:0#.f|membership|james@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-04-15",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-04-15",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the proposal for long sleeve yellow hi-vis attire for all staff, particularly in the context of prison contracts. Decision made to implement as standard PPE to enhance visibility and safety. Procurement team to source suitable options and report on availability and costs by next meeting. Implementation targeted for Q1 2024.\"",
+            "Modified": "2025-06-29T13:35:40Z",
+            "Created": "2025-04-16T05:53:16Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f39_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=39&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Enhanced Safety: Yellow Hi-Vis Long Sleeves for Prisons\"",
+            "{FilenameWithExtension}": "\"Enhanced Safety: Yellow Hi-Vis Long Sleeves for Prisons\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/39_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "9.0"
+        },
+        {
+            "@odata.etag": "\"13\"",
+            "ItemInternalId": "40",
+            "ID": 40,
+            "Title": "\"Ensure Scaffold Safety: Install Kick Boards Immediately\"",
+            "SafetyIdea1": "<div class=\"ExternalClassFA26BC90E97E41AA8450D25D3422D806\"><p class=\"editor-paragraph\">In regards to the scaffolds is there a reason we don't have kick boards? </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+                "DisplayName": "Struan O'Donnell",
+                "Email": "Struan@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Struan@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Apprentice Glazier"
+            },
+            "Name#Claims": "i:0#.f|membership|struan@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-05-06",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-05-13",
+            "Meeting_x0020_Notes1": "\"Safety concern regarding absence of kick boards on scaffolds was discussed. Committee agreed that kick boards are essential for preventing materials from falling. John to assess current scaffold inventory and report on compliance with safety regulations. Decision made to prioritize kick board installation. Further review scheduled for next meeting to ensure adherence to safety standards.\"",
+            "Modified": "2025-06-29T13:35:43Z",
+            "Created": "2025-05-06T05:01:04Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f40_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=40&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "\"Ensure Scaffold Safety: Install Kick Boards Immediately\"",
+            "{FilenameWithExtension}": "\"Ensure Scaffold Safety: Install Kick Boards Immediately\"",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/40_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"17\"",
+            "ItemInternalId": "49",
+            "ID": 49,
+            "Title": "Auto-updated from Actions",
+            "SafetyIdea1": "<div class=\"ExternalClassAC558FDD50C94043AA3BC39D6F779C2D\"><p class=\"editor-paragraph\">Can we have an afternoon cleaning up the racks and workshop?</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+                "DisplayName": "Kevin Young",
+                "Email": "Kevin@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Kevin@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Senior Glazier"
+            },
+            "Name#Claims": "i:0#.f|membership|kevin@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-05-28",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Value Add Idea"
+            },
+            "Idea_x0020_Type#Id": 0,
+            "MeetingDate": "2025-06-10",
+            "Notes": "In discussion, pin racks, etc, schedule some time. Plywood storing, bin some ",
+            "Meeting_x0020_Notes1": "\"Committee reviewed the proposal for an afternoon dedicated to cleaning up the racks and workshop. Agreed on the importance of maintaining a tidy work environment to prevent accidents. Decision made to schedule a team cleanup day next Friday. John will organize the necessary materials and ensure all staff are briefed on safety procedures during the cleanup.\"",
+            "Modified": "2025-06-29T13:35:44Z",
+            "Created": "2025-05-28T06:38:43Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f49_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=49&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Auto-updated from Actions",
+            "{FilenameWithExtension}": "Auto-updated from Actions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/49_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "16.0"
+        },
+        {
+            "@odata.etag": "\"19\"",
+            "ItemInternalId": "51",
+            "ID": 51,
+            "Title": "Toolbox Review & Take 5 Protocol for Downer Prison Sites",
+            "SafetyIdea1": "<div class=\"ExternalClass88E87C81A41947FDA4580BE852A96A67\"><p class=\"editor-paragraph\">Review toolbox and tool list and Take 5 for Downer Prison Sites</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Actioned"
+            },
+            "Status#Id": 2,
+            "Idea_x0020_Date": "2025-06-10",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Safety Update"
+            },
+            "Idea_x0020_Type#Id": 2,
+            "MeetingDate": "2025-06-10",
+            "Notes": "Use Downers tool list, look into a glazing specific list some time in the future, combination lock for ladders. ",
+            "Meeting_x0020_Notes1": "\"Reviewed the toolbox and tool list for the Downer Prison Sites. Committee agreed to implement the updated 'Take 5' safety check procedure. Tools to be standardized across all sites to ensure compliance and efficiency. Mark will liaise with site managers to distribute the revised tool lists and arrange a briefing session for all team members by next month.\"",
+            "Modified": "2025-06-29T13:35:47Z",
+            "Created": "2025-06-10T02:17:18Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f51_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=51&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Toolbox Review & Take 5 Protocol for Downer Prison Sites",
+            "{FilenameWithExtension}": "Toolbox Review & Take 5 Protocol for Downer Prison Sites",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/51_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "17.0"
+        },
+        {
+            "@odata.etag": "\"14\"",
+            "ItemInternalId": "52",
+            "ID": 52,
+            "Title": "Job Safety Alert: Meth Decontaminated Site Precautions",
+            "SafetyIdea1": "<div class=\"ExternalClassBC1055380BF6456B872BFC6449DA11ED\"><p class=\"editor-paragraph\">Job Safety Notice – Meth Decontaminated Sites\n\nAs we’re attending more KO and council properties, some of which may have undergone methamphetamine decontamination, we’ve added a new notice to certain jobs to help keep everyone safe, we'll discuss this more at our next H&amp;S meeting. You’ll now see the following message on applicable jobs&#58;\n\nJob Warning Notice&#58; Meth Decontaminated Site\n1.Report Immediately – If you notice any odours, even the slightest, or signs of residue or dampness, contact the office immediately.\n2.Ventilation Awareness – Be alert to any indications that the property may not have been well ventilated.\n3.Protective Equipment – All glaziers must carry H2 respiratory masks in their vans and be prepared to use them as a precautionary measure.\n\n</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-06-18",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Safety Update"
+            },
+            "Idea_x0020_Type#Id": 2,
+            "MeetingDate": "2025-06-24",
+            "Meeting_x0020_Notes1": "\"Committee discussed the new Job Safety Notice for meth decontaminated sites. Members agreed on the importance of immediate reporting and proper ventilation. Glaziers to ensure H2 respiratory masks are readily available. Next steps: Lisa to arrange a brief training session on identifying decontamination signs next Tuesday. Further assessment of ventilation equipment is required.\"",
+            "Modified": "2025-06-29T13:35:49Z",
+            "Created": "2025-06-18T04:20:42Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f52_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=52&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Job Safety Alert: Meth Decontaminated Site Precautions",
+            "{FilenameWithExtension}": "Job Safety Alert: Meth Decontaminated Site Precautions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/52_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "12.0"
+        },
+        {
+            "@odata.etag": "\"20\"",
+            "ItemInternalId": "53",
+            "ID": 53,
+            "Title": "Auto-updated from Actions",
+            "SafetyIdea1": "<div class=\"ExternalClass364D3C3FC92E4273B44EFC7961307FB0\"><p class=\"editor-paragraph\">Sam needs Gauntlets on next Glasscorp Order, Black Nylon, short large size</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|sam.chang@cranfield.co.nz",
+                "DisplayName": "Sam Chang",
+                "Email": "Sam.Chang@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=Sam.Chang@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Transitional Glazier"
+            },
+            "Name#Claims": "i:0#.f|membership|sam.chang@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-06-19",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Order"
+            },
+            "Idea_x0020_Type#Id": 3,
+            "MeetingDate": "2025-06-24",
+            "Meeting_x0020_Notes1": "We talked about Sam needing gauntlets for the next Glasscorp order. Everyone agreed on getting the black nylon ones in a short large size. Considered it sorted.",
+            "Modified": "2025-06-29T13:51:50Z",
+            "Created": "2025-06-19T00:14:06Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f53_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=53&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Auto-updated from Actions",
+            "{FilenameWithExtension}": "Auto-updated from Actions",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/53_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "18.0"
+        },
+        {
+            "@odata.etag": "\"12\"",
+            "ItemInternalId": "54",
+            "ID": 54,
+            "Title": "Women's Prison Safety Update Discussion",
+            "SafetyIdea1": "<div class=\"ExternalClass274AEE11E32348589183D5DDCB90D5E8\"><p class=\"editor-paragraph\">Woman's Prison - Site Update to be discussed at tomorrows H&amp;S meeting </p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 3,
+                "Value": "Closed"
+            },
+            "Status#Id": 3,
+            "Idea_x0020_Date": "2025-06-22",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 2,
+                "Value": "Safety Update"
+            },
+            "Idea_x0020_Type#Id": 2,
+            "MeetingDate": "2025-06-24",
+            "Meeting_x0020_Notes1": "Talked about the update on the woman’s prison site. We acknowledged the points raised in yesterday's H&S meeting and wrapped up the discussion.",
+            "Modified": "2025-06-29T13:51:52Z",
+            "Created": "2025-06-22T23:30:39Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+                "DisplayName": "SharePoint App",
+                "Email": null,
+                "Picture": null,
+                "Department": null,
+                "JobTitle": null
+            },
+            "Editor#Claims": "i:0i.t|00000003-0000-0ff1-ce00-000000000000|app@sharepoint",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f54_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=54&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "Women's Prison Safety Update Discussion",
+            "{FilenameWithExtension}": "Women's Prison Safety Update Discussion",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/54_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "11.0"
+        },
+        {
+            "@odata.etag": "\"1\"",
+            "ItemInternalId": "55",
+            "ID": 55,
+            "SafetyIdea1": "<div class=\"ExternalClass9604505D89CB4E45A484D19EBDC0462F\"><p class=\"editor-paragraph\">Added to auto action list from Hoani; \nDoes&#160;Everyone&#160;have a head torch in their vans?&#160;This is a valuable part of your tool kit as it is getting dark earlier during the winter months and also call outs at night time requires a head torch, &#160;please thumbs up emoji if you have one and if you don't please go and get one this weekend</p></div>",
+            "Name": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Name#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Status": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 0,
+                "Value": "Submitted"
+            },
+            "Status#Id": 0,
+            "Idea_x0020_Date": "2025-07-03",
+            "Idea_x0020_Type": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference",
+                "Id": 1,
+                "Value": "Waste Reduce"
+            },
+            "Idea_x0020_Type#Id": 1,
+            "MeetingDate": "2025-07-08",
+            "Modified": "2025-07-03T20:06:50Z",
+            "Created": "2025-07-03T20:06:50Z",
+            "Author": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Author#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "Editor": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedUser",
+                "Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+                "DisplayName": "Simon Hubbard",
+                "Email": "simon@cranfield.co.nz",
+                "Picture": "https://cranfieldglass.sharepoint.com/_layouts/15/UserPhoto.aspx?Size=L&AccountName=simon@cranfield.co.nz",
+                "Department": null,
+                "JobTitle": "Office Manager"
+            },
+            "Editor#Claims": "i:0#.f|membership|simon@cranfield.co.nz",
+            "{Identifier}": "Lists%252fSafety%2bIdeas%252f55_.000",
+            "{IsFolder}": false,
+            "{Thumbnail}": {
+                "Large": null,
+                "Medium": null,
+                "Small": null
+            },
+            "{Link}": "https://cranfieldglass.sharepoint.com/_layouts/15/listform.aspx?PageType=4&ListId=60a5f8e7%2D7bf5%2D45da%2D96ed%2D24964dc674b4&ID=55&ContentTypeID=0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{Name}": "",
+            "{FilenameWithExtension}": "",
+            "{Path}": "Lists/Safety Ideas/",
+            "{FullPath}": "Lists/Safety Ideas/55_.000",
+            "{ContentType}": {
+                "@odata.type": "#Microsoft.Azure.Connectors.SharePoint.SPListExpandedContentType",
+                "Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+                "Name": "Item"
+            },
+            "{ContentType}#Id": "0x0100DA5EB505C803F144B042565BF6092817008217F5B0B321FA4BBCD0256E31B3B28F",
+            "{HasAttachments}": false,
+            "{VersionNumber}": "1.0"
+        }
+    ]
+}

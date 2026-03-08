@@ -1,0 +1,45 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ID": { "type": "integer" },
+      "Title": { "type": "string" },
+      "SafetyIdea1": { "type": "string" },
+      "Status": { "type": "string" },
+      "Idea_x0020_Date": { "type": "string" },
+      "Idea_x0020_Type": { "type": "string" },
+      "MeetingDate": { "type": "string" },
+      "Meeting_x0020_Notes1": { "type": "string" },
+      "Created": { "type": "string" },
+      "Modified": { "type": "string" },
+      "Name": {
+        "type": "object",
+        "properties": {
+          "Id": { "type": "integer" },
+          "Title": { "type": "string" },
+          "EMail": { "type": "string" },
+          "JobTitle": { "type": "string" }
+        }
+      },
+      "Author": {
+        "type": "object",
+        "properties": {
+          "Id": { "type": "integer" },
+          "Title": { "type": "string" },
+          "EMail": { "type": "string" },
+          "JobTitle": { "type": "string" }
+        }
+      },
+      "Editor": {
+        "type": "object",
+        "properties": {
+          "Id": { "type": "integer" },
+          "Title": { "type": "string" },
+          "EMail": { "type": "string" },
+          "JobTitle": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# Required npm packages for Microsoft Azure Authentication
+
+## Frontend Dependencies (install with npm install):
+@azure/msal-browser
+@azure/msal-node
+@types/react
+@types/react-dom
+react
+react-dom
+typescript
+lucide-react
+
+## Backend Dependencies (install with npm install):
+express
+@types/express
+@types/node
+typescript
+tsx
+
+## Development Dependencies:
+@types/node
+typescript
+
+## Installation Commands:
+
+# Frontend packages
+npm install @azure/msal-browser @azure/msal-node @types/react @types/react-dom react react-dom typescript lucide-react
+
+# Backend packages  
+npm install express @types/express @types/node typescript tsx
+
+# Or install all at once:
+npm install @azure/msal-browser @azure/msal-node @types/react @types/react-dom react react-dom typescript lucide-react express @types/express @types/node tsx
+
+## Package.json Scripts (add to your package.json):
+{
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "build": "tsc",
+    "start": "node dist/server/index.js"
+  }
+}

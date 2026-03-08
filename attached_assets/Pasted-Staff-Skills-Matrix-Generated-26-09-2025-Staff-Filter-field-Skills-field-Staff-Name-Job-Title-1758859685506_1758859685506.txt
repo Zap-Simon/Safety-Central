@@ -1,0 +1,35 @@
+Staff Skills Matrix
+Generated: 26/09/2025 | Staff Filter: field | Skills: field
+Staff Name	Job Title	Status	Basic Hand Tools
+BHT-003 Cutting and disposing of glass	Power Tools & Equipment
+PTE-002 Power Tools Safety
+SAFETY CRITICAL	Lifting & Handling Equipment
+PTE-001 Glass Sucker Operation
+CERT REQUIRED	Lifting & Handling Equipment
+BHT-002 Manual Handling
+SAFETY CRITICAL	Safety Equipment & PPE
+PPE-001 Gloves Safety	Safety Equipment & PPE
+BHT-001 Site Safety Induction	Safety Equipment & PPE
+PPE-002 Gauntlets Operation	Vehicles & Transport
+VEH-001 Trailer Operation
+CERT REQUIRED	Vehicles & Transport
+VEH-002 Frailed Van Operation
+CERT REQUIRED	Working at Heights
+WAH-001 Ladder Safety
+SAFETY CRITICAL	Working at Heights
+LHE-001 Scissor Lift Operation
+SAFETY CRITICAL	Chemicals
+CHM-001 Safety Data Sheets (SDS) Understanding
+Wayne Joyce	Senior Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Ryan Newman	Intermediate Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Struan O'Donnell	Apprentice Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Isaac Ensor	Apprentice Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Sam Chang	Transitional Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Kevin Young	Senior Glazier	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Hoani Hunt	Managing Director	Active	Not Trained	Not Trained	Not Trained	Not Trained	Expert
+ABLE TO USE	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Simon Hubbard	Office Manager	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+James Waites	Field Supervisor	Active	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained	Not Trained
+Cranfield Glass Christchurch - Staff Training & Competency Management System
+
+This document contains confidential training records and competency assessments.

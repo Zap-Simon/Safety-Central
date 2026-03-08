@@ -1,0 +1,43 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ID": { "type": "integer" },
+      "Title": { "type": "string" },
+      "Date": { "type": "string" },
+      "EventType": { "type": "string" },
+      "Canyoubrieflyexplainwhathappened": { "type": "string" },
+      "Howdidthishappen_x003f_": { "type": "string" },
+      "InvestigationRequired_x003f_": { "type": "boolean" },
+      "Status": { "type": "string" },
+      "MeetingDate": { "type": "string" },
+      "Created": { "type": "string" },
+      "Modified": { "type": "string" },
+      "Name": {
+        "type": "object",
+        "properties": {
+          "DisplayName": { "type": "string" },
+          "Email": { "type": "string" },
+          "JobTitle": { "type": ["string", "null"] }
+        }
+      },
+      "Author": {
+        "type": "object",
+        "properties": {
+          "DisplayName": { "type": "string" },
+          "Email": { "type": "string" },
+          "JobTitle": { "type": ["string", "null"] }
+        }
+      },
+      "Editor": {
+        "type": "object",
+        "properties": {
+          "DisplayName": { "type": "string" },
+          "Email": { "type": "string" },
+          "JobTitle": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

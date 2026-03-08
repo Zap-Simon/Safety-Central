@@ -1,0 +1,90 @@
+[
+  {
+    "InternalName": "Idea_x002f_Event",
+    "Type": "Note",
+    "DisplayName": "Idea / Event",
+    "Id": "ecc8c39d-305d-47af-97c2-7242e7de15a7",
+    "Group": "Custom Columns",
+    "Description": ""
+  },
+  {
+    "InternalName": "Notes_x0020__x002f__x0020_Commen",
+    "Type": "Note",
+    "DisplayName": "Notes / Comments"
+  },
+  {
+    "InternalName": "Assigend_x0020_to",
+    "Type": "Person",
+    "DisplayName": "Assigned to"
+  },
+  {
+    "InternalName": "SubmittedBy",
+    "Type": "Person",
+    "DisplayName": "Submitted By"
+  },
+  {
+    "InternalName": "IdeaType",
+    "Type": "Choice",
+    "DisplayName": "Idea Type"
+  },
+  {
+    "InternalName": "IdeaDate",
+    "Type": "DateTime",
+    "DisplayName": "Idea Date"
+  },
+  {
+    "InternalName": "Catagorie",
+    "Type": "Choice",
+    "DisplayName": "Category"
+  },
+  {
+    "InternalName": "Status",
+    "Type": "Choice",
+    "DisplayName": "Status"
+  },
+  {
+    "InternalName": "Priority",
+    "Type": "Choice",
+    "DisplayName": "Priority"
+  },
+  {
+    "InternalName": "ListOrigin",
+    "Type": "Choice",
+    "DisplayName": "List Origin"
+  },
+  {
+    "InternalName": "Link",
+    "Type": "Hyperlink",
+    "DisplayName": "Link"
+  },
+  {
+    "InternalName": "ActionStartDate",
+    "Type": "DateTime",
+    "DisplayName": "Action Start Date"
+  },
+  {
+    "InternalName": "ID",
+    "Type": "Counter",
+    "DisplayName": "ID"
+  },
+  {
+    "InternalName": "Author",
+    "Type": "Person",
+    "DisplayName": "Created By"
+  },
+  {
+    "InternalName": "Editor",
+    "Type": "Person",
+    "DisplayName": "Modified By"
+  },
+  {
+    "InternalName": "Created",
+    "Type": "DateTime",
+    "DisplayName": "Created"
+  },
+  {
+    "InternalName": "Modified",
+    "Type": "DateTime",
+    "DisplayName": "Modified"
+  }
+]
