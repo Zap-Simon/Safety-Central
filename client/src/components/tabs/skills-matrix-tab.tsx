@@ -1594,12 +1594,9 @@ const StaffCellRenderer = (params: any) => {
                 if (isSafetyCritical) {
                   return (
                     <div className="space-y-6">
-                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Shield className="w-5 h-5 text-red-600" />
-                          <h4 className="font-medium text-red-800">Safety Critical Training</h4>
-                        </div>
-                        <p className="text-sm text-red-600">Comprehensive documentation including certificates, expiry dates, and photo evidence required.</p>
+                      <div className="bg-red-50 p-3 rounded-lg border border-red-200 flex items-center space-x-2">
+                        <Shield className="w-4 h-4 text-red-600 flex-shrink-0" />
+                        <p className="text-sm text-red-700 font-medium">Safety Critical — requires annual review</p>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1631,7 +1628,7 @@ const StaffCellRenderer = (params: any) => {
                           name="achievedDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium">Training Achieved Date</FormLabel>
+                              <FormLabel className="text-sm font-medium">Training Date</FormLabel>
                               <FormControl>
                                 <Input
                                   type="date"
@@ -1640,26 +1637,6 @@ const StaffCellRenderer = (params: any) => {
                                   className="h-10"
                                 />
                               </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="appliedDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Applied Date (H&S Policy)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
-                                  data-testid="input-applied-date"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <p className="text-xs text-gray-500">When this training was first applied/used</p>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1679,7 +1656,6 @@ const StaffCellRenderer = (params: any) => {
                                   className="h-10"
                                 />
                               </FormControl>
-                              <p className="text-xs text-gray-500">When this training expires</p>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1690,50 +1666,12 @@ const StaffCellRenderer = (params: any) => {
                           name="assessorName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium">Assessor Name</FormLabel>
+                              <FormLabel className="text-sm font-medium">Assessor</FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
                                   placeholder="e.g., John Smith"
                                   data-testid="input-assessor-name"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="trainingProvider"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Training Provider</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g., Safety Training Co."
-                                  data-testid="input-training-provider"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="certificateNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Certificate Number</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g., CERT-2024-001"
-                                  data-testid="input-certificate-number"
                                   className="h-10"
                                 />
                               </FormControl>
@@ -2031,76 +1969,6 @@ const StaffCellRenderer = (params: any) => {
                 return null;
               })()}
               
-              {/* Photo Evidence Section - Safety Critical Only */}
-              {selectedRecord && (() => {
-                const classification = classifications.find(c => c.id === selectedRecord.skill.classificationId);
-                const formVariant = classification ? getFormVariant(classification.key) : 'foundation';
-                const isSafetyCritical = formVariant === 'safety';
-                
-                return isSafetyCritical && selectedRecord.skill.audience !== 'administration' ? (
-                  <div className="border-t pt-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <Camera className="w-5 h-5 text-red-600" />
-                        <h4 className="font-medium text-red-800">Photo Evidence (H&S Policy Requirement)</h4>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="photoEvidenceUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Photo URL</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="https://sharepoint.com/path/to/photo.jpg"
-                                  data-testid="input-photo-url"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="photoEvidenceFilename"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Photo Filename</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="training_evidence.jpg"
-                                  data-testid="input-photo-filename"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {/* Photo Preview */}
-                      {form.watch("photoEvidenceUrl") && (
-                        <div className="border rounded-lg p-4 bg-gray-50">
-                          <p className="text-sm font-medium mb-2">Photo Preview:</p>
-                          <img 
-                            src={form.watch("photoEvidenceUrl")} 
-                            alt="Training evidence"
-                            className="max-w-xs max-h-32 object-cover rounded border"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : null;
-              })()}
               
               {/* Notes Section - Always Present */}
               <div className="border-t pt-6">
