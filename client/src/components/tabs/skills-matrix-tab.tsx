@@ -1684,156 +1684,57 @@ const StaffCellRenderer = (params: any) => {
                   );
                 }
                 
-                // For Equipment Level: Standard layout with expiry tracking  
+                // For Equipment Level: Simplified layout
                 if (isEquipmentLevel) {
                   return (
                     <div className="space-y-6">
-                      <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-orange-800 mb-1">Equipment Level Training</h4>
-                            <p className="text-sm text-orange-600">Competency tracking with expiry dates and certification details</p>
-                          </div>
-                          <FormField
-                            control={form.control}
-                            name="ableToUse"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    data-testid="checkbox-able-to-use"
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-medium">
-                                  Manual "Able to Use" Override
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 flex items-center justify-between">
+                        <p className="text-sm text-orange-700 font-medium">Equipment training — track competency and expiry</p>
+                        <FormField
+                          control={form.control}
+                          name="ableToUse"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-able-to-use" />
+                              </FormControl>
+                              <FormLabel className="text-sm font-medium">Able to Use</FormLabel>
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="competencyLevel"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Competency Level</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-competency-level" className="h-10">
-                                    <SelectValue placeholder="Select competency level" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.values(FIELD_COMPETENCY_LEVELS).map((level) => (
-                                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="achievedDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Training Achieved Date</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
-                                  data-testid="input-achieved-date"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="expiryDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Expiry Date</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
-                                  data-testid="input-expiry-date"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <p className="text-xs text-gray-500">When this training expires</p>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="assessorName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Assessor Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g., John Smith"
-                                  data-testid="input-assessor-name"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="trainingProvider"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Training Provider</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g., Safety Training Co."
-                                  data-testid="input-training-provider"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="certificateNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Certificate Number</FormLabel>
-                              <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g., CERT-2024-001"
-                                  data-testid="input-certificate-number"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="competencyLevel" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Competency Level</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger data-testid="select-competency-level" className="h-10"><SelectValue placeholder="Select level" /></SelectTrigger></FormControl>
+                              <SelectContent>{Object.values(FIELD_COMPETENCY_LEVELS).map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="achievedDate" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Training Date</FormLabel>
+                            <FormControl><Input type="date" {...field} data-testid="input-achieved-date" className="h-10" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="expiryDate" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Expiry Date</FormLabel>
+                            <FormControl><Input type="date" {...field} data-testid="input-expiry-date" className="h-10" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="assessorName" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Assessor</FormLabel>
+                            <FormControl><Input {...field} placeholder="e.g., John Smith" data-testid="input-assessor-name" className="h-10" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                       </div>
                     </div>
                   );
@@ -1843,125 +1744,41 @@ const StaffCellRenderer = (params: any) => {
                 if (isNonCritical) {
                   return (
                     <div className="space-y-6">
-                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-blue-800 mb-1">{category} Training</h4>
-                            <p className="text-sm text-blue-600">Basic competency tracking with optional details</p>
-                          </div>
-                          {/* Able to Use Override for Non-Critical */}
-                          <FormField
-                            control={form.control}
-                            name="ableToUse"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    data-testid="checkbox-able-to-use"
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-medium">
-                                  Manual "Able to Use" Override
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 flex items-center justify-between">
+                        <p className="text-sm text-blue-700 font-medium">{category} training</p>
+                        <FormField control={form.control} name="ableToUse" render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                            <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-able-to-use" /></FormControl>
+                            <FormLabel className="text-sm font-medium">Able to Use</FormLabel>
+                          </FormItem>
+                        )} />
                       </div>
-                      
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="competencyLevel"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Competency Level</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-competency-level" className="h-10">
-                                    <SelectValue placeholder="Select competency level" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.values(FIELD_COMPETENCY_LEVELS).map((level) => (
-                                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="achievedDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Training Achieved Date</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
-                                  data-testid="input-achieved-date"
-                                  className="h-10"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="competencyLevel" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Competency Level</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl><SelectTrigger data-testid="select-competency-level" className="h-10"><SelectValue placeholder="Select level" /></SelectTrigger></FormControl>
+                              <SelectContent>{Object.values(FIELD_COMPETENCY_LEVELS).map(level => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="achievedDate" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Training Date</FormLabel>
+                            <FormControl><Input type="date" {...field} data-testid="input-achieved-date" className="h-10" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="assessorName" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Assessor</FormLabel>
+                            <FormControl><Input {...field} placeholder="e.g., John Smith" data-testid="input-assessor-name" className="h-10" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                       </div>
-                      
-                      {/* Optional Provider Information */}
-                      <details className="border rounded-lg">
-                        <summary className="p-4 cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
-                          Optional: Provider Information
-                        </summary>
-                        <div className="px-4 pb-4 space-y-4 border-t bg-gray-50">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="assessorName"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium">Assessor Name</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="e.g., John Smith"
-                                      data-testid="input-assessor-name"
-                                      className="h-10"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="trainingProvider"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium">Training Provider</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      placeholder="e.g., Safety Training Co."
-                                      data-testid="input-training-provider"
-                                      className="h-10"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </details>
                     </div>
                   );
                 }
