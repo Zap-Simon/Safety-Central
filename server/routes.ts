@@ -3062,7 +3062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const recordData: any = {
               staffId: staff.id,
               skillId: module.id,
-              competencyLevel: 'Competent',
+              competencyLevel: 'Competent – SOP/Module',
               achievedDate: achievedDate,
               expiryDate: moduleExpiryDate,
               ableToUse: true,
