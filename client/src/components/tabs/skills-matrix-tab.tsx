@@ -1867,18 +1867,29 @@ const StaffCellRenderer = (params: any) => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="expiry-date">Expiry Date (Regular Modules)</Label>
-              <Input
-                id="expiry-date"
-                type="date"
-                value={complianceExpiryDate}
-                onChange={(e) => setComplianceExpiryDate(e.target.value)}
-                data-testid="input-compliance-expiry-date"
-              />
-              <p className="text-sm text-gray-500">
-                Regular modules will expire on this date. <strong className="text-red-600">Safety-critical modules will automatically expire in December {new Date().getMonth() >= 11 ? new Date().getFullYear() + 1 : new Date().getFullYear()}</strong> for review before year-end.
-              </p>
+            <div className="rounded-md border divide-y text-sm">
+              <div className="flex items-center justify-between p-3 gap-4">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-800">Standard modules</p>
+                  <p className="text-gray-500 text-xs mt-0.5">Hand tools, power tools, vehicles, etc.</p>
+                </div>
+                <Input
+                  type="date"
+                  value={complianceExpiryDate}
+                  onChange={(e) => setComplianceExpiryDate(e.target.value)}
+                  data-testid="input-compliance-expiry-date"
+                  className="w-40 h-8 text-sm"
+                />
+              </div>
+              <div className="flex items-center justify-between p-3 gap-4 bg-red-50">
+                <div className="flex-1">
+                  <p className="font-medium text-red-800">Safety-critical modules</p>
+                  <p className="text-red-600 text-xs mt-0.5">Lifting, PPE, working at heights — fixed to year-end for mandatory reassessment</p>
+                </div>
+                <span className="text-sm font-medium text-red-700 w-40 text-right">
+                  1 Dec {new Date().getMonth() >= 11 ? new Date().getFullYear() + 1 : new Date().getFullYear()}
+                </span>
+              </div>
             </div>
             
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
