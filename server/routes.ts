@@ -3047,33 +3047,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const staff of fieldStaff) {
         for (const module of fieldModules) {
           try {
-            // Safety-critical modules expire on December 1st of current year (or next year if past December), regular modules use selected date
-            const moduleExpiryDate = module.isSafetyCritical 
-              ? (() => {
-                  const now = new Date();
-                  const currentYear = now.getFullYear();
-                  const currentMonth = now.getMonth(); // 0-11
-                  // If we're in December or later, use next year; otherwise use current year
-                  const targetYear = currentMonth >= 11 ? currentYear + 1 : currentYear;
-                  return new Date(targetYear, 11, 1); // December 1st
-                })()
-              : expiryDate;
-            
             const recordData: any = {
               staffId: staff.id,
               skillId: module.id,
               competencyLevel: 'Competent – SOP/Module',
               achievedDate: achievedDate,
-              expiryDate: moduleExpiryDate,
+              expiryDate: expiryDate,
               ableToUse: true,
               status: 'Active',
               assessorName: 'Compliance Update',
-              notes: module.isSafetyCritical 
-                ? `Temporary compliance pass - SAFETY CRITICAL: Review by December ${(() => {
-                    const now = new Date();
-                    return now.getMonth() >= 11 ? now.getFullYear() + 1 : now.getFullYear();
-                  })()}`
-                : `Temporary compliance pass - Due for review ${expiryDate.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' })}`
+              notes: `Temporary compliance pass - Due for review ${expiryDate.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' })}`
             };
 
             // Always create - the storage method handles superseding old Active records
