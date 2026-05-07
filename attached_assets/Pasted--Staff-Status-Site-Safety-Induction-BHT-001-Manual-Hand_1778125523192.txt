@@ -1,0 +1,236 @@
+
+Staff	Status	
+Site Safety Induction
+BHT-001
+Manual Handling
+BHT-002
+⚠ SAFETY CRITICAL
+Power Tools Safety
+PTE-002
+⚠ SAFETY CRITICAL
+Gloves Safety
+PPE-001
+⚠ SAFETY CRITICAL
+Ladder Safety
+WAH-001
+⚠ SAFETY CRITICAL
+Scissor Lift Operation
+LHE-001
+⚠ SAFETY CRITICAL
+Glass Sucker Operation
+PTE-001
+📋 CERT REQUIRED
+Frailed Van Operation
+VEH-002
+📋 CERT REQUIRED
+Trailer Operation
+VEH-001
+📋 CERT REQUIRED
+Cutting and disposing of glass
+BHT-003
+Safety Data Sheets (SDS) Understanding
+CHM-001
+Gauntlets Safety
+PPE-002
+Ryan Newman
+Intermediate Glazier	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Struan O'Donnell
+Apprentice Glazier	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Isaac Ensor
+Apprentice Glazier	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Sam Chang
+Transitional Glazier	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Hoani Hunt
+Managing Director	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Wayne Joyce
+Senior Glazier	Inactive	✗	✗	✗	✗	✗	✗	✗	✗	✗	✗	✗	✗
+Simon Hubbard
+Office Manager	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+James Waites
+Field Supervisor	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+Kevin Young
+Senior Glazier	Active	✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 01 Dec 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
+✓ Able to Use
+Exp: 18 Jun 26
