@@ -2359,6 +2359,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const lock = await storage.getMeetingLock(meetingDate);
+      if (lock?.isLocked) {
+        return res.status(403).json({
+          success: false,
+          error: 'Attendance is locked — no changes permitted'
+        });
+      }
+
       const attendanceRecord = await storage.updateMeetingAttendance(
         meetingDate, 
         attendeeName, 

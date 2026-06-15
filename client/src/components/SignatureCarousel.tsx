@@ -29,16 +29,21 @@ function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 }
 
-function generateRemoteSignatureImage(name: string): string {
+function generateRemoteSignatureImage(name: string, date: string): string {
   const canvas = document.createElement('canvas');
   canvas.width = 320;
-  canvas.height = 80;
+  canvas.height = 100;
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = 'italic 36px Georgia, "Times New Roman", serif';
+  ctx.font = 'italic 32px Georgia, "Times New Roman", serif';
   ctx.fillStyle = '#1f2937';
   ctx.textBaseline = 'middle';
-  ctx.fillText(name, 10, 44);
+  ctx.fillText(name, 10, 36);
+  ctx.font = '11px Arial, sans-serif';
+  ctx.fillStyle = '#6b7280';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Attended Remotely', 10, 66);
+  ctx.fillText(date, 10, 84);
   return canvas.toDataURL('image/png');
 }
 
@@ -203,7 +208,7 @@ export default function SignatureCarousel({
   };
 
   const handleRemote = async () => {
-    const img = generateRemoteSignatureImage(currentAttendee.name);
+    const img = generateRemoteSignatureImage(currentAttendee.name, meetingDate);
     await saveSignature('remote', img);
   };
 
@@ -235,6 +240,23 @@ export default function SignatureCarousel({
     if (status === 'remote') return 'bg-purple-100 text-purple-700 border-purple-200';
     return 'bg-gray-100 text-gray-500 border-gray-200';
   };
+
+  if (attendees.length === 0) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-5">
+            <UserX className="h-10 w-10 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No Attendees Marked Present</h2>
+          <p className="text-gray-500 mb-6">Mark people as attending before collecting signatures.</p>
+          <Button onClick={onClose} className="w-full bg-gray-800 hover:bg-gray-900 text-white rounded-xl py-3">
+            Close
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isComplete) {
     return (
