@@ -460,7 +460,7 @@ export default function Actions() {
               <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
               <div className="text-xs text-gray-500">Overdue</div>
             </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-amber-100">
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-amber-100 col-span-2 sm:col-span-1">
               <div className="text-2xl font-bold text-amber-600">{stats.highPriority}</div>
               <div className="text-xs text-gray-500">High Priority</div>
             </div>
@@ -481,11 +481,11 @@ export default function Actions() {
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-2">
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                   data-testid="select-filter-status"
                 >
                   <option value="all">All Status</option>
@@ -498,7 +498,7 @@ export default function Actions() {
                 <select
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                   data-testid="select-filter-priority"
                 >
                   <option value="all">All Priority</option>
@@ -509,7 +509,7 @@ export default function Actions() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                   data-testid="select-filter-type"
                 >
                   <option value="all">All Types</option>

@@ -2040,7 +2040,7 @@ export default function MeetingHistory() {
                 <select
                   value={selectedPeriod === 'actions' ? 'all' : selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[200px]"
+                  className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto"
                 >
                   <option value="all">📅 All Time</option>
                   <option value="relevant">⚡ Relevant Items (Active & Upcoming)</option>
@@ -2055,7 +2055,7 @@ export default function MeetingHistory() {
                   variant="outline"
                   size="sm"
                   onClick={() => setLocation('/actions')}
-                  className="flex items-center gap-2 min-w-[140px] hover:bg-amber-50 hover:border-amber-300"
+                  className="flex items-center gap-2 w-full sm:w-auto hover:bg-amber-50 hover:border-amber-300"
                 >
                   <i className="fas fa-tasks text-sm"></i>
                   Open Actions
@@ -2109,7 +2109,7 @@ export default function MeetingHistory() {
                       setSelectedMeetingForStats('all');
                     }
                   }}
-                  className={`flex items-center gap-2 min-w-[140px] ${
+                  className={`flex items-center gap-2 w-full sm:w-auto ${
                     selectedMeetingForStats !== 'all' 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
                       : 'hover:bg-gray-50'
@@ -2184,7 +2184,8 @@ export default function MeetingHistory() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md"
                 >
                   <i className="fas fa-download text-xs"></i>
-                  <span>Export Meeting Minutes</span>
+                  <span className="sm:hidden">Export</span>
+                  <span className="hidden sm:inline">Export Meeting Minutes</span>
                   {selectedMeetingsForExport.size > 0 && (
                     <span className="px-1.5 py-0.5 rounded-full text-xs bg-white/20 text-white">
                       {selectedMeetingsForExport.size}

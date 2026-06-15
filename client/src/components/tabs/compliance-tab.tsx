@@ -366,7 +366,7 @@ export default function ComplianceTab() {
     <div className="p-6 space-y-8">
       {/* Main Compliance Cards */}
       <div className="space-y-6">
-        <div className="flex justify-end mb-6">
+        <div className="hidden sm:flex justify-end mb-6">
           <div className="flex items-center space-x-3">
             <div className="flex items-center">
               <button
