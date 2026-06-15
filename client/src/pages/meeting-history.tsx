@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, Plus, Lock, Unlock, PenLine } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, isSameDay, getMeetingStatus } from "@shared/dateUtils";
 import { predictiveText } from "@/lib/predictiveText";
@@ -148,6 +148,13 @@ export default function MeetingHistory() {
   // Status options from SharePoint (including 'Closed' for Business Ideas and Safety Ideas)
   const [statusOptions, setStatusOptions] = useState<string[]>(['Submitted', 'In Discussion', 'Actioned', 'Closed']);
   const [isCreatingItem, setIsCreatingItem] = useState(false);
+  const [pendingItems, setPendingItems] = useState<Array<{
+    id: string;
+    type: string;
+    description: string;
+    submittedBy: string;
+    meetingDate: string;
+  }>>([]);
   
   // Note: Old dropdown suggestion states removed - now using InlineTextarea component
 
@@ -184,6 +191,15 @@ export default function MeetingHistory() {
 
   // Functions for SharePoint item management
   const createSharePointItem = async (itemData: any) => {
+    // Add an optimistic pending item immediately so something appears on screen
+    const pendingId = `pending-${Date.now()}`;
+    setPendingItems(prev => [...prev, {
+      id: pendingId,
+      type: itemData.type,
+      description: itemData.description,
+      submittedBy: itemData.submittedBy,
+      meetingDate: itemData.meetingDate
+    }]);
     setIsCreatingItem(true);
     try {
       const response = await authenticatedFetch('/api/sharepoint/create-item', {
@@ -202,9 +218,9 @@ export default function MeetingHistory() {
 
       const result = await response.json();
       if (result.success) {
-        showSuccess('Success', `Successfully created ${itemData.type} item: ${itemData.title}`);
         // Refresh data without page reload
         await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+        showSuccess('Item Added', `Your ${itemData.type === 'Safety Ideas' ? 'safety idea' : 'business idea'} has been saved to SharePoint.`);
       } else {
         showError('Creation Failed', result.error || 'Failed to create item');
       }
@@ -213,6 +229,8 @@ export default function MeetingHistory() {
       showError('Creation Failed', 'Failed to create item');
     } finally {
       setIsCreatingItem(false);
+      // Remove the pending placeholder once we have the real result
+      setPendingItems(prev => prev.filter(p => p.id !== pendingId));
     }
   };
 
@@ -444,6 +462,8 @@ export default function MeetingHistory() {
     setModalTitle(title);
     setModalMessage(message);
     setShowSuccessModal(true);
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => setShowSuccessModal(false), 3000);
   };
 
   const showShareableUrlSuccess = (url: string, filename: string) => {
@@ -2615,6 +2635,28 @@ export default function MeetingHistory() {
                     })()}
                 
                   <div className="space-y-3 sm:space-y-4 p-3 sm:p-6">
+                    {/* Pending/optimistic items skeleton - appear immediately after saving */}
+                    {pendingItems
+                      .filter(p => p.meetingDate === meetingDate)
+                      .map(p => (
+                        <div key={p.id} className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+                            <span className="text-sm font-semibold text-blue-700">Saving to SharePoint…</span>
+                            <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full ml-auto">{p.type}</span>
+                          </div>
+                          <div className="space-y-2 animate-pulse">
+                            <div className="h-3 bg-blue-200 rounded-full w-2/3"></div>
+                            <div className="h-3 bg-blue-200 rounded-full w-1/2"></div>
+                          </div>
+                          <p className="text-xs text-blue-500 mt-3 line-clamp-1 italic">
+                            "{p.description.length > 70 ? p.description.substring(0, 70) + '…' : p.description}"
+                          </p>
+                          <p className="text-xs text-blue-400 mt-1">Submitted by {p.submittedBy}</p>
+                        </div>
+                      ))
+                    }
+
                     {Object.entries(categorized).map(([categoryType, categoryItems]) => {
                       if (categoryItems.length === 0) return null;
                       
@@ -3712,19 +3754,23 @@ export default function MeetingHistory() {
 
         {/* Error Modal */}
         <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
-          <DialogContent className="sm:max-w-md" aria-describedby="error-description">
+          <DialogContent className="mx-4 max-w-sm rounded-2xl border-0 shadow-2xl" aria-describedby="error-description">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-red-600">
-                <CalendarX className="h-5 w-5" />
-                {modalTitle}
-              </DialogTitle>
-              <div id="error-description" className="sr-only">Error notification dialog</div>
+              <div className="flex flex-col items-center text-center gap-3 pt-2">
+                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <CalendarX className="h-6 w-6 text-red-600" />
+                </div>
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  {modalTitle}
+                </DialogTitle>
+                <div id="error-description" className="sr-only">Error notification dialog</div>
+              </div>
             </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-gray-700">{modalMessage}</p>
+            <div className="space-y-4 pb-2">
+              <p className="text-sm text-gray-600 text-center">{modalMessage}</p>
               <Button 
                 onClick={() => setShowErrorModal(false)}
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl h-11"
               >
                 OK
               </Button>
@@ -3734,24 +3780,26 @@ export default function MeetingHistory() {
 
         {/* Success Modal */}
         <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-          <DialogContent className="sm:max-w-md" aria-describedby="success-description">
+          <DialogContent className="mx-4 max-w-sm rounded-2xl border-0 shadow-2xl" aria-describedby="success-description">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-green-600">
-                <CalendarX className="h-5 w-5" />
-                {modalTitle}
-              </DialogTitle>
-              <div id="success-description" className="sr-only">Success notification dialog</div>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-gray-700">{modalMessage}</p>
-              <div className="flex justify-center">
-                <Button 
-                  onClick={() => setShowSuccessModal(false)}
-                  className="px-8 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  OK
-                </Button>
+              <div className="flex flex-col items-center text-center gap-3 pt-2">
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                </div>
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  {modalTitle}
+                </DialogTitle>
+                <div id="success-description" className="sr-only">Success notification dialog</div>
               </div>
+            </DialogHeader>
+            <div className="space-y-4 pb-2">
+              <p className="text-sm text-gray-600 text-center">{modalMessage}</p>
+              <Button 
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl h-11"
+              >
+                Done
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -4222,6 +4270,14 @@ export default function MeetingHistory() {
             />
           );
         })()}
+
+        {/* Floating "Saving..." banner - shows immediately when submitting to SharePoint */}
+        {isCreatingItem && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-blue-700 text-white text-sm font-medium px-5 py-3 rounded-full shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Saving to SharePoint…
+          </div>
+        )}
 
         {/* Floating Add Button with Scroll Detection */}
         {showFloatingAdd && floatingMeetingDate && !showSignatureCarousel && (
