@@ -346,3 +346,30 @@ html {
   touch-action: manipulation;
   min-height: 44px;
 }
+
+/* iOS safe-area insets: blue notch (via header padding) + white home-indicator strip.
+   Header always grows by safe-top, so content offsets must too — at every breakpoint. */
+.pt-16 {
+  padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+}
+@media (min-width: 640px) {
+  .sm\:pt-20 {
+    padding-top: calc(5rem + env(safe-area-inset-top, 0px));
+  }
+}
+
+html, body {
+  background-color: #ffffff;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background-color: #ffffff;
+  z-index: 40;
+  pointer-events: none;
+}

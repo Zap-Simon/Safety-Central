@@ -1,1 +1,2 @@
 - [Mobile-friendly tab navigation pattern](mobile-tabs-pattern.md) — shadcn TabsTrigger whitespace-nowrap + fixed grid-cols overlaps labels on phones; use responsive grid + whitespace-normal + flex-col.
+- [Global mobile CSS quirks](global-mobile-css-quirks.md) — index.css forces `button{min-height:44px}` on mobile (ovals small round buttons); plus iOS safe-area inset setup.

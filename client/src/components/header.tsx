@@ -113,7 +113,7 @@ export default function Header() {
 
 
   return (
-    <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg fixed top-0 left-0 right-0 z-30">
+    <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg fixed top-0 left-0 right-0 z-30" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Home Link */}
