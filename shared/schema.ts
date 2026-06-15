@@ -592,6 +592,27 @@ export type InsertStaffModuleProgress = z.infer<typeof insertStaffModuleProgress
 // CSC Workflow types
 export type CSCWorkflow = z.infer<typeof cscWorkflowSchema>;
 
+// ─── Order Items — Teams Whiteboard field ordering pad ───────────────────────
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  itemName: text("item_name").notNull(),
+  addedBy: text("added_by").notNull(),
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+  status: text("status").notNull().default("active"), // "active" | "ordered" | "archived"
+  orderedAt: timestamp("ordered_at"),
+  orderedBy: text("ordered_by"),
+});
+
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+  id: true,
+  addedAt: true,
+  orderedAt: true,
+  orderedBy: true,
+});
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+
 // Enhanced equipment authorization type with module references
 export type EquipmentAuthorizationNew = typeof equipmentAuthorizations.$inferSelect;
 export type InsertEquipmentAuthorizationNew = z.infer<typeof insertEquipmentAuthorizationSchemaNew>;

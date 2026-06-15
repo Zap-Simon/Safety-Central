@@ -5757,6 +5757,109 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     }
   });
 
+  // ─── Order Items endpoints (Teams Whiteboard ordering pad) ──────────────────
+
+  // Helper: resolve caller's display name from Bearer token via Graph /me.
+  // Returns displayName on success, null if token is missing or invalid.
+  async function resolveCallerFromToken(authHeader: string | undefined): Promise<{ displayName: string; email: string } | null> {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+    const token = authHeader.substring(7);
+    try {
+      const meRes = await fetch('https://graph.microsoft.com/v1.0/me?$select=userPrincipalName,displayName', {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
+      if (!meRes.ok) return null;
+      const me = await meRes.json();
+      const email = (me.userPrincipalName || '').toLowerCase().trim();
+      const displayName = me.displayName || email;
+      if (!email) return null;
+      return { displayName, email };
+    } catch {
+      return null;
+    }
+  }
+
+  // Helper: verify caller is admin/supervisor via staff table (email from Graph token).
+  async function resolveOrderAdminFromToken(authHeader: string | undefined): Promise<string | null> {
+    const caller = await resolveCallerFromToken(authHeader);
+    if (!caller) return null;
+    const staffMember = await storage.getStaffByEmail(caller.email);
+    if (!staffMember) return null;
+    if (staffMember.role === 'admin' || staffMember.role === 'supervisor') {
+      return caller.displayName;
+    }
+    return null;
+  }
+
+  // GET /api/orders/is-admin — returns { isAdmin, displayName } for the Bearer token holder
+  app.get('/api/orders/is-admin', async (req, res) => {
+    try {
+      const displayName = await resolveOrderAdminFromToken(req.headers.authorization);
+      res.json({ success: true, isAdmin: displayName !== null, displayName });
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      res.status(500).json({ success: false, error: 'Failed to check admin status' });
+    }
+  });
+
+  // GET /api/orders — list active items (no auth required, fast)
+  app.get('/api/orders', async (req, res) => {
+    try {
+      const items = await storage.getActiveOrderItems();
+      res.json({ success: true, items });
+    } catch (error) {
+      console.error('Error fetching order items:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch order items' });
+    }
+  });
+
+  // POST /api/orders — add a new item (requires valid staff Bearer token)
+  // Identity (addedBy) is derived server-side from Graph /me — not trusted from body.
+  app.post('/api/orders', async (req, res) => {
+    try {
+      const caller = await resolveCallerFromToken(req.headers.authorization);
+      if (!caller) {
+        return res.status(401).json({ success: false, error: 'Authentication required. Please sign in with your Cranfield Glass account.' });
+      }
+      const { itemName } = req.body;
+      if (!itemName || typeof itemName !== 'string' || itemName.trim().length === 0) {
+        return res.status(400).json({ success: false, error: 'itemName is required' });
+      }
+      const item = await storage.createOrderItem({
+        itemName: itemName.trim(),
+        addedBy: caller.displayName,
+        status: 'active',
+      });
+      res.json({ success: true, item });
+    } catch (error) {
+      console.error('Error creating order item:', error);
+      res.status(500).json({ success: false, error: 'Failed to create order item' });
+    }
+  });
+
+  // PATCH /api/orders/:id — mark ordered or archived (admin/supervisor only)
+  // Identity & role resolved server-side via Graph /me + staff table — never trusted from body.
+  app.patch('/api/orders/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
+      const { status } = req.body;
+      if (!status || !['ordered', 'archived'].includes(status)) {
+        return res.status(400).json({ success: false, error: 'status must be "ordered" or "archived"' });
+      }
+      // Resolve caller identity & role from Bearer token — not from request body
+      const callerName = await resolveOrderAdminFromToken(req.headers.authorization);
+      if (!callerName) {
+        return res.status(403).json({ success: false, error: 'Only admin or supervisor staff can mark items as ordered' });
+      }
+      const item = await storage.updateOrderItemStatus(id, status, callerName);
+      res.json({ success: true, item });
+    } catch (error) {
+      console.error('Error updating order item:', error);
+      res.status(500).json({ success: false, error: 'Failed to update order item' });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

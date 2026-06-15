@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
 import { msalInstance, sharePointRequest, loginRequest } from "@/auth/msalConfig";
-import { InteractionRequiredAuthError, BrowserAuthError, SsoSilentRequest } from "@azure/msal-browser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,6 @@ import {
   CheckCircle2,
   Loader2,
   Send,
-  LogIn,
   ChevronRight,
   RotateCcw,
   Sparkles,
@@ -119,20 +117,12 @@ function decodeJwtPayload(token: string): Record<string, any> {
   }
 }
 
-function isTeamsMobile(): boolean {
-  try {
-    return window.parent !== window && /Teams|SkypeSpaces/i.test(navigator.userAgent);
-  } catch {
-    return false;
-  }
-}
 
 export default function SubmitTab() {
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [sharePointToken, setSharePointToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
-  const [inTeams, setInTeams] = useState(false);
 
   const [step, setStep] = useState<
     "input" | "classifying" | "followup" | "confirm" | "submitting" | "done"
@@ -161,107 +151,33 @@ export default function SubmitTab() {
     return () => clearInterval(id);
   }, [step, inputText]);
 
-  // ─── Auth (Teams SSO → MSAL silent → popup/redirect) ─────────────────────
+  // ─── Auth (Teams SSO only — company personal tab, no interactive fallback) ──
   async function initAuth() {
-    await msalInstance.initialize();
-
-    const redirectResponse = await msalInstance.handleRedirectPromise();
-    if (redirectResponse) {
-      setUserName(redirectResponse.account?.name || "");
-      await acquireTokensForAccount(redirectResponse.account!);
-      return;
-    }
-
     try {
       await microsoftTeams.app.initialize();
       setInTeams(true);
-      await authenticateViaTeamsSSO();
-      return;
-    } catch {
-      setInTeams(false);
-    }
 
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      setUserName(accounts[0].name || "");
-      await acquireTokensForAccount(accounts[0]);
-      return;
-    }
+      // Get identity from Teams SSO token
+      const ssoToken = await microsoftTeams.authentication.getAuthToken();
+      const payload = decodeJwtPayload(ssoToken);
+      const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
+      const displayName = payload.name || loginHint;
+      setUserName(displayName);
 
-    setAuthState("unauthenticated");
-  }
-
-  async function authenticateViaTeamsSSO() {
-    const teamsToken = await microsoftTeams.authentication.getAuthToken();
-    const payload = decodeJwtPayload(teamsToken);
-    const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
-    const displayName = payload.name || "";
-    setUserName(displayName);
-
-    const ssoRequest: SsoSilentRequest = { loginHint, scopes: loginRequest.scopes };
-
-    try {
-      const graphResp = await msalInstance.ssoSilent(ssoRequest);
-      const spResp = await msalInstance.ssoSilent({ loginHint, scopes: sharePointRequest.scopes });
+      // Acquire resource tokens silently using the Teams identity
+      await msalInstance.initialize();
+      const [graphResp, spResp] = await Promise.all([
+        msalInstance.ssoSilent({ loginHint, scopes: loginRequest.scopes }),
+        msalInstance.ssoSilent({ loginHint, scopes: sharePointRequest.scopes }),
+      ]);
       setGraphToken(graphResp.accessToken);
       setSharePointToken(spResp.accessToken);
       setUserName(graphResp.account?.name || displayName);
       setAuthState("authenticated");
     } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        await signInWithPopupOrRedirect(loginHint);
-      } else {
-        setAuthState("unauthenticated");
-      }
+      console.error("Teams SSO auth failed:", err);
+      setAuthState("unauthenticated");
     }
-  }
-
-  async function acquireTokensForAccount(account: any) {
-    try {
-      const [graphResp, spResp] = await Promise.all([
-        msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account }),
-        msalInstance.acquireTokenSilent({ scopes: sharePointRequest.scopes, account }),
-      ]);
-      setGraphToken(graphResp.accessToken);
-      setSharePointToken(spResp.accessToken);
-      setAuthState("authenticated");
-    } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        await signInWithPopupOrRedirect(account.username);
-      } else {
-        setAuthState("unauthenticated");
-      }
-    }
-  }
-
-  async function signInWithPopupOrRedirect(loginHint?: string) {
-    const request = { ...loginRequest, ...(loginHint ? { loginHint } : {}) };
-    try {
-      if (isTeamsMobile()) {
-        await msalInstance.loginRedirect(request);
-        return;
-      }
-      const resp = await msalInstance.loginPopup(request);
-      setUserName(resp.account?.name || "");
-      await acquireTokensForAccount(resp.account!);
-    } catch (err) {
-      if (
-        err instanceof BrowserAuthError &&
-        (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
-      ) {
-        try {
-          await msalInstance.loginRedirect(request);
-        } catch {
-          setAuthState("unauthenticated");
-        }
-      } else {
-        setAuthState("unauthenticated");
-      }
-    }
-  }
-
-  async function manualSignIn() {
-    await signInWithPopupOrRedirect();
   }
 
   // ─── Classification (eager + de-duped + cached) ──────────────────────────
@@ -429,9 +345,7 @@ export default function SubmitTab() {
             </div>
             <div className="absolute -inset-1 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
           </div>
-          <p className="text-gray-500 text-sm">
-            {inTeams ? "Signing you in automatically…" : "Loading…"}
-          </p>
+          <p className="text-gray-500 text-sm">Signing you in automatically…</p>
         </div>
       </div>
     );
@@ -441,17 +355,13 @@ export default function SubmitTab() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-4 animate-fade-in">
         <div className="w-full max-w-sm text-center animate-scale-in">
-          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20">
-            <LogIn className="h-7 w-7 text-white" />
+          <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Shield className="h-7 w-7 text-blue-500" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Sign In Required</h1>
-          <p className="text-gray-500 text-sm mb-6">
-            Sign in with your Cranfield Glass Microsoft account to submit ideas and safety reports.
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Not available here</h1>
+          <p className="text-gray-500 text-sm">
+            Please open this tab inside Microsoft Teams. If you're already in Teams, try refreshing the tab.
           </p>
-          <Button onClick={manualSignIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-            <LogIn className="h-4 w-4 mr-2" />
-            Sign in with Microsoft
-          </Button>
         </div>
       </div>
     );

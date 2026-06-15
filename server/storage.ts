@@ -17,6 +17,7 @@ import {
   moduleTools,
   moduleMaterials,
   staffModuleProgress,
+  orderItems,
   type User, 
   type InsertUser,
   type MeetingLock,
@@ -52,7 +53,9 @@ import {
   type ModuleMaterial,
   type InsertModuleMaterial,
   type StaffModuleProgress,
-  type InsertStaffModuleProgress
+  type InsertStaffModuleProgress,
+  type OrderItem,
+  type InsertOrderItem
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -205,6 +208,11 @@ export interface IStorage {
     completedDate: Date | null;
     expiryDate: Date | null;
   }>>;
+
+  // Order Items methods
+  getActiveOrderItems(): Promise<OrderItem[]>;
+  createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
+  updateOrderItemStatus(id: number, status: string, orderedBy?: string): Promise<OrderItem>;
 }
 
 
@@ -1056,6 +1064,33 @@ export class DatabaseStorage implements IStorage {
       expiryDate: row.expiryDate,
       ableToUse: row.ableToUse || false,
     }));
+  }
+
+  // Order Items methods
+  async getActiveOrderItems(): Promise<OrderItem[]> {
+    return await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.status, "active"))
+      .orderBy(orderItems.addedAt);
+  }
+
+  async createOrderItem(item: InsertOrderItem): Promise<OrderItem> {
+    const [created] = await db.insert(orderItems).values(item).returning();
+    return created;
+  }
+
+  async updateOrderItemStatus(id: number, status: string, orderedBy?: string): Promise<OrderItem> {
+    const [updated] = await db
+      .update(orderItems)
+      .set({
+        status,
+        orderedAt: status === "ordered" ? new Date() : null,
+        orderedBy: orderedBy || null,
+      })
+      .where(eq(orderItems.id, id))
+      .returning();
+    return updated;
   }
 }
 
