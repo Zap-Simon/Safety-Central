@@ -3028,6 +3028,7 @@ export default function MeetingHistory() {
                                                     <option value="In Progress">In Progress</option>
                                                     <option value="On Hold">On Hold</option>
                                                     <option value="Completed">Completed</option>
+                                                    <option value="Ready to Close">Ready to Close</option>
                                                   </select>
                                                 </div>
                                                 <div>
@@ -3071,6 +3072,125 @@ export default function MeetingHistory() {
                       );
                     })}
                   </div>
+
+                  {/* Completed Actions - Group Review container */}
+                  {(() => {
+                    const allMeetingItems = Object.values(categorized).flat() as MeetingItem[];
+                    const readyToCloseItems = allMeetingItems.filter(item => item.actionStatus === 'Ready to Close');
+                    if (readyToCloseItems.length === 0) return null;
+                    const containerKey = `${meetingDate}-ready-to-close`;
+                    const isExpanded = expandedCategories.has(containerKey);
+                    return (
+                      <div className="mt-2">
+                        <Collapsible open={isExpanded} onOpenChange={(open) => {
+                          if (open) {
+                            setExpandedCategories(prev => new Set([...prev, containerKey]));
+                          } else {
+                            setExpandedCategories(prev => { const n = new Set(prev); n.delete(containerKey); return n; });
+                          }
+                        }}>
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-between p-3 sm:p-4 h-auto bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg hover:bg-emerald-100 mb-2 touch-manipulation min-h-[48px] sm:min-h-[44px]"
+                            >
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-emerald-600" />
+                                <div className="text-left min-w-0 flex-1">
+                                  <div className="font-semibold text-sm sm:text-base leading-tight">Completed Actions – Group Review</div>
+                                  <div className="text-xs opacity-75 mt-0.5">{readyToCloseItems.length} item{readyToCloseItems.length !== 1 ? 's' : ''} ready for sign-off</div>
+                                </div>
+                              </div>
+                              {isExpanded ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-3 pl-1 sm:pl-2">
+                              {readyToCloseItems.map((item: MeetingItem) => (
+                                <div key={`rtc-${item.id}`} className="bg-white rounded-lg border border-emerald-200 shadow-sm p-3 sm:p-4">
+                                  {/* Header row */}
+                                  <div className="flex items-start justify-between gap-2 mb-3">
+                                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2 line-clamp-2">
+                                      {item.title?.trim() || <span className="text-gray-400 italic">No title</span>}
+                                    </h4>
+                                    <div className="flex flex-wrap gap-1.5 flex-shrink-0">
+                                      <Badge variant="outline" className={`text-xs whitespace-nowrap ${
+                                        item.type === 'Safety Ideas' ? 'bg-red-50 text-red-700 border-red-200' :
+                                        item.type === 'Near Miss' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                        'bg-blue-50 text-blue-700 border-blue-200'
+                                      }`}>
+                                        {item.type}
+                                      </Badge>
+                                      <Badge className="text-xs whitespace-nowrap bg-emerald-100 text-emerald-800 border-emerald-300">
+                                        Ready to Close
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {/* Detail rows */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                                    {item.actionAssignedTo && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-user text-emerald-600 w-3"></i>
+                                        <span><span className="font-medium">Actioned by:</span> {item.actionAssignedTo}</span>
+                                      </div>
+                                    )}
+                                    {item.actionDueDate && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-calendar-check text-emerald-600 w-3"></i>
+                                        <span><span className="font-medium">Due:</span> {formatDate(item.actionDueDate.split('T')[0])}</span>
+                                      </div>
+                                    )}
+                                    {item.submittedBy && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-user-edit text-gray-400 w-3"></i>
+                                        <span><span className="font-medium">Submitted by:</span> {item.submittedBy}</span>
+                                      </div>
+                                    )}
+                                    {item.status && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-tag text-gray-400 w-3"></i>
+                                        <span><span className="font-medium">Item status:</span> {item.status}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Action notes */}
+                                  {item.actionNotes && (
+                                    <div className="bg-emerald-50 border border-emerald-100 rounded p-2 mb-2">
+                                      <div className="flex items-start gap-2">
+                                        <i className="fas fa-clipboard-check text-emerald-600 text-xs mt-0.5"></i>
+                                        <div>
+                                          <span className="text-xs font-medium text-emerald-800">What was done: </span>
+                                          <span className="text-xs text-emerald-900">{item.actionNotes}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Meeting notes */}
+                                  {item.meetingNotes && (
+                                    <div className="bg-gray-50 border border-gray-100 rounded p-2">
+                                      <div className="flex items-start gap-2">
+                                        <i className="fas fa-comment-dots text-gray-400 text-xs mt-0.5"></i>
+                                        <div>
+                                          <span className="text-xs font-medium text-gray-600">Discussion notes: </span>
+                                          <span className="text-xs text-gray-700">{item.meetingNotes}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Call to action */}
+                                  <div className="mt-3 pt-2 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-700">
+                                    <i className="fas fa-users text-emerald-500"></i>
+                                    <span>Group to discuss, confirm outcome and close off this item.</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </div>
+                    );
+                  })()}
+
                     {/* Print-only signature section */}
                     <div className="print-signatures" style={{display: 'none'}}>
                   <h3><strong>Meeting Approval & Signatures</strong></h3>
@@ -3835,8 +3955,8 @@ export default function MeetingHistory() {
                   {(() => {
                     const spNames = new Set(sharepointUsers.map(u => u.title?.toLowerCase().trim()));
                     const staticFallbacks = [
-                      ...STAFF_DATA.management,
-                      ...STAFF_DATA.glaziers
+                      ...meetingAttendees.management,
+                      ...meetingAttendees.glaziers
                     ].filter(s => !spNames.has(s.name.toLowerCase().trim()));
                     const allSpUsers = sharepointUsers.filter(u => u.title?.trim());
                     const combined = [

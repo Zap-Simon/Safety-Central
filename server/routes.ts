@@ -5122,8 +5122,55 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         </tbody>
     </table>
 
+    ${(() => {
+      const readyToCloseItems = filteredData.filter((item: any) => item.actionStatus === 'Ready to Close');
+      if (readyToCloseItems.length === 0) return '';
+      return `
+    <div class="section-header" style="margin-top:24px;">III. Completed Actions – Group Review</div>
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px;margin-bottom:16px;">
+      <div style="font-size:10pt;color:#166534;margin-bottom:10px;">
+        <strong>&#10003; ${readyToCloseItems.length} completed action${readyToCloseItems.length !== 1 ? 's' : ''} require group discussion and sign-off to formally close.</strong>
+        This section demonstrates our circular compliance system — actions are completed, reviewed by the group, and officially closed at the meeting.
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+        <thead>
+          <tr style="background:#dcfce7;">
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:28%;">Item</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:20%;">Actioned By</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:32%;">What Was Done</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:20%;">Group Outcome</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${readyToCloseItems.map((item: any) => `
+          <tr>
+            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+              <div style="background:${item.type === 'Safety Ideas' ? '#dc2626' : item.type === 'Near Miss' ? '#ea580c' : '#2563eb'};color:#fff;font-size:8pt;padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:4px;">${item.type}</div>
+              <div style="font-weight:600;font-size:10pt;">${item.title || `${item.type} Item`}</div>
+              <div style="font-size:9pt;color:#555;margin-top:2px;">Submitted by: ${item.submittedBy || 'Unknown'}</div>
+            </td>
+            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+              ${item.actionAssignedTo ? `<div style="font-weight:600;">${item.actionAssignedTo}</div>` : '<div style="color:#888;">—</div>'}
+              ${item.actionDueDate ? `<div style="font-size:9pt;color:#555;">Due: ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}</div>` : ''}
+            </td>
+            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+              ${item.actionNotes ? `<div>${item.actionNotes}</div>` : ''}
+              ${item.meetingNotes ? `<div style="margin-top:4px;color:#555;font-size:9pt;"><em>Discussion: ${item.meetingNotes}</em></div>` : ''}
+              ${!item.actionNotes && !item.meetingNotes ? '<div style="color:#888;">No notes recorded</div>' : ''}
+            </td>
+            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+              <div style="background:#dcfce7;border:1px dashed #86efac;border-radius:4px;padding:6px;font-size:9pt;color:#166534;min-height:36px;">
+                Group decision:<br><br>____________________
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+    })()}
+
     <div class="signatures">
-        <div class="section-header">III. Meeting Attendance &amp; Sign-Off</div>
+        <div class="section-header">IV. Meeting Attendance &amp; Sign-Off</div>
         
         ${generateAttendanceSection(meetingAttendance, selectedMeeting, meetingDate, meetingSignatures)}
     </div>
