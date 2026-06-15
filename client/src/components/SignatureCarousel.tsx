@@ -55,6 +55,12 @@ export default function SignatureCarousel({
   onComplete,
   onClose
 }: SignatureCarouselProps) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   const [currentIndex, setCurrentIndex] = useState(() => {
     const firstUnsigned = attendees.findIndex(a => !existingSignatures[a.name]?.status);
     return firstUnsigned >= 0 ? firstUnsigned : 0;
@@ -337,7 +343,7 @@ export default function SignatureCarousel({
                   key={a.name}
                   onClick={() => { setCurrentIndex(i); setMode('choose'); }}
                   title={a.name}
-                  className={`flex-shrink-0 min-w-[2.25rem] w-9 h-9 rounded-full text-xs font-bold transition-all border-2 flex items-center justify-center ${
+                  className={`flex-shrink-0 w-9 h-9 aspect-square rounded-full text-xs font-bold transition-all border-2 flex items-center justify-center overflow-hidden ${
                     isCurrent
                       ? 'border-blue-500 bg-blue-600 text-white scale-110 shadow'
                       : sig
