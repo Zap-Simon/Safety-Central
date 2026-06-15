@@ -1539,7 +1539,11 @@ export default function MeetingHistory() {
         method: 'POST',
         body: JSON.stringify({ meetingDate, attendeeName, status, signatureData, signedAt })
       });
-      return response.json();
+      const data = await response.json();
+      if (!response.ok || data.success === false) {
+        throw new Error(data.error ?? `Server error ${response.status}`);
+      }
+      return data;
     },
     onSuccess: (data, variables) => {
       if (data.success) {

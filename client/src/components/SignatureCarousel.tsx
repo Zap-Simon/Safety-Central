@@ -175,8 +175,11 @@ export default function SignatureCarousel({
     lastPoint.current = null;
   };
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const saveSignature = async (status: SignatureStatus, signatureData: string | null) => {
     if (!currentAttendee) return;
+    setSaveError(null);
     setIsSaving(true);
     const signedAt = new Date().toISOString();
     try {
@@ -184,6 +187,8 @@ export default function SignatureCarousel({
       const record: SignatureRecord = { status, signatureData, signedAt };
       setLocalSignatures(prev => ({ ...prev, [currentAttendee.name]: record }));
       advance();
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save — please try again');
     } finally {
       setIsSaving(false);
     }
@@ -365,6 +370,11 @@ export default function SignatureCarousel({
                 </div>
               )}
               <p className="text-sm text-gray-500 mb-4">{alreadySigned ? 'Re-sign or change status:' : 'How is this person attending?'}</p>
+              {saveError && (
+                <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  {saveError}
+                </div>
+              )}
               <Button
                 onClick={handleSign}
                 className="w-full h-14 text-base bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-3"
@@ -413,6 +423,11 @@ export default function SignatureCarousel({
                   onTouchEnd={handleTouchEnd}
                 />
               </div>
+              {saveError && (
+                <div className="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  {saveError}
+                </div>
+              )}
               <div className="flex items-center justify-between mt-3 gap-3">
                 <Button variant="outline" size="sm" onClick={() => { clearCanvas(); setMode('choose'); }} className="flex items-center gap-1.5 text-gray-600">
                   <RotateCcw className="h-4 w-4" />
