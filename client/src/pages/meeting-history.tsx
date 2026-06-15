@@ -2809,11 +2809,11 @@ export default function MeetingHistory() {
                                                 <button
                                                   onClick={() => openNotesModal(item)}
                                                   className="inline-flex items-center gap-1 px-3 py-1 text-xs text-gray-600 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors shadow-sm"
-                                                  title="Edit meeting notes"
+                                                  title={item.meetingNotes?.trim() ? "Edit meeting notes" : "Add meeting notes"}
                                                   data-testid={`button-edit-notes-${item.id}`}
                                                 >
-                                                  <i className="fas fa-edit text-xs"></i>
-                                                  <span>Edit Notes</span>
+                                                  <i className={`fas ${item.meetingNotes?.trim() ? 'fa-edit' : 'fa-plus'} text-xs`}></i>
+                                                  <span>{item.meetingNotes?.trim() ? 'Edit Notes' : 'Add Notes'}</span>
                                                 </button>
                                               </div>
                                               {item.meetingNotes && item.meetingNotes.trim() ? (
@@ -4010,7 +4010,8 @@ export default function MeetingHistory() {
                         setShowSaveDropdown(false);
                       }
                     }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-r-none border-r border-blue-500"
+                    disabled={!editingMeetingNotes.trim()}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-r-none border-r border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i className="fas fa-save mr-2"></i>
                     Save Notes
@@ -4018,7 +4019,8 @@ export default function MeetingHistory() {
                   {/* Dropdown trigger */}
                   <Button
                     onClick={() => setShowSaveDropdown(prev => !prev)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-l-none px-3 border-l border-blue-500"
+                    disabled={!editingMeetingNotes.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-l-none px-3 border-l border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Save and update status"
                   >
                     <i className="fas fa-chevron-down text-xs"></i>
