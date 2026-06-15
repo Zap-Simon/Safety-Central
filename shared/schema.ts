@@ -76,6 +76,9 @@ export const meetingAttendance = pgTable("meeting_attendance", {
   meetingDate: text("meeting_date").notNull(),
   attendeeName: text("attendee_name").notNull(),
   isPresent: boolean("is_present").notNull().default(false),
+  signatureStatus: text("signature_status"), // 'signed' | 'remote' | 'absent'
+  signatureData: text("signature_data"), // base64 PNG data URL (for 'signed' status)
+  signedAt: text("signed_at"), // ISO date string
 });
 
 export const cardOrdering = pgTable("card_ordering", {

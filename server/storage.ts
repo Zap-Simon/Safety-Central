@@ -76,6 +76,9 @@ export interface IStorage {
   setMeetingAttendance(attendance: InsertMeetingAttendance): Promise<MeetingAttendance>;
   updateMeetingAttendance(meetingDate: string, attendeeName: string, isPresent: boolean): Promise<MeetingAttendance>;
   getAllMeetingAttendance(): Promise<Record<string, string[]>>;
+  updateMeetingSignature(meetingDate: string, attendeeName: string, status: string, signatureData: string | null, signedAt: string): Promise<MeetingAttendance>;
+  getMeetingSignatures(meetingDate: string): Promise<Record<string, { status: string; signatureData: string | null; signedAt: string }>>;
+  getAllMeetingSignatures(): Promise<Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>>;
   
   // Action Items methods (local database for action tracking)
   getActionItem(listType: string, sharePointItemId: string): Promise<ActionItem | undefined>;
@@ -341,6 +344,63 @@ export class DatabaseStorage implements IStorage {
           result[record.meetingDate] = [];
         }
         result[record.meetingDate].push(record.attendeeName);
+      }
+    }
+    return result;
+  }
+
+  async updateMeetingSignature(meetingDate: string, attendeeName: string, status: string, signatureData: string | null, signedAt: string): Promise<MeetingAttendance> {
+    const existingRecords = await db
+      .select()
+      .from(meetingAttendance)
+      .where(eq(meetingAttendance.meetingDate, meetingDate));
+    
+    const existing = existingRecords.find(r => r.attendeeName === attendeeName);
+
+    if (existing) {
+      const [updated] = await db
+        .update(meetingAttendance)
+        .set({ signatureStatus: status, signatureData, signedAt })
+        .where(eq(meetingAttendance.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(meetingAttendance)
+        .values({ meetingDate, attendeeName, isPresent: true, signatureStatus: status, signatureData, signedAt })
+        .returning();
+      return created;
+    }
+  }
+
+  async getMeetingSignatures(meetingDate: string): Promise<Record<string, { status: string; signatureData: string | null; signedAt: string }>> {
+    const records = await db.select().from(meetingAttendance).where(eq(meetingAttendance.meetingDate, meetingDate));
+    const result: Record<string, { status: string; signatureData: string | null; signedAt: string }> = {};
+    for (const record of records) {
+      if (record.signatureStatus) {
+        result[record.attendeeName] = {
+          status: record.signatureStatus,
+          signatureData: record.signatureData ?? null,
+          signedAt: record.signedAt ?? ''
+        };
+      }
+    }
+    return result;
+  }
+
+  async getAllMeetingSignatures(): Promise<Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>> {
+    const records = await db.select().from(meetingAttendance);
+    const result: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>> = {};
+    for (const record of records) {
+      if (record.signatureStatus) {
+        if (!result[record.meetingDate]) {
+          result[record.meetingDate] = {};
+        }
+        result[record.meetingDate][record.attendeeName] = {
+          status: record.signatureStatus,
+          signatureData: record.signatureData ?? null,
+          signedAt: record.signedAt ?? ''
+        };
       }
     }
     return result;

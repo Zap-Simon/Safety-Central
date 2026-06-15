@@ -1402,7 +1402,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const meetingDate = selectedMeeting === 'all' ? 'All Meetings' : new Date(selectedMeeting).toLocaleDateString('en-GB');
       const currentDate = new Date().toLocaleDateString('en-GB');
       
-      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting);
+      const meetingSignatures = req.body.meetingSignatures as Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>> | undefined;
+      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures);
       
       // Generate unique ID for shareable URL
       const shareId = 'meeting-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -2374,6 +2375,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update meeting attendance'
       });
+    }
+  });
+
+  // Meeting signature endpoints
+  app.get('/api/meeting-signatures', async (req, res) => {
+    try {
+      const signatures = await storage.getAllMeetingSignatures();
+      res.json({ success: true, signatures });
+    } catch (error) {
+      console.error('Error fetching meeting signatures:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch signatures' });
+    }
+  });
+
+  app.get('/api/meeting-signatures/:meetingDate', async (req, res) => {
+    try {
+      const { meetingDate } = req.params;
+      const signatures = await storage.getMeetingSignatures(decodeURIComponent(meetingDate));
+      res.json({ success: true, signatures });
+    } catch (error) {
+      console.error('Error fetching meeting signatures:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch signatures' });
+    }
+  });
+
+  app.post('/api/meeting-signatures', async (req, res) => {
+    try {
+      const { meetingDate, attendeeName, status, signatureData, signedAt } = req.body;
+      if (!meetingDate || !attendeeName || !status) {
+        return res.status(400).json({ success: false, error: 'meetingDate, attendeeName, and status are required' });
+      }
+      const record = await storage.updateMeetingSignature(meetingDate, attendeeName, status, signatureData ?? null, signedAt ?? new Date().toISOString());
+      res.json({ success: true, record });
+    } catch (error) {
+      console.error('Error saving signature:', error);
+      res.status(500).json({ success: false, error: 'Failed to save signature' });
     }
   });
 
@@ -4600,7 +4637,7 @@ function generateAnalyticsChartsHTML(analytics: any): string {
 }
 
 // HTML Meeting Minutes Generator Function
-function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string): string {
+function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>): string {
   const typeColors = {
     'Business Ideas': '#2563eb',
     'Safety Ideas': '#dc2626', 
@@ -5074,16 +5111,9 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     </table>
 
     <div class="signatures">
-        <div class="section-header">III. Meeting Attendance</div>
+        <div class="section-header">III. Meeting Attendance &amp; Sign-Off</div>
         
-        ${generateAttendanceSection(meetingAttendance, selectedMeeting, meetingDate)}
-
-        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
-            <p style="margin: 0; font-size: 10pt; color: #6b7280;">
-                Digital signatures can be collected via Jotform or similar platform.<br>
-                Attendance checkboxes sync with the main UI for consistency.
-            </p>
-        </div>
+        ${generateAttendanceSection(meetingAttendance, selectedMeeting, meetingDate, meetingSignatures)}
     </div>
     </div>
 
@@ -5189,70 +5219,101 @@ function generateActionRequiredSection(item: any): string {
 }
 
 // Generate attendance section with UI synchronization
-function generateAttendanceSection(meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingDate?: string): string {
-  // Define all attendees structure
-  const allAttendees = {
-    management: [
-      { name: 'Hoani Hunt', role: 'Company Director', id: 'hoani' },
-      { name: 'Simon Hubbard', role: 'Health & Safety Coordinator', id: 'simon' },
-      { name: 'James Waites', role: 'Glazing Supervisor', id: 'james' },
-      { name: 'Emma White', role: 'Administrator', id: 'emma' }
-    ],
-    glaziers: [
-      { name: 'Kevin Young', role: 'Glazier', id: 'kevin' },
-      { name: 'Ryan Newman', role: 'Glazier', id: 'ryan' },
-      { name: 'Dan Conlan', role: 'Glazier', id: 'dan' },
-      { name: 'Struan O\'Donnell', role: 'Glazier', id: 'struan' },
-      { name: 'Sam Chang', role: 'Glazier', id: 'sam' }
-    ]
+function generateAttendanceSection(meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingDate?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>): string {
+  const allAttendees = [
+    { name: 'Hoani Hunt', role: 'Company Director' },
+    { name: 'Simon Hubbard', role: 'Health & Safety Coordinator' },
+    { name: 'James Waites', role: 'Glazing Supervisor' },
+    { name: 'Emma White', role: 'Administrator' },
+    { name: 'Kevin Young', role: 'Glazier' },
+    { name: 'Ryan Newman', role: 'Glazier' },
+    { name: 'Dan Conlan', role: 'Glazier' },
+    { name: "Struan O'Donnell", role: 'Glazier' },
+    { name: 'Sam Chang', role: 'Glazier' }
+  ];
+
+  const isPresent = (name: string): boolean => {
+    if (!meetingAttendance || !selectedMeeting || selectedMeeting === 'all') return true;
+    const list = meetingAttendance[selectedMeeting];
+    if (!list) return true;
+    return list.includes(name);
   };
 
-  // Function to check if attendee is present
-  const isAttending = (attendeeName: string): boolean => {
-    if (!meetingAttendance || !selectedMeeting || selectedMeeting === 'all') {
-      return true; // Default to present if no specific meeting data
-    }
-    
-    // Use the selectedMeeting as the key for attendance lookup
-    const attendeesForMeeting = meetingAttendance[selectedMeeting];
-    if (!attendeesForMeeting) {
-      return true; // Default to present if no attendance data
-    }
-    
-    return attendeesForMeeting.includes(attendeeName);
+  const signaturesForMeeting = meetingSignatures && selectedMeeting && selectedMeeting !== 'all'
+    ? (meetingSignatures[selectedMeeting] ?? {})
+    : {};
+
+  const hasSigs = Object.keys(signaturesForMeeting).length > 0;
+
+  const formatDate = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return iso; }
   };
 
-  // Generate management team section
-  const managementHTML = allAttendees.management.map(attendee => `
-    <div style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
-        <input type="checkbox" id="${attendee.id}" style="margin: 0;" ${isAttending(attendee.name) ? 'checked' : ''}>
-        <label for="${attendee.id}" style="font-size: 10pt;">${attendee.name} – ${attendee.role}</label>
-    </div>
-  `).join('');
+  const signedAttendees = allAttendees.filter(a => {
+    const sig = signaturesForMeeting[a.name];
+    return sig && (sig.status === 'signed' || sig.status === 'remote');
+  });
 
-  // Generate glaziers section
-  const glaziersHTML = allAttendees.glaziers.map(attendee => `
+  const absentAttendees = allAttendees.filter(a => {
+    const sig = signaturesForMeeting[a.name];
+    return !isPresent(a.name) || (sig && sig.status === 'absent');
+  });
+
+  const pendingAttendees = allAttendees.filter(a => {
+    const sig = signaturesForMeeting[a.name];
+    return isPresent(a.name) && !sig;
+  });
+
+  if (hasSigs) {
+    const sigBlocks = signedAttendees.map(a => {
+      const sig = signaturesForMeeting[a.name];
+      const isRemote = sig.status === 'remote';
+      return `
+        <div style="break-inside: avoid; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: #fafafa;">
+          <div style="font-weight: bold; font-size: 11pt; color: #1f2937;">${a.name}</div>
+          <div style="font-size: 9pt; color: #6b7280; margin-bottom: 10px;">${a.role}${isRemote ? ' &nbsp;·&nbsp; <span style="color:#7c3aed;">Attended Remotely</span>' : ''}</div>
+          ${isRemote
+            ? `<div style="font-family: 'Georgia', serif; font-style: italic; font-size: 22pt; color: #1f2937; padding: 8px 0; border-bottom: 2px solid #374151; min-height: 48px;">${a.name}</div>`
+            : sig.signatureData
+              ? `<img src="${sig.signatureData}" style="max-width: 200px; max-height: 60px; display: block; border-bottom: 2px solid #374151;" alt="Signature">`
+              : `<div style="border-bottom: 2px solid #374151; height: 48px;"></div>`
+          }
+          <div style="font-size: 8pt; color: #9ca3af; margin-top: 6px;">Signed: ${formatDate(sig.signedAt)}</div>
+        </div>`;
+    }).join('');
+
+    const pendingList = pendingAttendees.map(a =>
+      `<span style="display: inline-block; padding: 4px 10px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 999px; font-size: 9pt; color: #92400e; margin: 3px;">${a.name}</span>`
+    ).join('');
+
+    const absentList = absentAttendees.map(a =>
+      `<span style="display: inline-block; padding: 4px 10px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 999px; font-size: 9pt; color: #6b7280; margin: 3px;">${a.name}</span>`
+    ).join('');
+
+    return `
+      <div style="margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          ${sigBlocks || '<p style="color:#9ca3af; font-size:10pt;">No signatures collected yet.</p>'}
+        </div>
+        ${pendingList ? `<div style="margin-bottom: 12px;"><span style="font-size:9pt; font-weight:600; color:#92400e;">Pending signature: </span>${pendingList}</div>` : ''}
+        ${absentList ? `<div><span style="font-size:9pt; font-weight:600; color:#6b7280;">Not present: </span>${absentList}</div>` : ''}
+      </div>`;
+  }
+
+  // Fallback: no signatures yet — show simple checkbox attendance table
+  const rows = allAttendees.map(a => `
     <div style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
-        <input type="checkbox" id="${attendee.id}" style="margin: 0;" ${isAttending(attendee.name) ? 'checked' : ''}>
-        <label for="${attendee.id}" style="font-size: 10pt;">${attendee.name} – ${attendee.role}</label>
-    </div>
-  `).join('');
+        <span style="font-size: 16px;">${isPresent(a.name) ? '✅' : '⬜'}</span>
+        <span style="font-size: 10pt; color: #374151;">${a.name} – ${a.role}</span>
+    </div>`).join('');
 
   return `
-    <div style="margin-bottom: 30px;">
-        <h4 style="color: #3b82f6; margin-bottom: 15px; font-size: 12pt;">Management Team</h4>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            ${managementHTML}
-        </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
+      ${rows}
     </div>
-
-    <div style="margin-bottom: 30px;">
-        <h4 style="color: #3b82f6; margin-bottom: 15px; font-size: 12pt;">Glaziers</h4>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            ${glaziersHTML}
-        </div>
-    </div>
-  `;
+    <div style="text-align: center; margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 9pt; color: #9ca3af;">Signatures not yet collected — use the Collect Signatures feature in the app to capture sign-off.</p>
+    </div>`;
 }
 
   // Skills Matrix CSV export - Updated for 5-level competency system

@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, Plus, Lock, Unlock } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, Plus, Lock, Unlock, PenLine } from "lucide-react";
+import SignatureCarousel from "@/components/SignatureCarousel";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, isSameDay, getMeetingStatus } from "@shared/dateUtils";
 import { predictiveText } from "@/lib/predictiveText";
 import { InlineTextarea } from "@/components/ui/inline-textarea";
@@ -94,6 +95,8 @@ export default function MeetingHistory() {
   const [meetingAttendance, setMeetingAttendance] = useState<Record<string, string[]>>({});
   const [showAttendanceSelector, setShowAttendanceSelector] = useState<string>('');
   const [lockedAttendance, setLockedAttendance] = useState<Record<string, boolean>>({});
+  const [meetingSignatures, setMeetingSignatures] = useState<Record<string, Record<string, { status: 'signed' | 'remote' | 'absent'; signatureData: string | null; signedAt: string }>>>({});
+  const [showSignatureCarousel, setShowSignatureCarousel] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('relevant');
   const [selectedMeetingForStats, setSelectedMeetingForStats] = useState<string>('all');
   const [isGeneratingTitles, setIsGeneratingTitles] = useState<boolean>(false);
@@ -653,8 +656,21 @@ export default function MeetingHistory() {
     queryFn: () => authenticatedFetch('/api/meeting-attendance').then(res => res.json()),
   });
 
+  // Meeting signatures query
+  const { data: signaturesResponse } = useQuery({
+    queryKey: ['/api/meeting-signatures'],
+    queryFn: () => authenticatedFetch('/api/meeting-signatures').then(res => res.json()),
+  });
+
   // Meeting locks will be fetched individually when needed
   // For now, we'll use local state combined with mutations to the API
+
+  // Update meeting signatures from API response
+  useEffect(() => {
+    if (signaturesResponse?.success && signaturesResponse.signatures) {
+      setMeetingSignatures(signaturesResponse.signatures);
+    }
+  }, [signaturesResponse]);
 
   // Update meeting attendance from API response
   useEffect(() => {
@@ -1515,6 +1531,34 @@ export default function MeetingHistory() {
     });
   };
 
+  const saveSignatureMutation = useMutation({
+    mutationFn: async ({ meetingDate, attendeeName, status, signatureData, signedAt }: {
+      meetingDate: string; attendeeName: string; status: string; signatureData: string | null; signedAt: string;
+    }) => {
+      const response = await authenticatedFetch('/api/meeting-signatures', {
+        method: 'POST',
+        body: JSON.stringify({ meetingDate, attendeeName, status, signatureData, signedAt })
+      });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      if (data.success) {
+        setMeetingSignatures(prev => ({
+          ...prev,
+          [variables.meetingDate]: {
+            ...(prev[variables.meetingDate] ?? {}),
+            [variables.attendeeName]: {
+              status: variables.status as 'signed' | 'remote' | 'absent',
+              signatureData: variables.signatureData,
+              signedAt: variables.signedAt
+            }
+          }
+        }));
+        queryClient.invalidateQueries({ queryKey: ['/api/meeting-signatures'] });
+      }
+    }
+  });
+
   const toggleAttendanceLock = (meetingDate: string) => {
     const isCurrentlyLocked = lockedAttendance[meetingDate] || false;
     
@@ -1717,6 +1761,7 @@ export default function MeetingHistory() {
               selectedMeeting: meetingDate,
               selectedType: 'all',
               meetingAttendance: meetingAttendance,
+              meetingSignatures: meetingSignatures,
             }),
           });
 
@@ -1763,6 +1808,7 @@ export default function MeetingHistory() {
             selectedMeeting: meetingDate,
             selectedType: 'all',
             meetingAttendance: meetingAttendance,
+            meetingSignatures: meetingSignatures,
           }),
         });
 
@@ -2440,6 +2486,23 @@ export default function MeetingHistory() {
                           {showAttendanceSelector === meetingDate ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                         </Button>
 
+                        {(() => {
+                          const sigs = meetingSignatures[meetingDate] ?? {};
+                          const sigCount = Object.keys(sigs).length;
+                          return (
+                            <Button
+                              variant="outline"
+                              onClick={() => setShowSignatureCarousel(meetingDate)}
+                              className="w-full sm:w-auto flex items-center justify-center gap-2 text-indigo-700 bg-white hover:bg-indigo-50 hover:border-indigo-300 border-indigo-200"
+                            >
+                              <PenLine className="h-4 w-4" />
+                              <span>Collect Signatures</span>
+                              {sigCount > 0 && (
+                                <span className="ml-1 bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-0.5 rounded-full">{sigCount}</span>
+                              )}
+                            </Button>
+                          );
+                        })()}
                       </div>
                     </div>
 
@@ -2491,57 +2554,43 @@ export default function MeetingHistory() {
                           {/* Compact single section with all attendees */}
                           <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                              {/* Management Team */}
-                              {meetingAttendees.management.map((attendee) => (
-                                <label 
-                                  key={attendee.name} 
-                                  className={`flex items-center gap-2 p-2 rounded-lg transition-colors text-sm ${
-                                    isLocked 
-                                      ? 'cursor-not-allowed opacity-60' 
-                                      : 'cursor-pointer hover:bg-blue-50'
-                                  }`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isAttending(meetingDate, attendee.name)}
-                                    onChange={() => !isLocked && toggleAttendee(meetingDate, attendee.name)}
-                                    disabled={isLocked}
-                                    className={`h-4 w-4 text-blue-600 border-2 border-gray-300 rounded transition-all ${
-                                      isLocked ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'
+                              {[...meetingAttendees.management, ...meetingAttendees.glaziers].map((attendee) => {
+                                const sig = (meetingSignatures[meetingDate] ?? {})[attendee.name];
+                                const sigBadge = sig
+                                  ? sig.status === 'signed' ? { label: '✍️', cls: 'bg-green-100 text-green-700' }
+                                  : sig.status === 'remote' ? { label: '🖥️', cls: 'bg-purple-100 text-purple-700' }
+                                  : { label: '—', cls: 'bg-gray-100 text-gray-400' }
+                                  : null;
+                                return (
+                                  <label
+                                    key={attendee.name}
+                                    className={`flex items-center gap-2 p-2 rounded-lg transition-colors text-sm ${
+                                      isLocked
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : 'cursor-pointer hover:bg-blue-50'
                                     }`}
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-medium text-gray-900 truncate">{attendee.name}</div>
-                                    <div className="text-xs text-blue-600 truncate">{attendee.role}</div>
-                                  </div>
-                                </label>
-                              ))}
-                              
-                              {/* Glaziers */}
-                              {meetingAttendees.glaziers.map((attendee) => (
-                                <label 
-                                  key={attendee.name} 
-                                  className={`flex items-center gap-2 p-2 rounded-lg transition-colors text-sm ${
-                                    isLocked 
-                                      ? 'cursor-not-allowed opacity-60' 
-                                      : 'cursor-pointer hover:bg-blue-50'
-                                  }`}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={isAttending(meetingDate, attendee.name)}
-                                    onChange={() => !isLocked && toggleAttendee(meetingDate, attendee.name)}
-                                    disabled={isLocked}
-                                    className={`h-4 w-4 text-blue-600 border-2 border-gray-300 rounded transition-all ${
-                                      isLocked ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'
-                                    }`}
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-medium text-gray-900 truncate">{attendee.name}</div>
-                                    <div className="text-xs text-gray-600 truncate">Glazier</div>
-                                  </div>
-                                </label>
-                              ))}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isAttending(meetingDate, attendee.name)}
+                                      onChange={() => !isLocked && toggleAttendee(meetingDate, attendee.name)}
+                                      disabled={isLocked}
+                                      className={`h-4 w-4 text-blue-600 border-2 border-gray-300 rounded transition-all ${
+                                        isLocked ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'
+                                      }`}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium text-gray-900 truncate">{attendee.name}</div>
+                                      <div className="text-xs text-blue-600 truncate">{attendee.role}</div>
+                                    </div>
+                                    {sigBadge && (
+                                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${sigBadge.cls}`}>
+                                        {sigBadge.label}
+                                      </span>
+                                    )}
+                                  </label>
+                                );
+                              })}
                             </div>
                           </div>
                         </div>
@@ -3950,6 +3999,34 @@ export default function MeetingHistory() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Signature Carousel Modal */}
+        {showSignatureCarousel && (() => {
+          const presentAttendees = [
+            ...meetingAttendees.management,
+            ...meetingAttendees.glaziers
+          ].filter(a => isAttending(showSignatureCarousel, a.name));
+          const existingSigs = meetingSignatures[showSignatureCarousel] ?? {};
+          const displayDate = (() => { try { return new Date(showSignatureCarousel).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return showSignatureCarousel; } })();
+          return (
+            <SignatureCarousel
+              meetingDate={displayDate}
+              attendees={presentAttendees}
+              existingSignatures={existingSigs}
+              onSaveSignature={async (attendeeName, status, signatureData, signedAt) => {
+                await saveSignatureMutation.mutateAsync({
+                  meetingDate: showSignatureCarousel,
+                  attendeeName,
+                  status,
+                  signatureData,
+                  signedAt
+                });
+              }}
+              onComplete={() => setShowSignatureCarousel('')}
+              onClose={() => setShowSignatureCarousel('')}
+            />
+          );
+        })()}
 
         {/* Floating Add Button with Scroll Detection */}
         {showFloatingAdd && floatingMeetingDate && (
