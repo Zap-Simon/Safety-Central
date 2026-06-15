@@ -2787,11 +2787,7 @@ export default function MeetingHistory() {
                                                   <span>{formatDate(item.submittedDate)}</span>
                                                 </div>
                                               </div>
-                                              <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-2">
-                                                <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                                  <span className="font-medium text-gray-700 text-xs uppercase tracking-wide">Assigned to:</span> 
-                                                  <span className="line-clamp-1">{item.assignedTo ? highlightSearchTerm(item.assignedTo, searchQuery) : 'Not assigned'}</span>
-                                                </div>
+                                              <div className="bg-white border border-gray-100 rounded-lg p-3">
                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-1">
                                                   <span className="font-medium text-gray-700 text-xs uppercase tracking-wide">Status:</span> 
                                                   <span>{highlightSearchTerm(item.status, searchQuery)}</span>
