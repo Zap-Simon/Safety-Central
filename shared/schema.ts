@@ -64,6 +64,7 @@ export const actionItems = pgTable("action_items", {
   actionStartDate: text("action_start_date"), // ISO date string
   actionDueDate: text("action_due_date"), // ISO date string
   actionNotes: text("action_notes"),
+  meetingNotes: text("meeting_notes"), // Local backup of meeting notes (also saved to SharePoint)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => ({

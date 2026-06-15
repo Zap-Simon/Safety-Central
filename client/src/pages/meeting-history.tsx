@@ -242,23 +242,42 @@ export default function MeetingHistory() {
 
   const updateMeetingNotes = async (item: MeetingItem, notes: string) => {
     try {
-      const response = await authenticatedFetch('/api/sharepoint/update-item', {
+      // Save locally first (instant, reliable backup)
+      const localSave = await fetch('/api/action-items', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          itemId: item.id,
           listType: item.type,
-          updates: { meetingNotes: notes }
+          sharePointItemId: item.id,
+          meetingNotes: notes
         })
       });
-
-      const result = await response.json();
-      if (result.success) {
-        showSuccess('Success', 'Meeting notes updated successfully!');
-        // Refresh data without page reload
-        await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
-      } else {
-        showError('Update Failed', result.error || 'Failed to update meeting notes');
+      const localResult = await localSave.json();
+      if (!localResult.success) {
+        console.warn('Local meeting notes save failed:', localResult.error);
       }
+
+      // Also save to SharePoint (background sync)
+      try {
+        const response = await authenticatedFetch('/api/sharepoint/update-item', {
+          method: 'POST',
+          body: JSON.stringify({
+            itemId: item.id,
+            listType: item.type,
+            updates: { meetingNotes: notes }
+          })
+        });
+        const result = await response.json();
+        if (!result.success) {
+          console.warn('SharePoint meeting notes sync failed:', result.error);
+        }
+      } catch (spError) {
+        console.warn('SharePoint sync error (notes saved locally):', spError);
+      }
+
+      showSuccess('Success', 'Meeting notes saved successfully!');
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
     } catch (error) {
       console.error('Error updating meeting notes:', error);
       showError('Update Failed', 'Failed to update meeting notes');
