@@ -127,6 +127,7 @@ export default function MeetingHistory() {
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [editingMeetingNotes, setEditingMeetingNotes] = useState<string>('');
   const [editingNotesItem, setEditingNotesItem] = useState<MeetingItem | null>(null);
+  const [showSaveDropdown, setShowSaveDropdown] = useState(false);
   const [isEnhancingNotes, setIsEnhancingNotes] = useState<boolean>(false);
   
   const [newIdeaForm, setNewIdeaForm] = useState({
@@ -3905,7 +3906,7 @@ export default function MeetingHistory() {
         </Dialog>
 
         {/* Meeting Notes Modal - Mobile Optimized */}
-        <Dialog open={showNotesModal} onOpenChange={setShowNotesModal}>
+        <Dialog open={showNotesModal} onOpenChange={(open) => { setShowNotesModal(open); if (!open) setShowSaveDropdown(false); }}>
           <DialogContent className="w-[95vw] max-w-lg mx-auto my-4 max-h-[95vh] overflow-y-auto" aria-describedby="notes-description">
             <DialogHeader className="pb-3">
               <DialogTitle className="flex items-center gap-2 text-lg">
@@ -3997,20 +3998,71 @@ export default function MeetingHistory() {
                 >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => {
-                    if (editingNotesItem) {
-                      updateMeetingNotes(editingNotesItem, editingMeetingNotes);
-                      setShowNotesModal(false);
-                      setEditingNotesItem(null);
-                      setEditingMeetingNotes('');
-                    }
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation"
-                >
-                  <i className="fas fa-save mr-2"></i>
-                  Save Notes
-                </Button>
+                <div className="flex-1 flex relative">
+                  {/* Main save button */}
+                  <Button
+                    onClick={() => {
+                      if (editingNotesItem) {
+                        updateMeetingNotes(editingNotesItem, editingMeetingNotes);
+                        setShowNotesModal(false);
+                        setEditingNotesItem(null);
+                        setEditingMeetingNotes('');
+                        setShowSaveDropdown(false);
+                      }
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-r-none border-r border-blue-500"
+                  >
+                    <i className="fas fa-save mr-2"></i>
+                    Save Notes
+                  </Button>
+                  {/* Dropdown trigger */}
+                  <Button
+                    onClick={() => setShowSaveDropdown(prev => !prev)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white min-h-[44px] touch-manipulation rounded-l-none px-3 border-l border-blue-500"
+                    aria-label="Save and update status"
+                  >
+                    <i className="fas fa-chevron-down text-xs"></i>
+                  </Button>
+                  {/* Dropdown menu */}
+                  {showSaveDropdown && (
+                    <div className="absolute bottom-full right-0 mb-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                        Save &amp; Change Status
+                      </div>
+                      {['In Discussion', 'Actioned', 'Closed'].map((status) => {
+                        const icons: Record<string, string> = {
+                          'In Discussion': 'fa-comments',
+                          'Actioned': 'fa-check-circle',
+                          'Closed': 'fa-lock',
+                        };
+                        const colors: Record<string, string> = {
+                          'In Discussion': 'text-blue-600',
+                          'Actioned': 'text-green-600',
+                          'Closed': 'text-gray-500',
+                        };
+                        return (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              if (editingNotesItem) {
+                                updateMeetingNotes(editingNotesItem, editingMeetingNotes);
+                                updateItemStatus(editingNotesItem, status);
+                                setShowNotesModal(false);
+                                setEditingNotesItem(null);
+                                setEditingMeetingNotes('');
+                                setShowSaveDropdown(false);
+                              }
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors text-left"
+                          >
+                            <i className={`fas ${icons[status]} ${colors[status]} w-4 text-center`}></i>
+                            <span>Save &amp; Set <strong>{status}</strong></span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </DialogContent>
