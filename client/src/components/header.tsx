@@ -14,6 +14,22 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   
   const isOnMeetingHistory = location.includes('/meeting-history');
+  const [currentTab, setCurrentTab] = useState(() => new URLSearchParams(window.location.search).get('tab') || 'home');
+
+  useEffect(() => {
+    const updateTab = () => {
+      setCurrentTab(new URLSearchParams(window.location.search).get('tab') || 'home');
+    };
+    window.addEventListener('popstate', updateTab);
+    // Poll for tab changes via URL (tab changes use replaceState, not pushState)
+    const interval = setInterval(updateTab, 200);
+    return () => {
+      window.removeEventListener('popstate', updateTab);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isOnEngagementTab = !isOnMeetingHistory && currentTab === 'documentation';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -195,8 +211,8 @@ export default function Header() {
                 </div>
               </div>
 
-              {/* Navigation - Scrollable area */}
-              {!isOnMeetingHistory && (
+              {/* Navigation - Scrollable area (only shown on Engagement tab) */}
+              {isOnEngagementTab && (
                 <div className="flex-1 overflow-y-auto min-h-0">
                   <div className="p-4">
                     <div className="text-xs font-medium text-gray-500 mb-3 px-1">PAGE NAVIGATION</div>
