@@ -561,22 +561,24 @@ export default function Actions() {
                   }`}
                 >
                   {/* Top row: type/priority/status/due */}
-                  <div className="flex items-center gap-2 px-4 pt-3 pb-1 flex-wrap">
-                    {getTypeIcon(item.type)}
-                    <span className="text-xs text-gray-500">{item.type}</span>
-                    <Badge variant="outline" className={getPriorityColor(item.actionPriority)}>
+                  <div className="flex items-center gap-1.5 px-4 pt-3 pb-1 flex-wrap">
+                    <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600">
+                      {getTypeIcon(item.type)}
+                      {item.type}
+                    </span>
+                    <Badge variant="outline" className={`h-5 px-2 py-0 leading-none rounded-full text-xs font-medium ${getPriorityColor(item.actionPriority)}`}>
                       {item.actionPriority || 'No Priority'}
                     </Badge>
-                    <Badge variant="outline" className={getStatusColor(item.actionStatus)}>
+                    <Badge variant="outline" className={`h-5 px-2 py-0 leading-none rounded-full text-xs font-medium ${getStatusColor(item.actionStatus)}`}>
                       {item.actionStatus || 'Not Started'}
                     </Badge>
                     {dueDateStatus && !isCompleted && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${dueDateStatus.color}`}>
+                      <span className={`inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium ${dueDateStatus.color}`}>
                         <Clock className="h-3 w-3" />{dueDateStatus.label}
                       </span>
                     )}
                     {isCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
-                    <span className="ml-auto text-xs text-gray-400">Meeting: {formatDate(item.meetingDate)}</span>
+                    <span className="ml-auto inline-flex items-center h-5 px-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-500">Meeting: {formatDate(item.meetingDate)}</span>
                   </div>
 
                   {/* Title */}
@@ -590,7 +592,7 @@ export default function Actions() {
                   </div>
 
                   {/* Editable fields row */}
-                  <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 [&>div]:min-w-0">
                     <div>
                       <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Priority</label>
                       <select
@@ -606,7 +608,7 @@ export default function Actions() {
                           }
                           updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
                         }}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:border-amber-400 focus:outline-none"
+                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
                         data-testid={`select-action-priority-${item.id}`}
                       >
                         <option value="">No Priority</option>
@@ -620,7 +622,7 @@ export default function Actions() {
                       <select
                         value={item.actionStatus || ''}
                         onChange={(e) => updateActionFields(item, { actionStatus: e.target.value })}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:border-amber-400 focus:outline-none"
+                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
                         data-testid={`select-action-status-${item.id}`}
                       >
                         <option value="">Not Started</option>
@@ -636,7 +638,7 @@ export default function Actions() {
                         value={getActionFieldValue(item, 'actionAssignedTo')}
                         onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
                         placeholder="Unassigned"
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:border-amber-400 focus:outline-none"
+                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
                         data-testid={`input-action-assigned-${item.id}`}
                       />
                     </div>
@@ -646,7 +648,7 @@ export default function Actions() {
                         type="date"
                         value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
                         onChange={(e) => updateActionFields(item, { actionDueDate: e.target.value })}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:border-amber-400 focus:outline-none"
+                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
                         data-testid={`input-action-due-date-${item.id}`}
                       />
                     </div>
