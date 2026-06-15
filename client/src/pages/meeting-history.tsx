@@ -2828,7 +2828,7 @@ export default function MeetingHistory() {
                                                 </div>
                                               ) : (
                                                 <div className="text-sm text-gray-500 italic">
-                                                  No meeting notes added yet. Click "Edit Notes" to add discussion points.
+                                                  No meeting notes added yet. Click "Add Notes" to add discussion points.
                                                 </div>
                                               )}
                                             </div>
@@ -3819,25 +3819,34 @@ export default function MeetingHistory() {
                 <select
                   value={newIdeaForm.submittedById}
                   onChange={(e) => {
-                    const selectedUser = sharepointUsers.find(user => user.id.toString() === e.target.value);
+                    const val = e.target.value;
+                    const spUser = sharepointUsers.find(user => user.id.toString() === val);
+                    const name = spUser?.title || (val.startsWith('static_') ? val.slice(7) : '');
                     setNewIdeaForm(prev => ({ 
                       ...prev, 
-                      submittedById: e.target.value,
-                      submittedBy: selectedUser?.title || ''
+                      submittedById: val,
+                      submittedBy: name
                     }));
                   }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-3 sm:py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
-                  style={{ fontSize: '16px' }} // Prevents zoom on iOS
+                  style={{ fontSize: '16px' }}
                 >
                   <option value="">Select person...</option>
-                  {sharepointUsers
-                    // Show all approved SharePoint users for submission (ideas can be submitted by anyone)
-                    .filter(user => user.title && user.title.trim())
-                    .map(user => (
-                      <option key={user.id} value={user.id.toString()}>
-                        {user.title}
-                      </option>
-                    ))}
+                  {(() => {
+                    const spNames = new Set(sharepointUsers.map(u => u.title?.toLowerCase().trim()));
+                    const staticFallbacks = [
+                      ...STAFF_DATA.management,
+                      ...STAFF_DATA.glaziers
+                    ].filter(s => !spNames.has(s.name.toLowerCase().trim()));
+                    const allSpUsers = sharepointUsers.filter(u => u.title?.trim());
+                    const combined = [
+                      ...allSpUsers.map(u => ({ value: u.id.toString(), label: u.title })),
+                      ...staticFallbacks.map(s => ({ value: `static_${s.name}`, label: s.name }))
+                    ].sort((a, b) => a.label.localeCompare(b.label));
+                    return combined.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ));
+                  })()}
                 </select>
               </div>
               
