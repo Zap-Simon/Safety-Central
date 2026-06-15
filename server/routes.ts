@@ -1405,8 +1405,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate HTML content
       const meetingDate = selectedMeeting === 'all' ? 'All Meetings' : new Date(selectedMeeting).toLocaleDateString('en-GB');
       const currentDate = new Date().toLocaleDateString('en-GB');
-      
-      const meetingSignatures = req.body.meetingSignatures as Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>> | undefined;
+
+      // Fetch signatures directly from DB — more reliable than trusting client-sent data
+      let meetingSignatures: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>> | undefined;
+      try {
+        if (selectedMeeting && selectedMeeting !== 'all') {
+          // Try exact key first, then fallback to all-signatures with date normalization
+          let sigsForDate = await storage.getMeetingSignatures(selectedMeeting);
+          if (Object.keys(sigsForDate).length === 0) {
+            // Try normalizing date to YYYY-MM-DD
+            const normalizedSelected = new Date(selectedMeeting).toISOString().split('T')[0];
+            sigsForDate = await storage.getMeetingSignatures(normalizedSelected);
+          }
+          if (Object.keys(sigsForDate).length === 0) {
+            // Fallback: search all signatures for a date-matching key
+            const allSigs = await storage.getAllMeetingSignatures();
+            const normalizedSelected = new Date(selectedMeeting).toISOString().split('T')[0];
+            const matchingKey = Object.keys(allSigs).find(k => {
+              try { return new Date(k).toISOString().split('T')[0] === normalizedSelected; } catch { return false; }
+            });
+            if (matchingKey) sigsForDate = allSigs[matchingKey];
+          }
+          meetingSignatures = { [selectedMeeting]: sigsForDate };
+        } else {
+          meetingSignatures = await storage.getAllMeetingSignatures();
+        }
+      } catch (sigErr) {
+        console.warn('Could not fetch signatures from DB for export:', sigErr);
+        meetingSignatures = req.body.meetingSignatures;
+      }
+
       const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures);
       
       // Generate unique ID for shareable URL

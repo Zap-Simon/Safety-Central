@@ -674,13 +674,13 @@ export default function MeetingHistory() {
   // Meeting attendance query
   const { data: attendanceResponse } = useQuery({
     queryKey: ['/api/meeting-attendance'],
-    queryFn: () => authenticatedFetch('/api/meeting-attendance').then(res => res.json()),
+    queryFn: () => fetch('/api/meeting-attendance').then(res => res.json()),
   });
 
   // Meeting signatures query
   const { data: signaturesResponse } = useQuery({
     queryKey: ['/api/meeting-signatures'],
-    queryFn: () => authenticatedFetch('/api/meeting-signatures').then(res => res.json()),
+    queryFn: () => fetch('/api/meeting-signatures').then(res => res.json()),
   });
 
   // Meeting locks will be fetched individually when needed
@@ -711,7 +711,7 @@ export default function MeetingHistory() {
 
       const lockPromises = uniqueMeetingDates.map(async (meetingDate) => {
         try {
-          const response = await authenticatedFetch(`/api/meeting-locks/${encodeURIComponent(meetingDate as string)}`);
+          const response = await fetch(`/api/meeting-locks/${encodeURIComponent(meetingDate as string)}`);
           const data = await response.json();
           return { meetingDate, isLocked: data.success ? data.meetingLock.isLocked : false };
         } catch (error) {
@@ -735,8 +735,9 @@ export default function MeetingHistory() {
   // Mutations for updating meeting locks and attendance
   const updateMeetingLockMutation = useMutation({
     mutationFn: async ({ meetingDate, isLocked }: { meetingDate: string, isLocked: boolean }) => {
-      const response = await authenticatedFetch('/api/meeting-locks', {
+      const response = await fetch('/api/meeting-locks', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           meetingDate,
           isLocked,
@@ -763,8 +764,9 @@ export default function MeetingHistory() {
 
   const updateMeetingAttendanceMutation = useMutation({
     mutationFn: async ({ meetingDate, attendeeName, isPresent }: { meetingDate: string, attendeeName: string, isPresent: boolean }) => {
-      const response = await authenticatedFetch('/api/meeting-attendance', {
+      const response = await fetch('/api/meeting-attendance', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           meetingDate,
           attendeeName,
@@ -1556,8 +1558,9 @@ export default function MeetingHistory() {
     mutationFn: async ({ meetingDate, attendeeName, status, signatureData, signedAt }: {
       meetingDate: string; attendeeName: string; status: string; signatureData: string | null; signedAt: string;
     }) => {
-      const response = await authenticatedFetch('/api/meeting-signatures', {
+      const response = await fetch('/api/meeting-signatures', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meetingDate, attendeeName, status, signatureData, signedAt })
       });
       const data = await response.json();
