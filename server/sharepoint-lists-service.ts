@@ -824,15 +824,15 @@ export class SharePointListsService {
       // Add list-specific fields
       if (listType === 'Business Ideas') {
         if (updates.description) payload['BusinessIdea1'] = updates.description;
-        if (updates.meetingNotes) payload['MeetingNotes'] = updates.meetingNotes;
+        if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
         if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
       } else if (listType === 'Safety Ideas') {
         if (updates.description) payload['SafetyIdea1'] = updates.description;
-        if (updates.meetingNotes) payload['Meeting_x0020_Notes1'] = updates.meetingNotes;
+        if (updates.meetingNotes !== undefined) payload['Meeting_x0020_Notes1'] = updates.meetingNotes;
         if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
       } else if (listType === 'Near Miss') {
         if (updates.description) payload['Canyoubrieflyexplainwhathappened'] = updates.description;
-        if (updates.meetingNotes) payload['MeetingNotes'] = updates.meetingNotes;
+        if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
         if (updates.eventType) payload['EventType'] = updates.eventType;
       }
 
