@@ -70,6 +70,7 @@ export default function SignatureCarousel({
   const [hasDrawn, setHasDrawn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -82,7 +83,7 @@ export default function SignatureCarousel({
   const progress = attendees.length > 0 ? (signedCount / attendees.length) * 100 : 0;
 
   useEffect(() => {
-    setMode(alreadySigned ? 'choose' : 'choose');
+    setMode('choose');
     setHasDrawn(false);
     clearCanvas();
   }, [currentIndex]);
@@ -174,8 +175,6 @@ export default function SignatureCarousel({
     isDrawing.current = false;
     lastPoint.current = null;
   };
-
-  const [saveError, setSaveError] = useState<string | null>(null);
 
   const saveSignature = async (status: SignatureStatus, signatureData: string | null) => {
     if (!currentAttendee) return;
@@ -303,7 +302,7 @@ export default function SignatureCarousel({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden" style={{ maxHeight: '95dvh' }}>
 
-        {/* Header */}
+        {/* Header — always visible */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-4 flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -311,56 +310,92 @@ export default function SignatureCarousel({
               <p className="text-blue-200 text-sm">{meetingDate}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold">{signedCount}<span className="text-blue-300 text-base font-normal"> / {attendees.length}</span></div>
+              <div className="text-2xl font-bold">
+                {signedCount}
+                <span className="text-blue-300 text-base font-normal"> / {attendees.length}</span>
+              </div>
               <div className="text-blue-200 text-xs">signed</div>
             </div>
           </div>
-          <Progress value={progress} className="h-2 bg-blue-500 [&>div]:bg-white" />
+          {/* Progress bar — full width pill, never squashed */}
+          <div className="w-full h-2 rounded-full bg-blue-500 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-white transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
 
-        {/* Attendee mini-track */}
-        <div className="flex gap-1.5 px-5 py-3 bg-gray-50 border-b border-gray-100 overflow-x-auto flex-shrink-0">
-          {attendees.map((a, i) => {
-            const sig = localSignatures[a.name];
-            const isCurrent = i === currentIndex;
-            return (
-              <button
-                key={a.name}
-                onClick={() => { setCurrentIndex(i); setMode('choose'); }}
-                title={a.name}
-                className={`flex-shrink-0 w-9 h-9 rounded-full text-xs font-bold transition-all border-2 ${
-                  isCurrent ? 'border-blue-500 bg-blue-600 text-white scale-110 shadow' :
-                  sig ? (sig.status === 'signed' ? 'border-green-400 bg-green-100 text-green-700' :
-                         sig.status === 'remote' ? 'border-purple-400 bg-purple-100 text-purple-700' :
-                         'border-gray-300 bg-gray-100 text-gray-400') :
-                  'border-gray-200 bg-white text-gray-500 hover:border-blue-300'
-                }`}
-              >
-                {sig ? getStatusIcon(sig.status) : getInitials(a.name)}
-              </button>
-            );
-          })}
-        </div>
+        {/* Attendee mini-track — hidden while drawing to give more canvas space */}
+        {mode !== 'draw' && (
+          <div className="flex gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100 overflow-x-auto flex-shrink-0">
+            {attendees.map((a, i) => {
+              const sig = localSignatures[a.name];
+              const isCurrent = i === currentIndex;
+              return (
+                <button
+                  key={a.name}
+                  onClick={() => { setCurrentIndex(i); setMode('choose'); }}
+                  title={a.name}
+                  className={`flex-shrink-0 min-w-[2.25rem] w-9 h-9 rounded-full text-xs font-bold transition-all border-2 flex items-center justify-center ${
+                    isCurrent
+                      ? 'border-blue-500 bg-blue-600 text-white scale-110 shadow'
+                      : sig
+                        ? (sig.status === 'signed'
+                            ? 'border-green-400 bg-green-100 text-green-700'
+                            : sig.status === 'remote'
+                              ? 'border-purple-400 bg-purple-100 text-purple-700'
+                              : 'border-gray-300 bg-gray-100 text-gray-400')
+                        : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300'
+                  }`}
+                >
+                  {sig ? getStatusIcon(sig.status) : getInitials(a.name)}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto px-5 py-5">
 
-          {/* Attendee card */}
-          <div className="flex items-center gap-4 mb-5">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
-              {getInitials(currentAttendee?.name ?? '')}
+          {/* Attendee card — compact when drawing, full when choosing */}
+          {mode === 'draw' ? (
+            /* Compact strip when in draw mode */
+            <div className="flex items-center gap-3 mb-4 bg-blue-50 rounded-xl px-3 py-2.5">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                {getInitials(currentAttendee?.name ?? '')}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-900 text-sm truncate">{currentAttendee?.name}</div>
+                <div className="text-xs text-blue-600">Draw your signature below</div>
+              </div>
+              <button
+                onClick={() => { clearCanvas(); setMode('choose'); }}
+                className="text-gray-400 hover:text-gray-600 text-xs px-2 py-1 rounded-lg hover:bg-white transition-colors flex-shrink-0"
+              >
+                Cancel
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xl font-bold text-gray-900 truncate">{currentAttendee?.name}</div>
-              <div className="text-sm text-gray-500">{currentAttendee?.role}</div>
-              {alreadySigned && (
-                <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border mt-1 ${getStatusColour(localSignatures[currentAttendee.name].status)}`}>
-                  {getStatusIcon(localSignatures[currentAttendee.name].status)} {getStatusLabel(localSignatures[currentAttendee.name].status)}
-                </span>
-              )}
+          ) : (
+            /* Full card when choosing */
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+                {getInitials(currentAttendee?.name ?? '')}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xl font-bold text-gray-900 truncate">{currentAttendee?.name}</div>
+                <div className="text-sm text-gray-500">{currentAttendee?.role}</div>
+                {alreadySigned && (
+                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border mt-1 ${getStatusColour(localSignatures[currentAttendee.name].status)}`}>
+                    {getStatusIcon(localSignatures[currentAttendee.name].status)} {getStatusLabel(localSignatures[currentAttendee.name].status)}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
+          {/* Choose mode */}
           {mode === 'choose' && (
             <div className="space-y-3">
               {alreadySigned && localSignatures[currentAttendee.name].signatureData && (
@@ -369,7 +404,9 @@ export default function SignatureCarousel({
                   <img src={localSignatures[currentAttendee.name].signatureData!} alt="signature" className="max-h-14 max-w-full" />
                 </div>
               )}
-              <p className="text-sm text-gray-500 mb-4">{alreadySigned ? 'Re-sign or change status:' : 'How is this person attending?'}</p>
+              <p className="text-sm text-gray-500 mb-4">
+                {alreadySigned ? 'Re-sign or change status:' : 'How is this person attending?'}
+              </p>
               {saveError && (
                 <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                   {saveError}
@@ -377,7 +414,7 @@ export default function SignatureCarousel({
               )}
               <Button
                 onClick={handleSign}
-                className="w-full h-14 text-base bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-3"
+                className="w-full h-14 text-base bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-3 rounded-xl"
                 disabled={isSaving}
               >
                 <PenLine className="h-5 w-5" />
@@ -386,7 +423,7 @@ export default function SignatureCarousel({
               <Button
                 onClick={handleRemote}
                 variant="outline"
-                className="w-full h-14 text-base border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-3"
+                className="w-full h-14 text-base border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-3 rounded-xl"
                 disabled={isSaving}
               >
                 <Monitor className="h-5 w-5" />
@@ -395,7 +432,7 @@ export default function SignatureCarousel({
               <Button
                 onClick={handleAbsent}
                 variant="outline"
-                className="w-full h-14 text-base border-gray-300 text-gray-600 hover:bg-gray-50 flex items-center gap-3"
+                className="w-full h-14 text-base border-gray-300 text-gray-600 hover:bg-gray-50 flex items-center gap-3 rounded-xl"
                 disabled={isSaving}
               >
                 <UserX className="h-5 w-5" />
@@ -404,16 +441,17 @@ export default function SignatureCarousel({
             </div>
           )}
 
+          {/* Draw mode */}
           {mode === 'draw' && (
             <div>
-              <p className="text-sm text-gray-500 mb-3">Draw your signature below:</p>
-              <div className="border-2 border-dashed border-gray-300 rounded-xl overflow-hidden bg-gray-50 touch-none">
+              {/* Signature canvas — tall and prominent */}
+              <div className="border-2 border-dashed border-blue-300 rounded-2xl overflow-hidden bg-white shadow-inner touch-none relative">
                 <canvas
                   ref={canvasRef}
                   width={480}
-                  height={160}
+                  height={220}
                   className="w-full cursor-crosshair block"
-                  style={{ touchAction: 'none' }}
+                  style={{ touchAction: 'none', height: '220px' }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -422,50 +460,66 @@ export default function SignatureCarousel({
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 />
+                {/* Placeholder hint when nothing drawn yet */}
+                {!hasDrawn && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-gray-300 text-sm select-none">Sign here</span>
+                  </div>
+                )}
               </div>
+
               {saveError && (
                 <div className="mt-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                   {saveError}
                 </div>
               )}
-              <div className="flex items-center justify-between mt-3 gap-3">
-                <Button variant="outline" size="sm" onClick={() => { clearCanvas(); setMode('choose'); }} className="flex items-center gap-1.5 text-gray-600">
+
+              {/* Draw mode actions */}
+              <div className="flex items-center gap-3 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={clearCanvas}
+                  disabled={!hasDrawn}
+                  className="flex items-center gap-1.5 text-gray-500 rounded-xl flex-1"
+                >
                   <RotateCcw className="h-4 w-4" />
-                  Back
-                </Button>
-                <Button variant="outline" size="sm" onClick={clearCanvas} className="flex items-center gap-1.5 text-gray-500">
-                  <RotateCcw className="h-3.5 w-3.5" />
                   Clear
                 </Button>
                 <Button
                   onClick={handleConfirmSign}
                   disabled={!hasDrawn || isSaving}
-                  className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-xl flex-[2] h-12 text-base"
                 >
-                  {isSaving ? 'Saving…' : <>Confirm <ArrowRight className="h-4 w-4" /></>}
+                  {isSaving ? 'Saving…' : (
+                    <>
+                      Confirm Signature
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer navigation */}
-        <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            disabled={currentIndex === 0}
-            className="flex items-center gap-1.5 text-gray-500"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <span className="text-sm text-gray-400">{currentIndex + 1} of {attendees.length}</span>
-          <Button variant="ghost" onClick={onClose} className="text-gray-400 text-sm">
-            Save &amp; Close
-          </Button>
-        </div>
+        {/* Footer navigation — hidden in draw mode to maximise canvas space */}
+        {mode !== 'draw' && (
+          <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between flex-shrink-0 bg-white">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={currentIndex === 0}
+              className="flex items-center gap-1.5 text-gray-500"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <span className="text-sm text-gray-400">{currentIndex + 1} of {attendees.length}</span>
+            <Button variant="ghost" onClick={onClose} className="text-gray-400 text-sm">
+              Save &amp; Close
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

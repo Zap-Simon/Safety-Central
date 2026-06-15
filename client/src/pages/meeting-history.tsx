@@ -4045,7 +4045,7 @@ export default function MeetingHistory() {
         })()}
 
         {/* Floating Add Button with Scroll Detection */}
-        {showFloatingAdd && floatingMeetingDate && (
+        {showFloatingAdd && floatingMeetingDate && !showSignatureCarousel && (
           <div className="fixed bottom-6 right-6 z-50">
             <button
               onClick={() => {
