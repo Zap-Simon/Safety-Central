@@ -251,7 +251,7 @@ export default function MeetingHistory() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          listType: item.type,
+          listType: item.type === 'Near Miss' ? 'NearMiss' : item.type.replace(' ', ''),
           sharePointItemId: item.id,
           meetingNotes: notes
         })
@@ -350,7 +350,7 @@ export default function MeetingHistory() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          listType: item.type,
+          listType: item.type === 'Near Miss' ? 'NearMiss' : item.type.replace(' ', ''),
           sharePointItemId: item.id,
           ...mergedData
         })
