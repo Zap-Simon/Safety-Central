@@ -1979,7 +1979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Emma White',
         'Kevin Young',
         'Ryan Newman',
-        'Isaac Ensor',
+        'Dan Conlan',
         'Struan O\'Donnell',
         'Sam Chang'
       ];
@@ -5201,7 +5201,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     glaziers: [
       { name: 'Kevin Young', role: 'Glazier', id: 'kevin' },
       { name: 'Ryan Newman', role: 'Glazier', id: 'ryan' },
-      { name: 'Isaac Ensor', role: 'Glazier', id: 'isaac' },
+      { name: 'Dan Conlan', role: 'Glazier', id: 'dan' },
       { name: 'Struan O\'Donnell', role: 'Glazier', id: 'struan' },
       { name: 'Sam Chang', role: 'Glazier', id: 'sam' }
     ]
