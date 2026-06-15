@@ -66,21 +66,21 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
           
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
-              <TabsTrigger value="home" className="flex items-center space-x-2">
-                <HomeIcon size={16} />
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 mb-6">
+              <TabsTrigger value="home" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                <HomeIcon size={16} className="flex-shrink-0" />
                 <span>Health & Safety</span>
               </TabsTrigger>
-              <TabsTrigger value="environment-quality" className="flex items-center space-x-2">
-                <Leaf size={16} />
+              <TabsTrigger value="environment-quality" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                <Leaf size={16} className="flex-shrink-0" />
                 <span>Environment & Quality</span>
               </TabsTrigger>
-              <TabsTrigger value="compliance" className="flex items-center space-x-2">
-                <Shield size={16} />
+              <TabsTrigger value="compliance" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                <Shield size={16} className="flex-shrink-0" />
                 <span>Standards & Compliance</span>
               </TabsTrigger>
-              <TabsTrigger value="documentation" className="flex items-center space-x-2">
-                <FileText size={16} />
+              <TabsTrigger value="documentation" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                <FileText size={16} className="flex-shrink-0" />
                 <span>Engagement</span>
               </TabsTrigger>
             </TabsList>

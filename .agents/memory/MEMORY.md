@@ -1,0 +1,1 @@
+- [Mobile-friendly tab navigation pattern](mobile-tabs-pattern.md) — shadcn TabsTrigger whitespace-nowrap + fixed grid-cols overlaps labels on phones; use responsive grid + whitespace-normal + flex-col.

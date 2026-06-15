@@ -101,17 +101,17 @@ export default function EquipmentMaintenance() {
 
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="overview" className="flex items-center space-x-2">
-                  <Settings size={16} />
+              <TabsList className="grid w-full grid-cols-3 h-auto gap-1 mb-6">
+                <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto px-2 sm:px-3 py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                  <Settings size={16} className="flex-shrink-0" />
                   <span>Equipment Overview</span>
                 </TabsTrigger>
-                <TabsTrigger value="test-tag" className="flex items-center space-x-2">
-                  <Zap size={16} />
+                <TabsTrigger value="test-tag" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto px-2 sm:px-3 py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                  <Zap size={16} className="flex-shrink-0" />
                   <span>Test & Tag Records</span>
                 </TabsTrigger>
-                <TabsTrigger value="maintenance" className="flex items-center space-x-2">
-                  <Shield size={16} />
+                <TabsTrigger value="maintenance" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 h-auto px-2 sm:px-3 py-2 whitespace-normal text-center text-xs sm:text-sm leading-tight">
+                  <Shield size={16} className="flex-shrink-0" />
                   <span>Inspection Records</span>
                 </TabsTrigger>
               </TabsList>

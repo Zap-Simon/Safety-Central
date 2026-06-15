@@ -2227,12 +2227,12 @@ export default function MeetingHistory() {
               {/* Export Selector */}
               {showExportSelector && (
                 <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm text-gray-600">Select meetings and format:</span>
                       <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">v1.3.0</span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 w-full sm:w-auto">
                       HTML: Browser view • CSV: Data analysis • MD: Typora PDF with navigation
                     </div>
                     {selectedMeetingsForExport.size > 0 && (

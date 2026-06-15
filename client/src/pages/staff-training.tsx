@@ -36,18 +36,18 @@ export default function StaffTraining() {
 
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
             <Tabs defaultValue="skills-matrix" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6 h-auto">
-                <TabsTrigger value="skills-matrix" className="flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-1.5">
+              <TabsList className="grid w-full grid-cols-3 mb-6 h-auto gap-1">
+                <TabsTrigger value="skills-matrix" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 h-auto whitespace-normal text-center">
                   <Award className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium truncate">Skills Matrix</span>
+                  <span className="text-xs sm:text-sm font-medium leading-tight">Skills Matrix</span>
                 </TabsTrigger>
-                <TabsTrigger value="field" className="flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-1.5">
+                <TabsTrigger value="field" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 h-auto whitespace-normal text-center">
                   <HardHat className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium truncate">Able To Use</span>
+                  <span className="text-xs sm:text-sm font-medium leading-tight">Able To Use</span>
                 </TabsTrigger>
-                <TabsTrigger value="office" className="flex items-center justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 sm:py-1.5">
+                <TabsTrigger value="office" className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 h-auto whitespace-normal text-center">
                   <Building2 className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium truncate">Administration</span>
+                  <span className="text-xs sm:text-sm font-medium leading-tight">Administration</span>
                 </TabsTrigger>
               </TabsList>
               
