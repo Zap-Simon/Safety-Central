@@ -94,16 +94,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const rootData = await rootResponse.json();
-      console.log('Root folder contents:', rootData.value.map(item => ({ name: item.name, isFolder: !!item.folder })));
+      console.log('Root folder contents:', rootData.value.map((item: any) => ({ name: item.name, isFolder: !!item.folder })));
       
       // Look for Health & Safety Policy folder directly in root
-      const policyFolder = rootData.value.find(item => 
+      const policyFolder = rootData.value.find((item: any) => 
         item.folder && item.name.toLowerCase().includes('health') && item.name.toLowerCase().includes('safety')
       );
       
       if (!policyFolder) {
         throw new Error('Could not find Health & Safety Policy folder. Available folders: ' + 
-          rootData.value.filter(item => item.folder).map(item => item.name).join(', '));
+          rootData.value.filter((item: any) => item.folder).map((item: any) => item.name).join(', '));
       }
       
       console.log('Found policy folder directly in root:', policyFolder.name);
@@ -133,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = data.value || [];
       
       console.log('Total files found:', files.length);
-      console.log('Files details:', files.map(f => ({ name: f.name, hasFile: !!f.file, size: f.size })));
+      console.log('Files details:', files.map((f: any) => ({ name: f.name, hasFile: !!f.file, size: f.size })));
       
       // Process files and identify types - only process actual files, not folders
       const documents = files
@@ -165,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter((doc: any) => doc.type !== 'unknown'); // Only include Word and PDF files
       
       console.log('Final documents to return:', documents.length);
-      console.log('Document names:', documents.map(d => d.name));
+      console.log('Document names:', documents.map((d: any) => d.name));
 
       res.json({
         success: true,
@@ -249,16 +249,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const rootData = await rootResponse.json();
-      console.log('Root folder contents:', rootData.value.map(item => ({ name: item.name, isFolder: !!item.folder })));
+      console.log('Root folder contents:', rootData.value.map((item: any) => ({ name: item.name, isFolder: !!item.folder })));
       
       // Look for Current Policy folder directly in root
-      const policyFolder = rootData.value.find(item => 
+      const policyFolder = rootData.value.find((item: any) => 
         item.folder && item.name.toLowerCase().includes('current policy')
       );
       
       if (!policyFolder) {
         throw new Error('Could not find Current Policy folder. Available folders: ' + 
-          rootData.value.filter(item => item.folder).map(item => item.name).join(', '));
+          rootData.value.filter((item: any) => item.folder).map((item: any) => item.name).join(', '));
       }
       
       console.log('Found environment policy folder (Current Policy) in root:', policyFolder.name);
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = data.value || [];
       
       console.log('Total environment policy files found:', files.length);
-      console.log('Files details:', files.map(f => ({ name: f.name, hasFile: !!f.file, size: f.size })));
+      console.log('Files details:', files.map((f: any) => ({ name: f.name, hasFile: !!f.file, size: f.size })));
       
       // Process files and identify types - only process actual files, not folders
       const documents = files
@@ -320,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter((doc: any) => doc.type !== 'unknown'); // Only include Word and PDF files
       
       console.log('Final environment policy documents to return:', documents.length);
-      console.log('Document names:', documents.map(d => d.name));
+      console.log('Document names:', documents.map((d: any) => d.name));
 
       res.json({
         success: true,
@@ -404,16 +404,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const rootData = await rootResponse.json();
-      console.log('Root folder contents:', rootData.value.map(item => ({ name: item.name, isFolder: !!item.folder })));
+      console.log('Root folder contents:', rootData.value.map((item: any) => ({ name: item.name, isFolder: !!item.folder })));
       
       // Look for Current Policy folder directly in root
-      const policyFolder = rootData.value.find(item => 
+      const policyFolder = rootData.value.find((item: any) => 
         item.folder && item.name.toLowerCase().includes('current policy')
       );
       
       if (!policyFolder) {
         throw new Error('Could not find Current Policy folder. Available folders: ' + 
-          rootData.value.filter(item => item.folder).map(item => item.name).join(', '));
+          rootData.value.filter((item: any) => item.folder).map((item: any) => item.name).join(', '));
       }
       
       console.log('Found quality policy folder (Current Policy) in root:', policyFolder.name);
@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = data.value || [];
       
       console.log('Total quality policy files found:', files.length);
-      console.log('Files details:', files.map(f => ({ name: f.name, hasFile: !!f.file, size: f.size })));
+      console.log('Files details:', files.map((f: any) => ({ name: f.name, hasFile: !!f.file, size: f.size })));
       
       // Process files and identify types - only process actual files, not folders
       const documents = files
@@ -475,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter((doc: any) => doc.type !== 'unknown'); // Only include Word and PDF files
       
       console.log('Final quality policy documents to return:', documents.length);
-      console.log('Document names:', documents.map(d => d.name));
+      console.log('Document names:', documents.map((d: any) => d.name));
 
       res.json({
         success: true,
@@ -633,7 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Calling Graph API URL for test & tag documents:', graphApiUrl);
       
       // Retry logic for temporary SharePoint issues
-      let response;
+      let response: Response | undefined;
       let attempts = 0;
       const maxAttempts = 3;
       
@@ -664,6 +664,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         break;
       }
       
+      if (!response) {
+        throw new Error('SharePoint did not respond after multiple attempts. Please try again shortly.');
+      }
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Graph API error details:', errorText);
@@ -682,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = data.value || [];
       
       console.log('Total test & tag files found:', files.length);
-      console.log('Files details:', files.map(f => ({ name: f.name, hasFile: !!f.file, size: f.size })));
+      console.log('Files details:', files.map((f: any) => ({ name: f.name, hasFile: !!f.file, size: f.size })));
       
       // Process files and identify types - only process actual files, not folders
       const documents = files
@@ -714,7 +718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .filter((doc: any) => doc.type !== 'unknown'); // Only include Word and PDF files
       
       console.log('Final test & tag documents to return:', documents.length);
-      console.log('Document names:', documents.map(d => d.name));
+      console.log('Document names:', documents.map((d: any) => d.name));
 
       res.json({
         success: true,
@@ -1655,10 +1659,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const csvContent = [
         // Analytics section first
-        ...analyticsRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+        ...analyticsRows.map((row: any[]) => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
         // Then headers and meeting data
         csvHeaders.join(','),
-        ...csvRows.map(row => row.join(','))
+        ...csvRows.map((row: any[]) => row.join(','))
       ].join('\n');
 
       // Set appropriate headers for CSV download
@@ -1728,7 +1732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Debug: Show unique meeting dates
-      const uniqueMeetingDates = [...new Set(allItems.map(item => new Date(item.meetingDate).toISOString().split('T')[0]))];
+      const uniqueMeetingDates = Array.from(new Set(allItems.map((item: any) => new Date(item.meetingDate).toISOString().split('T')[0])));
       
       const itemsToUpdate = allItems.filter(item => {
         const itemDateKey = new Date(item.meetingDate).toISOString().split('T')[0];
@@ -1834,7 +1838,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const accessToken = authHeader.substring(7);
-      const { listType, itemData } = req.body;
+      const { listType, itemData, deferTitle } = req.body;
 
       if (!listType || !itemData) {
         return res.status(400).json({
@@ -1846,17 +1850,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listsService = new SharePointListsService(accessToken);
       const newItemId = await listsService.createListItem(listType, itemData);
 
-      // Generate AI title immediately after creating the item
-      try {
-        if (itemData.description && itemData.description.trim()) {
-          const aiTitle = await OpenAIService.generateSmartTitle(itemData.description, listType);
-          if (aiTitle && aiTitle !== 'New Idea') {
-            await listsService.updateItemTitle(newItemId, aiTitle, listType);
+      const generateTitle = async () => {
+        try {
+          if (itemData.description && itemData.description.trim()) {
+            const aiTitle = await OpenAIService.generateSmartTitle(itemData.description, listType);
+            if (aiTitle && aiTitle !== 'New Idea') {
+              await listsService.updateItemTitle(newItemId, aiTitle, listType);
+            }
           }
+        } catch (aiError) {
+          console.error('AI title generation failed for new item:', aiError);
+          // Continue anyway - the item was created successfully
         }
-      } catch (aiError) {
-        console.error('AI title generation failed for new item:', aiError);
-        // Continue anyway - the item was created successfully
+      };
+
+      // When deferTitle is set (e.g. the Teams tab), respond as soon as the
+      // item is persisted and generate the AI title in the background. This
+      // makes submission feel instant. The default path keeps the original
+      // synchronous behaviour so existing main-app callers are unaffected.
+      if (deferTitle) {
+        void generateTitle();
+      } else {
+        await generateTitle();
       }
 
       res.json({
@@ -1996,13 +2011,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
 
       // Debug logging to see all users
-      filteredUsers.forEach(user => {
+      filteredUsers.forEach((user: any) => {
         console.log(`  - ${user.title} (ID: ${user.id}, Email: ${user.email})`);
       });
 
       // Remove duplicates, preferring specific email addresses
       const uniqueUsers = new Map();
-      filteredUsers.forEach(user => {
+      filteredUsers.forEach((user: any) => {
         const existingUser = uniqueUsers.get(user.title);
         if (!existingUser) {
           uniqueUsers.set(user.title, user);
@@ -3802,6 +3817,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // STAFF PHOTO MANAGEMENT - SharePoint Integration for ID Photos
   // ============================================================================
 
+  // Helper function to resolve a SharePoint site by its URL/path
+  async function getSiteInfo(accessToken: string, siteUrl: string) {
+    const siteResponse = await fetch(`https://graph.microsoft.com/v1.0/sites/${siteUrl}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!siteResponse.ok) {
+      const errorText = await siteResponse.text();
+      throw new Error(`Failed to resolve SharePoint site: ${siteResponse.status} - ${errorText}`);
+    }
+
+    return await siteResponse.json();
+  }
+
   // Helper function to upload photo to SharePoint document library
   async function uploadPhotoToSharePoint(
     accessToken: string,
@@ -3992,8 +4024,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save metadata to database
       const photoAssetData = {
         staffId: parseInt(staffId),
-        fileName: fileName,
-        sharePointFileId: uploadResult.fileId,
+        filename: fileName,
+        sharePointDriveItemId: uploadResult.fileId,
         sharePointWebUrl: uploadResult.webUrl,
         thumbnailUrl: thumbnailUrl,
         fileSize: buffer.length,
@@ -4062,9 +4094,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Delete from SharePoint if fileId exists
-      if (photo.sharePointFileId) {
+      if (photo.sharePointDriveItemId) {
         try {
-          await deletePhotoFromSharePoint(accessToken, photo.sharePointFileId);
+          await deletePhotoFromSharePoint(accessToken, photo.sharePointDriveItemId);
         } catch (error) {
           console.warn('Failed to delete photo from SharePoint:', error);
           // Continue with database deletion even if SharePoint deletion fails
@@ -4348,7 +4380,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       status: rowData['trainingRecord.status'] ? String(rowData['trainingRecord.status']) : 'Active'
                     };
 
-                    await storage.createTrainingRecord(trainingRecordData);
+                    await storage.createTrainingRecord(trainingRecordData as any);
                     importResult.summary.trainingRecordsCreated++;
                     console.log(`Created training record for ${staff.name} - ${skill.name}`);
                   } catch (error) {
@@ -5407,7 +5439,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
       }
       
       // Build modules list from classifications for CSV headers - include safety-critical info
-      const allModulesForExport = [];
+      const allModulesForExport: any[] = [];
       filteredClassifications.forEach(classification => {
         const classificationModules = allModules.filter(m => m.classificationId === classification.id);
         classificationModules.forEach(module => {
@@ -5531,7 +5563,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
       }
       
       // Build modules list from classifications - include safety-critical info
-      const allModulesForExport = [];
+      const allModulesForExport: any[] = [];
       filteredClassifications.forEach(classification => {
         const classificationModules = allModules.filter(m => m.classificationId === classification.id);
         classificationModules.forEach(module => {
@@ -5684,6 +5716,44 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     } catch (error) {
       console.error('Error generating Skills Matrix HTML:', error);
       res.status(500).json({ error: 'Failed to generate Skills Matrix HTML' });
+    }
+  });
+
+  // AI Classification endpoint for Teams Personal Tab
+  app.post('/api/ai-classify', async (req, res) => {
+    try {
+      // Validate bearer token by calling Graph /me — prevents cost-abuse from fake tokens
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Authentication required' });
+      }
+      const accessToken = authHeader.substring(7);
+      const meResp = await fetch('https://graph.microsoft.com/v1.0/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!meResp.ok) {
+        return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+      }
+
+      const { text } = req.body;
+
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required field: text'
+        });
+      }
+
+      const result = await OpenAIService.classifySubmission(text);
+
+      res.json({ success: true, ...result });
+
+    } catch (error) {
+      console.error('Error in AI classify endpoint:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Classification failed'
+      });
     }
   });
 

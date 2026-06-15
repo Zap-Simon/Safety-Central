@@ -1,0 +1,43 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "d1a3f72e-8c4b-4e9a-b5f2-3a7c1d9e2b84",
+  "packageName": "com.cranfieldglass.safetyideas",
+  "developer": {
+    "name": "Cranfield Glass Christchurch",
+    "websiteUrl": "https://cranfieldglass.co.nz",
+    "privacyUrl": "https://cranfieldglass.co.nz/privacy",
+    "termsOfUseUrl": "https://cranfieldglass.co.nz/terms"
+  },
+  "name": {
+    "short": "Safety & Ideas",
+    "full": "Cranfield Glass — Safety & Ideas"
+  },
+  "description": {
+    "short": "Submit safety observations, near misses, and improvement ideas.",
+    "full": "Quickly report near misses, safety observations, supply requests, and business improvement ideas directly from Microsoft Teams. The AI classifier automatically routes your submission to the correct SharePoint list."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#2563EB",
+  "staticTabs": [
+    {
+      "entityId": "safetyIdeasSubmit",
+      "name": "Submit",
+      "contentUrl": "https://staff-engagement-system.replit.app/teams-submit-cg7k2x9m",
+      "websiteUrl": "https://staff-engagement-system.replit.app/teams-submit-cg7k2x9m",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "staff-engagement-system.replit.app"
+  ],
+  "webApplicationInfo": {
+    "id": "dad12e09-3e7f-42fa-86e8-a0378bdd2699",
+    "resource": "api://staff-engagement-system.replit.app/dad12e09-3e7f-42fa-86e8-a0378bdd2699"
+  }
+}

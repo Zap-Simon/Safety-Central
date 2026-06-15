@@ -49,8 +49,8 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       baseUri: ["'self'"],
-      // Allow Microsoft authentication domains for popups
-      frameAncestors: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com"],
+      // Allow Teams, SharePoint, and Microsoft auth domains to embed the tab
+      frameAncestors: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com", "https://teams.microsoft.com", "https://*.teams.microsoft.com", "https://*.sharepoint.com", "https://*.office.com"],
       styleSrc: isProduction 
         ? ["'self'", "https:"]
         : ["'self'", "'unsafe-inline'", "https:"], // Allow unsafe-inline only in dev for Vite HMR
@@ -66,6 +66,9 @@ app.use(helmet({
       formAction: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com"],
     },
   },
+  // Disable X-Frame-Options so Teams can embed the /teams-tab page in an iframe.
+  // CSP frame-ancestors above provides the actual security boundary.
+  frameguard: false,
   // Disable cross-origin policies that interfere with Microsoft auth popups
   crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: false,

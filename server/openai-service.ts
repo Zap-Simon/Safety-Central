@@ -188,6 +188,84 @@ export class OpenAIService {
     }
   }
 
+  static async classifySubmission(text: string): Promise<{
+    category: string;
+    listTarget: 'near-miss' | 'safety-ideas' | 'business-ideas';
+    confidence: number;
+    reasoning: string;
+    followUpQuestions: string[];
+  }> {
+    const systemPrompt = `You are a health & safety and business improvement classifier for Cranfield Glass Christchurch, a glass and glazing company in New Zealand.
+
+Given a staff member's free-text description, classify it into exactly one of these categories and provide follow-up questions if confidence is low.
+
+Categories and their SharePoint list targets:
+- "Near Miss" → near-miss list (something that almost caused injury/damage but didn't)
+- "Safety Observation" → safety-ideas list (a hazard, unsafe condition, or safety concern observed)
+- "Improvement Idea" → safety-ideas list (an idea to improve safety processes, equipment, or procedures)
+- "Business Improvement" → business-ideas list (an idea to improve business processes, efficiency, or operations)
+- "Supply Request" → business-ideas list (need for supplies, equipment, or materials)
+- "Meeting Agenda Item" → business-ideas list (something to discuss at the next H&S meeting)
+- "Other" → business-ideas list (doesn't fit the above)
+
+For each category, these are the key follow-up questions when confidence < 0.8:
+- Near Miss: "Where did this happen?", "What task were you doing?", "What was the potential injury or damage?", "What caused it?", "Was any PPE being worn?"
+- Safety Observation: "Where is the hazard located?", "How serious is the risk?", "Who could be affected?"
+- Improvement Idea: "Which area or process does this improve?", "What is the expected benefit?"
+- Business Improvement: "Which area or process does this improve?", "What problem does it solve?"
+- Supply Request: "What quantity is needed?", "Is this urgent?", "Which job or area is it for?"
+- Meeting Agenda Item: "Why is this important to discuss?", "Is there a deadline?"
+
+Respond with valid JSON only:
+{
+  "category": "Near Miss" | "Safety Observation" | "Improvement Idea" | "Business Improvement" | "Supply Request" | "Meeting Agenda Item" | "Other",
+  "listTarget": "near-miss" | "safety-ideas" | "business-ideas",
+  "confidence": 0.0 to 1.0,
+  "reasoning": "brief explanation",
+  "followUpQuestions": ["question 1", "question 2"]
+}`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini', // Much faster than gpt-4o; classification is a simple task
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text.trim() }
+        ],
+        max_tokens: 300,
+        temperature: 0.1,
+        response_format: { type: 'json_object' }
+      });
+
+      const content = response.choices[0].message.content?.trim();
+      if (!content) throw new Error('Empty response from AI');
+
+      const parsed = JSON.parse(content);
+      if (!parsed.category || !parsed.listTarget || typeof parsed.confidence !== 'number') {
+        throw new Error('Invalid AI response structure');
+      }
+
+      const followUpQuestions = parsed.confidence < 0.8 ? (parsed.followUpQuestions || []) : [];
+
+      return {
+        category: parsed.category,
+        listTarget: parsed.listTarget,
+        confidence: parsed.confidence,
+        reasoning: parsed.reasoning || '',
+        followUpQuestions
+      };
+    } catch (error) {
+      logger.error({ err: error }, 'OpenAI classification failed');
+      return {
+        category: 'Other',
+        listTarget: 'business-ideas',
+        confidence: 0.5,
+        reasoning: 'Classification failed, defaulting to Other',
+        followUpQuestions: ['Can you describe what happened in more detail?', 'Which area of the business does this relate to?']
+      };
+    }
+  }
+
   static async generateSuggestions(content: string, type: string): Promise<string[]> {
     if (!content || content.trim().length < 10) {
       return [];
