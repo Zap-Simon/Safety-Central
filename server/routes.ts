@@ -2406,6 +2406,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!meetingDate || !attendeeName || !status) {
         return res.status(400).json({ success: false, error: 'meetingDate, attendeeName, and status are required' });
       }
+      const existingLock = await storage.getMeetingLock(meetingDate);
+      if (existingLock?.isLocked) {
+        return res.status(403).json({ success: false, error: 'Attendance is locked — signatures cannot be modified' });
+      }
       const record = await storage.updateMeetingSignature(meetingDate, attendeeName, status, signatureData ?? null, signedAt ?? new Date().toISOString());
       res.json({ success: true, record });
     } catch (error) {

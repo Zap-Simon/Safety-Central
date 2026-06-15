@@ -2489,11 +2489,14 @@ export default function MeetingHistory() {
                         {(() => {
                           const sigs = meetingSignatures[meetingDate] ?? {};
                           const sigCount = Object.keys(sigs).length;
+                          const isLocked = !!lockedAttendance[meetingDate];
                           return (
                             <Button
                               variant="outline"
-                              onClick={() => setShowSignatureCarousel(meetingDate)}
-                              className="w-full sm:w-auto flex items-center justify-center gap-2 text-indigo-700 bg-white hover:bg-indigo-50 hover:border-indigo-300 border-indigo-200"
+                              onClick={() => !isLocked && setShowSignatureCarousel(meetingDate)}
+                              disabled={isLocked}
+                              title={isLocked ? 'Attendance is locked — signatures cannot be modified' : undefined}
+                              className={`w-full sm:w-auto flex items-center justify-center gap-2 border-indigo-200 ${isLocked ? 'opacity-50 cursor-not-allowed text-indigo-400 bg-white' : 'text-indigo-700 bg-white hover:bg-indigo-50 hover:border-indigo-300'}`}
                             >
                               <PenLine className="h-4 w-4" />
                               <span>Collect Signatures</span>
@@ -2584,9 +2587,18 @@ export default function MeetingHistory() {
                                       <div className="text-xs text-blue-600 truncate">{attendee.role}</div>
                                     </div>
                                     {sigBadge && (
-                                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${sigBadge.cls}`}>
-                                        {sigBadge.label}
-                                      </span>
+                                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${sigBadge.cls}`}>
+                                          {sigBadge.label}
+                                        </span>
+                                        {sig?.status === 'signed' && sig.signatureData && (
+                                          <img
+                                            src={sig.signatureData}
+                                            alt={`${attendee.name} signature`}
+                                            className="h-6 w-16 object-contain border border-gray-200 rounded bg-white"
+                                          />
+                                        )}
+                                      </div>
                                     )}
                                   </label>
                                 );

@@ -50,7 +50,10 @@ export default function SignatureCarousel({
   onComplete,
   onClose
 }: SignatureCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const firstUnsigned = attendees.findIndex(a => !existingSignatures[a.name]?.status);
+    return firstUnsigned >= 0 ? firstUnsigned : 0;
+  });
   const [localSignatures, setLocalSignatures] = useState<Record<string, SignatureRecord>>(() => {
     const copy: Record<string, SignatureRecord> = {};
     for (const a of attendees) {
