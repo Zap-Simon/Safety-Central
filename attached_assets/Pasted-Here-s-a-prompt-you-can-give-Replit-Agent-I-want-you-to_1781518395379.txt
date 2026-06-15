@@ -1,0 +1,148 @@
+Here’s a prompt you can give Replit Agent:
+
+I want you to analyse my entire existing project and determine whether it is feasible to create a completely separate Microsoft Teams Personal Tab application that reuses existing backend services, AI workflows, databases, APIs, and authentication where appropriate, but remains isolated from the main application codebase.
+
+Objective
+
+Create a new Teams Personal Tab application called “Safety & Ideas” that will eventually replace our current Viva Connections + Microsoft Forms + Power Automate submission process.
+
+The new Teams app should be designed as a standalone deployable application that can be packaged and uploaded through Microsoft Teams Admin Center independently of the main system.
+
+Important Architecture Requirements
+
+1. Do not modify or break the existing application.
+2. Assess whether a separate frontend can be created within the existing repository while remaining logically isolated.
+3. Determine whether existing backend services, APIs, Azure Functions, AI processing, SharePoint integrations, Teams integrations, and authentication can be reused.
+4. Recommend the cleanest architecture that allows:
+    * Independent Teams deployment.
+    * Shared backend services where beneficial.
+    * Future extraction into its own repository if desired.
+5. Identify exactly which existing components can already support this new application with minimal development.
+
+Existing Process
+
+Current workflow:
+
+Viva Connections Card
+→ Microsoft Form
+→ Power Automate
+→ Teams Notification
+→ SharePoint List
+→ Meeting System
+→ Agenda Generation
+
+The goal is to replace this with:
+
+Teams Personal Tab
+→ User Submission
+→ AI Classification
+→ SharePoint / Existing Data Store
+→ Teams Notification
+→ Meeting System
+→ Agenda Generation
+
+AI-Powered Submission System
+
+I already have AI capabilities within the project.
+
+I want a single submission box where a user can enter information naturally.
+
+Examples:
+
+* “The workshop needs more suction cups.”
+* “I nearly cut my hand while removing a broken panel.”
+* “We should stock more black channel.”
+
+The AI should determine:
+
+* Safety Observation
+* Near Miss
+* Improvement Idea
+* Business Improvement
+* Supply Request
+* Meeting Agenda Item
+* Other category
+
+The user should not need to choose a category.
+
+The system should classify automatically.
+
+If confidence is low, the AI should ask follow-up questions.
+
+Example:
+
+User:
+“I nearly cut my hand removing broken glass.”
+
+AI:
+“This sounds like a Near Miss. Can you tell me:
+
+* What task were you performing?
+* What caused the incident?
+* Was PPE being worn?”
+
+The AI should dynamically gather only the additional information required for the identified category.
+
+Whiteboard / Ordering System
+
+I want a very lightweight whiteboard-style page.
+
+Purpose:
+
+Field staff can quickly add items that need ordering.
+
+Examples:
+
+* Black silicone
+* Setting blocks
+* Suction cups
+* Razor blades
+
+Requirements:
+
+* Extremely fast loading.
+* Minimal interface.
+* Add item in seconds.
+* Mobile friendly.
+* Suitable for Teams mobile.
+
+Admin users should be able to:
+
+* Mark item as Ordered.
+* Remove item from active list.
+* Automatically archive or delete it from the database.
+
+Please review existing project components and determine whether any existing database models, APIs, AI services, authentication systems, notification systems, Teams integrations, SharePoint integrations, or meeting systems can already support this feature.
+
+Meeting System Integration
+
+Review how the existing meeting and action system currently operates.
+
+Determine:
+
+* Whether submissions can automatically become agenda items.
+* Whether supply requests should be excluded from meetings.
+* Whether near misses should automatically appear in safety meetings.
+* Whether business improvement ideas should appear in management meetings.
+* Whether existing action tracking can already be reused.
+
+Teams Personal Tab Assessment
+
+Determine:
+
+1. Can the current project support a Teams Personal Tab with minimal changes?
+2. What components can be reused immediately?
+3. What new components are required?
+4. What Microsoft Teams manifest configuration would be needed?
+5. Can the new application be packaged separately from the main system?
+6. What would be the simplest deployment approach?
+
+Before making changes, provide a detailed assessment of:
+
+* Existing reusable components.
+* Recommended architecture.
+* Risks.
+* Estimated implementation effort.
+* Any gaps that must be built.
+
+That prompt should get Replit to inspect what you’ve already built rather than immediately generating new code. Given your setup, my suspicion is that 70–90% of the plumbing already exists and the biggest work is creating the new Teams-friendly UI and replacing the Forms layer with direct data entry. The AI classification piece may already be surprisingly close if you’ve already got AI reading and routing form submissions.
