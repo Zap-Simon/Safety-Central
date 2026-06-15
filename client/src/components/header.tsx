@@ -200,9 +200,7 @@ export default function Header() {
                 <div className="flex-1 overflow-y-auto min-h-0">
                   <div className="p-4">
                     <div className="text-xs font-medium text-gray-500 mb-3 px-1">PAGE NAVIGATION</div>
-                    <div onClick={() => setIsMobileMenuOpen(false)} className="mobile-sidebar">
-                      <Sidebar />
-                    </div>
+                    <Sidebar onBeforeNavigate={() => setIsMobileMenuOpen(false)} />
                   </div>
                 </div>
               )}

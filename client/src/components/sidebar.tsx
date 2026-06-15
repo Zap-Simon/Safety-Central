@@ -10,7 +10,11 @@ const navigationItems = [
   { id: "benefits", label: "Key Benefits", icon: "fas fa-star", type: "icon" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onBeforeNavigate?: () => void;
+}
+
+export default function Sidebar({ onBeforeNavigate }: SidebarProps = {}) {
   const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
@@ -19,11 +23,9 @@ export default function Sidebar() {
       let current = '';
       const headerOffset = 150;
       
-      // Check if we're near the bottom of the page
       const isNearBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200;
       
       if (isNearBottom) {
-        // Set the last section as active when near bottom
         const lastSection = sections[sections.length - 1];
         current = lastSection?.getAttribute('id') || '';
       } else {
@@ -39,7 +41,7 @@ export default function Sidebar() {
     };
 
     window.addEventListener('scroll', updateActiveNav);
-    updateActiveNav(); // Initialize on mount
+    updateActiveNav();
     
     return () => {
       window.removeEventListener('scroll', updateActiveNav);
@@ -47,14 +49,23 @@ export default function Sidebar() {
   }, []);
 
   const handleNavClick = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const headerHeight = 80; // Account for header height
-      const elementPosition = element.offsetTop - headerHeight;
-      window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-      });
+    if (onBeforeNavigate) {
+      onBeforeNavigate();
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          const headerHeight = 80;
+          const elementPosition = element.offsetTop - headerHeight;
+          window.scrollTo({ top: elementPosition, behavior: 'smooth' });
+        }
+      }, 320);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        const headerHeight = 80;
+        const elementPosition = element.offsetTop - headerHeight;
+        window.scrollTo({ top: elementPosition, behavior: 'smooth' });
+      }
     }
   };
 
