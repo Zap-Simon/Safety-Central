@@ -343,7 +343,8 @@ export default function SignatureCarousel({
                   key={a.name}
                   onClick={() => { setCurrentIndex(i); setMode('choose'); }}
                   title={a.name}
-                  className={`flex-shrink-0 w-9 h-9 aspect-square rounded-full text-xs font-bold transition-all border-2 flex items-center justify-center overflow-hidden ${
+                  style={{ width: '2.25rem', height: '2.25rem', minWidth: '2.25rem', maxWidth: '2.25rem', borderRadius: '50%', flexShrink: 0 }}
+                  className={`text-xs font-bold transition-all border-2 flex items-center justify-center overflow-hidden ${
                     isCurrent
                       ? 'border-blue-500 bg-blue-600 text-white scale-110 shadow'
                       : sig
