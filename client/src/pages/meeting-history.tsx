@@ -1245,10 +1245,10 @@ export default function MeetingHistory() {
     return pastMeetings.length > 0 ? pastMeetings[0].meetingDate : null;
   };
 
-  // Helper function to check if a meeting has movable items (items that aren't all closed)
+  // Helper function to check if a meeting has movable items (Submitted status only)
   const getMeetingMovableStatus = (categorized: Record<string, MeetingItem[]>) => {
     const allItems = Object.values(categorized).flat();
-    const movableItems = allItems.filter(item => item.status !== 'Closed');
+    const movableItems = allItems.filter(item => item.status === 'Submitted');
     const hasMovableItems = movableItems.length > 0;
     const allItemsClosed = allItems.length > 0 && movableItems.length === 0;
     return {
@@ -2443,7 +2443,7 @@ export default function MeetingHistory() {
                               handleMergeToNextMeeting(actualSharePointDate, categorized);
                             }}
                             className="px-3 py-1 rounded-md transition-colors duration-200 border flex items-center gap-2 text-xs font-medium bg-white/20 hover:bg-white/30 text-white border-white/30"
-                            title={`Move ${movableStatus.movableCount} open items to the next scheduled meeting`}
+                            title={`Move ${movableStatus.movableCount} Submitted item${movableStatus.movableCount !== 1 ? 's' : ''} to the next scheduled meeting`}
                           >
                             <i className="fas fa-arrow-right text-xs"></i>
                             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/30">
@@ -3257,10 +3257,10 @@ export default function MeetingHistory() {
               {mergeConfirmationData && (
                 <>
                   <div className="text-sm text-gray-600">
-                    Move <span className="font-semibold text-blue-600">{mergeConfirmationData.movableItemCount}</span> open agenda item{mergeConfirmationData.movableItemCount !== 1 ? 's' : ''} from{' '}
+                    Move <span className="font-semibold text-blue-600">{mergeConfirmationData.movableItemCount}</span> <span className="font-medium">Submitted</span> item{mergeConfirmationData.movableItemCount !== 1 ? 's' : ''} from{' '}
                     <span className="font-medium">{formatDate(mergeConfirmationData.currentMeetingDate)}</span> to the next scheduled meeting.
                     {mergeConfirmationData.movableItemCount < mergeConfirmationData.itemCount && (
-                      <span className="text-gray-500 italic"> ({mergeConfirmationData.itemCount - mergeConfirmationData.movableItemCount} closed items will remain)</span>
+                      <span className="text-gray-500 italic"> ({mergeConfirmationData.itemCount - mergeConfirmationData.movableItemCount} item{mergeConfirmationData.itemCount - mergeConfirmationData.movableItemCount !== 1 ? 's' : ''} with other statuses will remain)</span>
                     )}
                   </div>
 
@@ -3277,7 +3277,7 @@ export default function MeetingHistory() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="text-xs text-blue-800">
                       <i className="fas fa-info-circle mr-1"></i>
-                      Only open items (Business Ideas, Safety Ideas, Near Miss) will be moved. Closed items remain on the original date.
+                      Only <strong>Submitted</strong> items will be moved. Items with any other status (In Discussion, Actioned, Closed) stay on the original date.
                     </div>
                   </div>
                   
