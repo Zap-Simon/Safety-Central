@@ -94,9 +94,9 @@ export default function Actions() {
 
     if (filterStatus !== 'all') {
       const itemStatus = item.actionStatus || 'Not Started';
-      if (filterStatus === 'open' && (itemStatus === 'Completed')) return false;
-      if (filterStatus === 'completed' && itemStatus !== 'Completed') return false;
-      if (filterStatus !== 'open' && filterStatus !== 'completed' && itemStatus !== filterStatus) return false;
+      if (filterStatus === 'open' && (itemStatus === 'Completed' || itemStatus === 'Ready to Close')) return false;
+      if (filterStatus === 'Completed' && itemStatus !== 'Completed') return false;
+      if (filterStatus !== 'open' && filterStatus !== 'Completed' && itemStatus !== filterStatus) return false;
     }
 
     if (filterPriority !== 'all' && item.actionPriority !== filterPriority) return false;
@@ -169,6 +169,15 @@ export default function Actions() {
       });
 
       if (response.ok) {
+        // Update the cache directly so changes show immediately without waiting for a re-fetch
+        queryClient.setQueryData(['/api/meeting-history'], (old: any) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map((i: any) => i.id === item.id ? { ...i, ...payload } : i)
+          };
+        });
+
         if (clearLocalEditField) {
           setLocalActionEdits(prev => {
             const updated = { ...prev };
@@ -190,8 +199,9 @@ export default function Actions() {
             return newSet;
           });
         }, 2000);
-        
-        await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+
+        // Background re-fetch to keep in sync (non-blocking)
+        queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
       }
     } catch (error) {
       console.error('Failed to update action fields:', error);
@@ -224,6 +234,7 @@ export default function Actions() {
       case 'Completed': return 'bg-green-100 text-green-800 border-green-300';
       case 'In Progress': return 'bg-blue-100 text-blue-800 border-blue-300';
       case 'On Hold': return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'Ready to Close': return 'bg-emerald-100 text-emerald-800 border-emerald-300';
       default: return 'bg-gray-100 text-gray-600 border-gray-300';
     }
   };
@@ -493,7 +504,8 @@ export default function Actions() {
                   <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
                   <option value="On Hold">On Hold</option>
-                  <option value="completed">Completed</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Ready to Close">Ready to Close</option>
                 </select>
                 <select
                   value={filterPriority}
@@ -629,6 +641,7 @@ export default function Actions() {
                         <option value="In Progress">In Progress</option>
                         <option value="On Hold">On Hold</option>
                         <option value="Completed">Completed</option>
+                        <option value="Ready to Close">Ready to Close</option>
                       </select>
                     </div>
                     <div>
