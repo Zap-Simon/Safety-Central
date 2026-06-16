@@ -2295,7 +2295,7 @@ export default function MeetingHistory() {
                       <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">v1.3.0</span>
                     </div>
                     <div className="text-xs text-gray-500 w-full sm:w-auto">
-                      HTML: Browser view • CSV: Data analysis • MD: Typora PDF with navigation
+                      HTML: Browser view &amp; print to PDF • CSV: Data analysis
                     </div>
                     {selectedMeetingsForExport.size > 0 && (
                       <div className="flex gap-2">
