@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
 import { msalInstance, sharePointRequest, loginRequest } from "@/auth/msalConfig";
+import { InteractionRequiredAuthError, BrowserAuthError } from "@azure/msal-browser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import {
   ChevronRight,
   RotateCcw,
   Sparkles,
+  LogIn,
 } from "lucide-react";
 
 type Category =
@@ -218,7 +220,42 @@ export default function SubmitTab() {
       const msg = `Step 4 FAILED — ssoSilent: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
       console.error(msg, err);
       setAuthError(msg);
-      setAuthState("unauthenticated");
+      if (err instanceof InteractionRequiredAuthError) {
+        await signInWithPopupOrRedirect(loginHint);
+      } else {
+        setAuthState("unauthenticated");
+      }
+    }
+  }
+
+  async function signInWithPopupOrRedirect(loginHint?: string) {
+    const request = { ...loginRequest, ...(loginHint ? { loginHint } : {}) };
+    try {
+      const isMobile = window.parent !== window && /Teams|SkypeSpaces/i.test(navigator.userAgent);
+      if (isMobile) {
+        sessionStorage.setItem("teams-auth-redirect-target", "/teams-submit-cg7k2x9m");
+        await msalInstance.loginRedirect(request);
+        return;
+      }
+      const resp = await msalInstance.loginPopup(request);
+      const [graphResp, spResp] = await Promise.all([
+        msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account: resp.account! }),
+        msalInstance.acquireTokenSilent({ scopes: sharePointRequest.scopes, account: resp.account! }),
+      ]);
+      setGraphToken(graphResp.accessToken);
+      setSharePointToken(spResp.accessToken);
+      setUserName(resp.account?.name || "");
+      setAuthState("authenticated");
+    } catch (err: any) {
+      if (
+        err instanceof BrowserAuthError &&
+        (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
+      ) {
+        sessionStorage.setItem("teams-auth-redirect-target", "/teams-submit-cg7k2x9m");
+        await msalInstance.loginRedirect(request).catch(() => setAuthState("unauthenticated"));
+      } else {
+        setAuthState("unauthenticated");
+      }
     }
   }
 
@@ -417,11 +454,18 @@ export default function SubmitTab() {
             <Shield className={`h-7 w-7 ${isDark ? "text-blue-400" : "text-blue-500"}`} />
           </div>
           <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-            Sign-in failed
+            Sign in required
           </h1>
-          <p className={`text-sm mb-3 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Please open this tab inside Microsoft Teams. If you're already in Teams, try refreshing the tab.
+          <p className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Sign in with your Cranfield Glass Microsoft account to submit ideas and reports.
           </p>
+          <Button
+            onClick={() => signInWithPopupOrRedirect()}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3"
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Sign in with Microsoft
+          </Button>
           {authError && (
             <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
               <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
