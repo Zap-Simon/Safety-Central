@@ -71,7 +71,9 @@ const useSwitcherStyles = makeStyles({
     overflow: "hidden",
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
+    fontSize: tokens.fontSizeBase600,
     fontWeight: tokens.fontWeightSemibold,
+    lineHeight: tokens.lineHeightBase600,
     color: tokens.colorNeutralForeground1,
     paddingLeft: tokens.spacingHorizontalXS,
   },
@@ -110,7 +112,7 @@ function TeamsTabSwitcher({
         style={{ visibility: showGreeting && userName ? "visible" : "hidden" }}
       >
         Hi {userName.split(" ")[0] || "there"}{" "}
-        <span style={{ marginLeft: "2px", fontSize: "1.6rem", lineHeight: 1 }}>👋</span>
+        <span style={{ marginLeft: "4px", fontSize: "1.2em", lineHeight: 1 }}>👋</span>
       </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab
