@@ -1,4 +1,4 @@
-# Cranfield Glass — Safety & Ideas Teams App
+# Cranfield Glass — Improve+ Teams App
 
 This folder contains the Teams Personal Tab app package for the Cranfield Glass staff engagement system.
 
