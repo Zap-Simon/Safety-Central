@@ -172,7 +172,7 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalXXS,
   },
   bodyPad: {
-    paddingTop: tokens.spacingVerticalXS,
+    paddingTop: tokens.spacingVerticalM,
     paddingBottom: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
