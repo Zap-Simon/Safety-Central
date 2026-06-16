@@ -1,6 +1,8 @@
 # Cranfield Glass — Improve+ Teams App
 
-This folder contains the Teams Personal Tab app package for the Cranfield Glass staff engagement system.
+> *Small ideas. Continuous improvement.*
+
+This folder contains the Teams Personal Tab app package for the Cranfield Glass staff engagement system. The app's display name in Teams is **Improve+**.
 
 ## What the app contains
 
@@ -8,7 +10,7 @@ The personal tab has two screens, switched via a small **segmented toggle at the
 
 | Tab | Route | Purpose |
 |-----|-------|---------|
-| **Submit** | `/teams-submit-cg7k2x9m` (manifest) / `/teams-tab` (toggle) | Describe a near miss, safety observation, supply request, or improvement idea. AI classifies it and routes it to the correct SharePoint list. Shows an ambient "Hi {first name}" greeting. |
+| **Submit** | `/teams-submit-cg7k2x9m` (manifest) / `/teams-tab` (toggle) | Describe a near miss, safety observation, supply request, or improvement idea. AI classifies it and routes it to the correct SharePoint list. Shows a prominent "Hi {first name} 👋" greeting with the tagline *Small ideas. Continuous improvement.* |
 | **Orders** | `/teams-tab/orders` (toggle) | Shared ordering whiteboard — every signed-in staff member sees the same list; staff add items they need ordered and admins mark items as ordered. |
 
 The Teams manifest registers a single static tab pointing to the Submit screen. The Orders screen is reached via the in-app toggle inside the same iframe — no second manifest entry is needed.
@@ -26,12 +28,12 @@ The Teams manifest registers a single static tab pointing to the Submit screen. 
 1. Zip only the manifest and the two icons (not the folder, and not this README or the helper script):
    ```
    cd teams-app
-   zip ../cranfield-safety-ideas.zip manifest.json color.png outline.png
+   zip ../improve-plus.zip manifest.json color.png outline.png
    ```
 
 2. Go to **Teams Admin Center → Teams apps → Manage apps → Upload new app**.
 
-3. Upload `cranfield-safety-ideas.zip`.
+3. Upload `improve-plus.zip`.
 
 4. Once approved, users find it under **Apps → Built for your org** and pin it as a personal tab.
 
@@ -115,6 +117,8 @@ For a fork, use `api://<your-domain>/<your-client-id>` and update `webApplicatio
 
 ## Icons
 
-The current icons are simple placeholders. Replace before rolling out to all staff:
-- `color.png` — 192×192 px, full colour, PNG
-- `outline.png` — 32×32 px, transparent background, white/light icon only, PNG
+The icons are a modern **plus** mark, matching the **Improve+** name.
+- `color.png` — 192×192 px, white plus on the brand blue (`#2563EB`), PNG
+- `outline.png` — 32×32 px, **transparent background with a white plus only**, PNG
+
+> The outline icon is the one Teams shows in the left nav rail. It **must stay transparent + a single colour (white)** so Teams can tint it with its own theme colour. A flat or fully-coloured outline makes Teams display that literal colour instead of applying its override.

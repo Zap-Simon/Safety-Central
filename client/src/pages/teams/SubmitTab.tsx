@@ -412,6 +412,9 @@ export default function SubmitTab() {
           <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
             Hi {userName.split(" ")[0]} <span className="ml-0.5">👋</span>
           </p>
+          <p className={`mt-0.5 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Small ideas. Continuous improvement.
+          </p>
         </div>
       )}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1 pb-5">
