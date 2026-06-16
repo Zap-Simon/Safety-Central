@@ -2131,10 +2131,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Struan O\'Donnell',
         'Sam Chang'
       ];
+      // Case-insensitive lookup so "DAN CONLAN", "dan conlan" etc. all match
+      const approvedStaffLower = new Set(approvedStaff.map(n => n.toLowerCase()));
       
       // Filter and deduplicate users, preferring specific emails
       const filteredUsers = data.d.results
-        .filter((user: any) => user.Title && approvedStaff.includes(user.Title))
+        .filter((user: any) => user.Title && approvedStaffLower.has(user.Title.toLowerCase()))
         .map((user: any) => ({
           id: user.Id,
           title: user.Title,

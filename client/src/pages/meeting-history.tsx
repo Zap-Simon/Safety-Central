@@ -2859,25 +2859,49 @@ export default function MeetingHistory() {
                                                   );
                                                 })()}
                                                 {/* Change who the item was submitted by */}
-                                                {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && sharepointUsers.length > 0 && (
-                                                  <select
-                                                    value=""
-                                                    onChange={(e) => {
-                                                      const selected = sharepointUsers.find(u => (u.loginName || '') === e.target.value);
-                                                      if (selected && selected.loginName && selected.title !== item.submittedBy) {
-                                                        updateItemSubmitter(item, selected.loginName, selected.title);
-                                                      }
-                                                    }}
-                                                    disabled={isUpdatingSubmitter === item.id}
-                                                    className="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white hover:bg-gray-50 transition-colors min-w-0"
-                                                    title={`Currently submitted by ${item.submittedBy || 'Unknown'}. Choose a person to change it.`}
-                                                    data-testid={`select-submitter-${item.id}`}
-                                                  >
-                                                    <option value="">{isUpdatingSubmitter === item.id ? 'Updating…' : `By: ${item.submittedBy || 'Unknown'}`}</option>
-                                                    {sharepointUsers.filter(u => u.loginName).map(u => (
-                                                      <option key={u.id} value={u.loginName}>{u.title}</option>
-                                                    ))}
-                                                  </select>
+                                                {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && (
+                                                  (() => {
+                                                    // Build combined list: SharePoint users (with loginName) + static staff not already covered
+                                                    const spUserNames = new Set(sharepointUsers.map(u => u.title?.toLowerCase().trim()));
+                                                    const staticOptions = [...meetingAttendees.management, ...meetingAttendees.glaziers]
+                                                      .filter(s => !spUserNames.has(s.name.toLowerCase().trim()));
+                                                    const spOptions = sharepointUsers.filter(u => u.loginName);
+                                                    const hasOptions = spOptions.length > 0 || staticOptions.length > 0;
+                                                    if (!hasOptions) return null;
+                                                    return (
+                                                      <select
+                                                        value=""
+                                                        onChange={(e) => {
+                                                          const val = e.target.value;
+                                                          if (!val) return;
+                                                          if (val.startsWith('static_')) {
+                                                            showError('Cannot Change Submitter', `${val.slice(7)} doesn't have a SharePoint account set up. Ask your admin to add them.`);
+                                                            return;
+                                                          }
+                                                          const selected = sharepointUsers.find(u => (u.loginName || '') === val);
+                                                          if (selected && selected.loginName && selected.title !== item.submittedBy) {
+                                                            updateItemSubmitter(item, selected.loginName, selected.title);
+                                                          }
+                                                        }}
+                                                        disabled={isUpdatingSubmitter === item.id}
+                                                        className="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white hover:bg-gray-50 transition-colors min-w-0"
+                                                        title={`Currently submitted by ${item.submittedBy || 'Unknown'}. Choose a person to change it.`}
+                                                        data-testid={`select-submitter-${item.id}`}
+                                                      >
+                                                        <option value="">{isUpdatingSubmitter === item.id ? 'Updating…' : `By: ${item.submittedBy || 'Unknown'}`}</option>
+                                                        {spOptions.map(u => (
+                                                          <option key={u.id} value={u.loginName}>{u.title}</option>
+                                                        ))}
+                                                        {staticOptions.length > 0 && (
+                                                          <optgroup label="— Not in SharePoint —">
+                                                            {staticOptions.map(s => (
+                                                              <option key={`static_${s.name}`} value={`static_${s.name}`}>{s.name}</option>
+                                                            ))}
+                                                          </optgroup>
+                                                        )}
+                                                      </select>
+                                                    );
+                                                  })()
                                                 )}
                                                 {/* Flip to Actions button - only show for Actioned status OR Closed with action data */}
                                                 {(() => {
