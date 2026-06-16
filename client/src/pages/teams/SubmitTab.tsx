@@ -155,7 +155,6 @@ export default function SubmitTab() {
   async function initAuth() {
     try {
       await microsoftTeams.app.initialize();
-      setInTeams(true);
 
       // Get identity from Teams SSO token
       const ssoToken = await microsoftTeams.authentication.getAuthToken();

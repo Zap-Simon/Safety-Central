@@ -20,6 +20,17 @@ import { Send, ShoppingCart } from "lucide-react";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
 
+// Detect an MSAL redirect callback landing on "/" so we can restore the Teams UI
+function getMsalRedirectTarget(): string | null {
+  const hasMsalParams =
+    window.location.hash.includes("code=") ||
+    window.location.hash.includes("error=") ||
+    window.location.search.includes("code=") ||
+    window.location.search.includes("error=");
+  if (!hasMsalParams) return null;
+  return sessionStorage.getItem("teams-auth-redirect-target");
+}
+
 function TeamsBottomNav() {
   const [location] = useLocation();
   const isOrders = location === "/teams-tab/orders";
@@ -102,7 +113,18 @@ function MainRouter() {
 }
 
 function Router() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
+
+  // Handle MSAL redirect callback landing on "/" — restore the correct Teams route
+  const msalTarget = getMsalRedirectTarget();
+  if (msalTarget && location === "/") {
+    sessionStorage.removeItem("teams-auth-redirect-target");
+    // Navigate to the stored Teams path so TeamsRouter renders and OrdersTab
+    // can call handleRedirectPromise() to consume the auth tokens.
+    navigate(msalTarget, { replace: true });
+    return null;
+  }
+
   if (TEAMS_PATHS.includes(location)) {
     return <TeamsRouter />;
   }

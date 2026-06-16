@@ -132,6 +132,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     const request = { ...loginRequest, ...(loginHint ? { loginHint } : {}) };
     try {
       if (isTeamsMobile()) {
+        sessionStorage.setItem("teams-auth-redirect-target", "/teams-tab/orders");
         await msalInstance.loginRedirect(request);
         return;
       }
@@ -144,6 +145,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
       ) {
         try {
+          sessionStorage.setItem("teams-auth-redirect-target", "/teams-tab/orders");
           await msalInstance.loginRedirect(request);
         } catch {
           setAuthState("unauthenticated");
