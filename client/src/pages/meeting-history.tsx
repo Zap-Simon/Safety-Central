@@ -211,7 +211,8 @@ export default function MeetingHistory() {
             description: itemData.description,
             submittedBy: itemData.submittedBy,
             ideaType: itemData.ideaType,
-            status: 'Submitted'
+            status: 'Submitted',
+            meetingDate: itemData.meetingDate
           }
         })
       });
