@@ -59,7 +59,7 @@ function makeBerryTheme(base: Theme): Theme {
   };
 }
 
-const berryThemes: Record<string, Theme> = {
+export const berryThemes: Record<string, Theme> = {
   default: makeBerryTheme(teamsLightTheme),
   dark: makeBerryTheme(teamsDarkTheme),
   contrast: makeBerryTheme(teamsHighContrastTheme),

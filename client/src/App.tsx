@@ -15,7 +15,7 @@ import HealthSafetyPolicy from "@/pages/health-safety-policy";
 import EnvironmentPolicy from "@/pages/environment-policy";
 import QualityPolicy from "@/pages/quality-policy";
 import SubmitTab from "@/pages/teams/SubmitTab";
-import OrdersTab from "@/pages/teams/OrdersTab";
+import OrdersTab, { berryThemes } from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
@@ -71,9 +71,9 @@ const useSwitcherStyles = makeStyles({
     overflow: "hidden",
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
-    fontSize: tokens.fontSizeBase600,
+    fontSize: tokens.fontSizeBase500,
     fontWeight: tokens.fontWeightSemibold,
-    lineHeight: tokens.lineHeightBase600,
+    lineHeight: tokens.lineHeightBase500,
     color: tokens.colorNeutralForeground1,
     paddingLeft: tokens.spacingHorizontalXS,
   },
@@ -110,16 +110,7 @@ function TeamsTabSwitcher({
       </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab value="/teams-tab">Submit</Tab>
-        {/* Override brand CSS vars so the indicator + flash are purple, not blue */}
-        <Tab
-          value="/teams-tab/orders"
-          style={{
-            "--colorBrandForeground1": teamsLightTheme.colorPaletteBerryForeground1,
-            "--colorBrandForeground2": teamsLightTheme.colorPaletteBerryForeground2,
-          } as React.CSSProperties}
-        >
-          Orders
-        </Tab>
+        <Tab value="/teams-tab/orders">Orders</Tab>
       </TabList>
     </div>
   );
@@ -132,12 +123,16 @@ function TeamsRouterContent() {
   const [teamsUser, setTeamsUser] = useState("");
   const isOrders = location === "/teams-tab/orders";
 
-  const fluentTheme =
+  const baseTheme =
     theme === "dark"
       ? teamsDarkTheme
       : theme === "contrast"
       ? teamsHighContrastTheme
       : teamsLightTheme;
+
+  // On Orders, theme the entire shell berry so the tab indicator and content
+  // read consistently purple; Submit keeps the default Teams blue.
+  const fluentTheme = isOrders ? berryThemes[theme] ?? berryThemes.default : baseTheme;
 
   return (
     <FluentProvider
