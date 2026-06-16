@@ -16,7 +16,6 @@ import QualityPolicy from "@/pages/quality-policy";
 import SubmitTab from "@/pages/teams/SubmitTab";
 import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
-import { Send, ShoppingCart } from "lucide-react";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
@@ -30,13 +29,13 @@ function TeamsTabSwitcher() {
   const isOrders = location === "/teams-tab/orders";
 
   const base =
-    "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/50";
+    "inline-flex items-center justify-center rounded-full px-4 py-1 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/50";
   const inactive = isDark
     ? "border border-gray-700 text-gray-400"
     : "border border-gray-200 text-gray-600";
 
   return (
-    <div className="shrink-0 flex gap-2 px-4 pt-2 pb-3">
+    <div className="shrink-0 flex gap-2 px-4 pt-3 pb-2">
       <Link
         href="/teams-tab"
         aria-current={!isOrders ? "page" : undefined}
@@ -48,7 +47,6 @@ function TeamsTabSwitcher() {
             : inactive
         }`}
       >
-        <Send className="h-4 w-4" />
         Submit
       </Link>
       <Link
@@ -62,7 +60,6 @@ function TeamsTabSwitcher() {
             : inactive
         }`}
       >
-        <ShoppingCart className="h-4 w-4" />
         Orders
       </Link>
     </div>

@@ -247,7 +247,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
           value={itemText}
           onChange={(e) => setItemText(e.target.value)}
           onKeyDown={handleKeyDown}
-          className={`flex-1 text-base ${
+          className={`flex-1 text-base focus-visible:ring-0 focus-visible:ring-offset-0 ${
             isDark
               ? "bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-purple-500"
               : "border-gray-200 focus:border-purple-400"

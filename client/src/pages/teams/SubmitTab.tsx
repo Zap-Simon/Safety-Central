@@ -408,11 +408,11 @@ export default function SubmitTab() {
   return (
     <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-white"}`}>
       {userName && (
-        <div className="shrink-0 px-5 pt-1 pb-3">
+        <div className="shrink-0 px-5 pt-1 pb-5">
           <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
             Hi {userName.split(" ")[0]} <span className="ml-0.5">👋</span>
           </p>
-          <p className={`mt-0.5 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          <p className={`mt-2 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             Small ideas. Continuous improvement.
           </p>
         </div>
@@ -423,7 +423,7 @@ export default function SubmitTab() {
         }`}>
           {step === "input" && (
             <div className="space-y-4 animate-fade-in">
-              <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                 Describe what you saw, a near miss, or an improvement idea.
               </p>
               <div className="relative">
@@ -432,7 +432,7 @@ export default function SubmitTab() {
                   value={inputText}
                   onChange={(e) => handleTextChange(e.target.value)}
                   rows={4}
-                  className={`resize-none text-base transition-colors ${
+                  className={`resize-none text-base transition-colors focus-visible:ring-0 focus-visible:ring-offset-0 ${
                     isDark
                       ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
                       : "border-gray-200 focus:border-blue-400"
@@ -512,10 +512,10 @@ export default function SubmitTab() {
                         setFollowUpAnswers(updated);
                       }}
                       rows={2}
-                      className={`resize-none text-sm ${
+                      className={`resize-none text-sm focus-visible:ring-0 focus-visible:ring-offset-0 ${
                         isDark
-                          ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500"
-                          : "border-gray-200"
+                          ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
+                          : "border-gray-200 focus:border-blue-400"
                       }`}
                     />
                   </div>
