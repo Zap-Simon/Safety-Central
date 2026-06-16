@@ -171,36 +171,44 @@ export default function SubmitTab() {
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
   async function initAuth() {
+    await msalInstance.initialize();
+
+    // Fast path: App.tsx already processed handleRedirectPromise() and cached the
+    // tokens before navigating here. Skip ssoSilent (hidden iframe) entirely.
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      try {
+        const [graphResp, spResp] = await Promise.all([
+          msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account: accounts[0] }),
+          msalInstance.acquireTokenSilent({ scopes: sharePointRequest.scopes, account: accounts[0] }),
+        ]);
+        setGraphToken(graphResp.accessToken);
+        setSharePointToken(spResp.accessToken);
+        setUserName(accounts[0].name || "");
+        setAuthState("authenticated");
+        return;
+      } catch (err) {
+        if (!(err instanceof InteractionRequiredAuthError)) {
+          const msg = `Token refresh failed: ${(err as any)?.errorCode || (err as any)?.message}`;
+          console.error(msg, err);
+          setAuthError(msg);
+          setAuthState("unauthenticated");
+          return;
+        }
+        // InteractionRequired — fall through to Teams SSO below
+      }
+    }
+
+    // Teams SSO path — get loginHint from Teams token
+    let loginHint = "";
     try {
       await microsoftTeams.app.initialize();
+      const ssoToken = await microsoftTeams.authentication.getAuthToken();
+      const payload = decodeJwtPayload(ssoToken);
+      loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
+      setUserName(payload.name || loginHint);
     } catch (err: any) {
-      const msg = `Step 1 FAILED — Teams initialize: ${err?.message || err}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      setAuthState("unauthenticated");
-      return;
-    }
-
-    let ssoToken: string;
-    try {
-      ssoToken = await microsoftTeams.authentication.getAuthToken();
-    } catch (err: any) {
-      const msg = `Step 2 FAILED — getAuthToken: ${err?.message || JSON.stringify(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      setAuthState("unauthenticated");
-      return;
-    }
-
-    const payload = decodeJwtPayload(ssoToken);
-    const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
-    const displayName = payload.name || loginHint;
-    setUserName(displayName);
-
-    try {
-      await msalInstance.initialize();
-    } catch (err: any) {
-      const msg = `Step 3 FAILED — MSAL initialize: ${err?.message || err}`;
+      const msg = `Teams SSO failed: ${err?.message || String(err)}`;
       console.error(msg, err);
       setAuthError(msg);
       setAuthState("unauthenticated");
@@ -214,10 +222,10 @@ export default function SubmitTab() {
       ]);
       setGraphToken(graphResp.accessToken);
       setSharePointToken(spResp.accessToken);
-      setUserName(graphResp.account?.name || displayName);
+      setUserName(graphResp.account?.name || loginHint);
       setAuthState("authenticated");
     } catch (err: any) {
-      const msg = `Step 4 FAILED — ssoSilent: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
+      const msg = `MSAL ssoSilent failed: ${err?.errorCode || err?.message || String(err)}`;
       console.error(msg, err);
       setAuthError(msg);
       if (err instanceof InteractionRequiredAuthError) {

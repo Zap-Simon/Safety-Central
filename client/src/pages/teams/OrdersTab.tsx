@@ -69,27 +69,22 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   async function initAuth() {
     await msalInstance.initialize();
 
-    const redirectResponse = await msalInstance.handleRedirectPromise();
-    if (redirectResponse) {
-      setUserName(redirectResponse.account?.name || "");
-      setGraphToken(redirectResponse.accessToken);
-      setAuthState("authenticated");
-      return;
-    }
-
-    try {
-      await microsoftTeams.app.initialize();
-      await authenticateViaTeamsSSO();
-      return;
-    } catch {
-      // Not in Teams — fall through to MSAL silent
-    }
-
+    // Fast path: App.tsx already ran handleRedirectPromise() before navigating
+    // here, so tokens are in cache — skip the hidden-iframe ssoSilent entirely.
     const accounts = msalInstance.getAllAccounts();
     if (accounts.length > 0) {
       setUserName(accounts[0].name || "");
       await acquireTokenSilently(accounts[0]);
       return;
+    }
+
+    // No cached account — try Teams SSO to sign in for the first time
+    try {
+      await microsoftTeams.app.initialize();
+      await authenticateViaTeamsSSO();
+      return;
+    } catch {
+      // Not in Teams or SSO failed — show sign-in button
     }
 
     setAuthState("unauthenticated");

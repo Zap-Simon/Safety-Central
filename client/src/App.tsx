@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Switch, Route, useLocation, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { Send, ShoppingCart } from "lucide-react";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
+import { msalInstance } from "@/auth/msalConfig";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
 
@@ -130,12 +132,34 @@ function MainRouter() {
 function Router() {
   const [location, navigate] = useLocation();
 
-  // Handle MSAL redirect callback landing on "/" — restore the correct Teams route
-  const msalTarget = getMsalRedirectTarget();
-  if (msalTarget && location === "/") {
-    sessionStorage.removeItem("teams-auth-redirect-target");
-    navigate(msalTarget, { replace: true });
-    return null;
+  // Capture the redirect target synchronously before any async work clears it
+  const msalTargetRef = useRef(getMsalRedirectTarget());
+  const needsRedirect = msalTargetRef.current !== null && location === "/";
+
+  // When MSAL sends the user back to "/" with code= in the URL we MUST call
+  // handleRedirectPromise() BEFORE changing the URL, otherwise MSAL can't read
+  // the auth code and leaves interaction_in_progress stuck in sessionStorage.
+  const [redirectReady, setRedirectReady] = useState(!needsRedirect);
+
+  useEffect(() => {
+    if (!needsRedirect || !msalTargetRef.current) return;
+    const target = msalTargetRef.current;
+    msalInstance.initialize()
+      .then(() => msalInstance.handleRedirectPromise())
+      .catch(() => {})
+      .finally(() => {
+        sessionStorage.removeItem("teams-auth-redirect-target");
+        navigate(target, { replace: true });
+        setRedirectReady(true);
+      });
+  }, []);
+
+  if (!redirectReady) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
+        <p style={{ color: "#9ca3af", fontSize: "14px" }}>Signing you in…</p>
+      </div>
+    );
   }
 
   if (TEAMS_PATHS.includes(location)) {
