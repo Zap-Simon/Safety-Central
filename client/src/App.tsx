@@ -70,19 +70,15 @@ function TeamsRouterContent() {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${isDark ? "dark bg-gray-900" : "bg-white"}`}
+      className={`flex flex-col h-screen overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-gray-50"}`}
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "calc(3.5rem + env(safe-area-inset-bottom))",
       }}
     >
-      {isOrders ? (
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <OrdersTab />
-        </div>
-      ) : (
-        <SubmitTab />
-      )}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        {isOrders ? <OrdersTab /> : <SubmitTab />}
+      </div>
       <TeamsBottomNav />
     </div>
   );

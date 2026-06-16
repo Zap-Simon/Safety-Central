@@ -133,7 +133,7 @@ function decodeJwtPayload(token: string): Record<string, any> {
 }
 
 export default function SubmitTab() {
-  const { inTeams, isDark } = useTeamsTheme();
+  const { isDark } = useTeamsTheme();
 
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
@@ -315,45 +315,33 @@ export default function SubmitTab() {
     setPrefetching(false);
   }
 
-  // ─── Header — slim flat bar in Teams, gradient banner in browser ──────────
+  // ─── Header — slim, consistent with the Orders tab ────────────────────────
   function Header() {
-    if (inTeams) {
-      return (
-        <div className={`px-5 py-3 flex items-center gap-3 border-b ${
-          isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
-        }`}>
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-            isDark ? "bg-blue-900/50" : "bg-blue-50"
-          }`}>
-            <Shield className={`h-4 w-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-          </div>
-          <span className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
-            {userName ? `Hi ${userName.split(" ")[0]}` : "Safety & Ideas"}
-          </span>
-        </div>
-      );
-    }
     return (
-      <div className="bg-gradient-to-r from-blue-700 to-blue-500 px-5 pt-6 pb-7 text-white">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold leading-tight">Safety &amp; Ideas</h1>
-            <p className="text-xs text-blue-100/90">
-              {userName ? `Hi ${userName.split(" ")[0]}` : "Cranfield Glass Christchurch"}
-            </p>
-          </div>
+      <header className={`shrink-0 px-5 py-3.5 flex items-center gap-3 border-b ${
+        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
+      }`}>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+          isDark ? "bg-blue-900/40" : "bg-blue-50"
+        }`}>
+          <Shield className={`h-[18px] w-[18px] ${isDark ? "text-blue-400" : "text-blue-600"}`} />
         </div>
-      </div>
+        <div className="min-w-0">
+          <p className={`text-sm font-semibold leading-tight truncate ${isDark ? "text-white" : "text-gray-900"}`}>
+            {userName ? `Hi ${userName.split(" ")[0]}` : "Safety & Ideas"}
+          </p>
+          <p className={`text-xs leading-tight mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Report a hazard, near miss or idea
+          </p>
+        </div>
+      </header>
     );
   }
 
   // ─── Full-screen states ───────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`min-h-screen flex items-center justify-center animate-fade-in ${
+      <div className={`h-full flex items-center justify-center animate-fade-in ${
         isDark ? "bg-gray-900" : "bg-white"
       }`}>
         <div className="text-center">
@@ -373,7 +361,7 @@ export default function SubmitTab() {
 
   if (authState === "unauthenticated") {
     return (
-      <div className={`min-h-screen flex items-center justify-center p-4 animate-fade-in ${
+      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
         isDark ? "bg-gray-900" : "bg-white"
       }`}>
         <div className="w-full max-w-sm text-center animate-scale-in">
@@ -407,7 +395,7 @@ export default function SubmitTab() {
 
   if (step === "done") {
     return (
-      <div className={`min-h-screen flex items-center justify-center p-4 animate-fade-in ${
+      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
         isDark ? "bg-gray-900" : "bg-white"
       }`}>
         <div className="w-full max-w-sm text-center">
@@ -441,12 +429,13 @@ export default function SubmitTab() {
   const categoryRing = meta ? (isDark ? meta.darkRing : meta.ring) : "";
 
   return (
-    <div className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <Header />
-      <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
-        <Card className={`p-5 shadow-sm animate-fade-in-up ${
-          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        }`}>
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="min-h-full flex flex-col justify-center px-4 py-5">
+          <Card className={`w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+          }`}>
           {step === "input" && (
             <div className="space-y-4 animate-fade-in">
               <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
@@ -631,7 +620,8 @@ export default function SubmitTab() {
               </p>
             </div>
           )}
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
   );

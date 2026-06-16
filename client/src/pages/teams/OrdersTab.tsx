@@ -187,7 +187,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`min-h-screen flex items-center justify-center animate-fade-in ${
+      <div className={`h-full flex items-center justify-center animate-fade-in ${
         isDark ? "bg-gray-900" : "bg-white"
       }`}>
         <div className="text-center">
@@ -208,7 +208,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 gap-4 text-center">
+      <div className="flex flex-col items-center justify-center h-full px-6 gap-4 text-center">
         <div className="w-14 h-14 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg">
           <LogIn className="h-7 w-7 text-white" />
         </div>
@@ -236,10 +236,29 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-0 h-full">
-      {/* ── Sticky add bar ── */}
-      <div className={`sticky top-0 z-10 border-b px-4 py-3 flex gap-2 ${
-        isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
+    <div className={`flex flex-col min-h-0 h-full ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+      {/* ── Header — consistent with the Submit tab ── */}
+      <header className={`shrink-0 px-5 py-3.5 flex items-center gap-3 border-b ${
+        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
+      }`}>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+          isDark ? "bg-purple-900/40" : "bg-purple-50"
+        }`}>
+          <ShoppingCart className={`h-[18px] w-[18px] ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+        </div>
+        <div className="min-w-0">
+          <p className={`text-sm font-semibold leading-tight truncate ${isDark ? "text-white" : "text-gray-900"}`}>
+            {userName ? `Hi ${userName.split(" ")[0]}` : "Orders"}
+          </p>
+          <p className={`text-xs leading-tight mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Shared workshop order list
+          </p>
+        </div>
+      </header>
+
+      {/* ── Quick add bar ── */}
+      <div className={`shrink-0 border-b px-4 py-3 flex gap-2 ${
+        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
       }`}>
         <Input
           ref={inputRef}
@@ -283,7 +302,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
       )}
 
       {/* ── Item list ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 pb-6">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2 pb-6">
         {isLoading && (
           <div className="flex items-center justify-center py-12 text-gray-400 dark:text-gray-500">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -302,7 +321,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
               Nothing to order yet
             </p>
             <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              Type an item above and tap Add.
+              Add one above — the whole team will see it here.
             </p>
           </div>
         )}
@@ -354,7 +373,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
 
         {!isLoading && items.length > 0 && (
           <p className={`text-center text-xs pt-2 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-            {items.length} item{items.length !== 1 ? "s" : ""} to order
+            {items.length} item{items.length !== 1 ? "s" : ""} to order · shared with your team
           </p>
         )}
       </div>
