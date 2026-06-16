@@ -65,6 +65,40 @@ that is a **Near Miss**, a **Safety** item, or a **Business** item, then routes 
 the correct SharePoint list — without the staff member having to know those
 categories exist.
 
+### Which AI, which model, and who pays
+
+- **Provider — our own OpenAI account, *not* a Replit integration.** The app calls
+  the OpenAI API directly using our own API key, read from the `OPENAI_API_KEY`
+  server secret (`server/openai-service.ts`). Usage is therefore billed to our
+  OpenAI account. The key lives only on the server and is never exposed to the
+  browser.
+- **Models — chosen per job** (all set in `server/openai-service.ts`):
+
+  | Job | Model | Why |
+  |-----|-------|-----|
+  | Submit categorisation (`classifySubmission`) | **`gpt-4o-mini`** | Sorting a note into one of seven buckets is a simple task — mini is much faster and cheaper, run at temperature 0.1 for consistent results. |
+  | Smart title generation (`generateSmartTitle`) | **`gpt-4o-mini`** | Short title, runs in the background after submit — speed matters more than depth. |
+  | Heavier writing (titles, smart content, meeting notes/minutes) | **`gpt-4o`** | The full model for quality of writing where it matters. |
+
+- **Speed of the safety checks.** The Submit form validates restored drafts and
+  normalises the AI's response (see *Saving progress* below) using a few in-memory
+  `Array.includes` / `typeof` comparisons — microseconds, no network or database.
+  They add no perceptible overhead; the only real wait is the AI call itself.
+
+### Saving progress (draft persistence)
+
+The Submit flow saves the in-progress report to the browser's `localStorage`
+(`SubmitTab.tsx`), so a half-finished note survives a Teams **tab switch** (Teams
+remounts the tab each time) or the app being **closed and reopened**.
+
+To keep this safe, a restored draft is **deep-validated** before the "how it's
+categorised" (stage 2) screen is shown again: if the saved classification is
+missing fields or comes from an older app version, the app keeps the typed text
+but restarts at stage 1 rather than showing a blank, stuck screen. Completed
+("done") submissions are not reopened, and the storage key carries a **version
+suffix** (`cranfield.submit.draft.v2`) — bump it whenever the saved shape changes
+to instantly flush everyone's old drafts.
+
 ### The big picture
 
 ```mermaid
