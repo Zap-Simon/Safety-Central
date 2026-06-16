@@ -11,7 +11,7 @@ The personal tab has two screens, switched via a small **segmented toggle at the
 | Tab | Route | Purpose |
 |-----|-------|---------|
 | **Submit** | `/teams-submit-cg7k2x9m` (manifest) / `/teams-tab` (toggle) | Describe a near miss, safety observation, supply request, or improvement idea. AI classifies it and routes it to the correct SharePoint list. Shows a prominent "Hi {first name} 👋" greeting with the tagline *Small ideas. Continuous improvement.* |
-| **Orders** | `/teams-tab/orders` (toggle) | Shared ordering whiteboard — every signed-in staff member sees the same list; staff add items they need ordered and admins mark items as ordered. |
+| **Orders** | `/teams-tab/orders` (toggle) | Shared ordering whiteboard — every signed-in staff member sees the same list; staff add items they need ordered, and admins can remove items (swipe a card sideways) or clear the whole list. |
 
 The Teams manifest registers a single static tab pointing to the Submit screen. The Orders screen is reached via the in-app toggle inside the same iframe — no second manifest entry is needed.
 
@@ -34,9 +34,9 @@ the `teams-app/` package above).
 
 | File | Role |
 |------|------|
-| `client/src/App.tsx` | Teams routing + chrome. Defines the Teams routes (`TEAMS_PATHS`: `/teams-submit-cg7k2x9m`, `/teams-tab`, `/teams-tab/orders`), the `TeamsRouter`/`TeamsRouterContent` wrapper, the top **Submit / Orders** segmented toggle (`TeamsTabSwitcher` using Fluent `TabList`), the "Hi {name} 👋" greeting, and per-route theming (default blue on Submit, **berry/purple shell** on Orders). |
-| `client/src/pages/teams/SubmitTab.tsx` | **Submit** screen. AI-classify state machine (`input → classifying → followup → confirm → submitting → done`); debounced background pre-classify; the keyboard-safe textarea; the "Continue / Reading your note…" button; posts the final item to SharePoint. |
-| `client/src/pages/teams/OrdersTab.tsx` | **Orders** screen. Shared team order list (add / mark ordered / remove / clear); admin detection; also **exports `berryThemes`** (the purple theme variants reused by `App.tsx`). |
+| `client/src/App.tsx` | Teams routing + chrome. Defines the Teams routes (`TEAMS_PATHS`: `/teams-submit-cg7k2x9m`, `/teams-tab`, `/teams-tab/orders`), the `TeamsRouter`/`TeamsRouterContent` wrapper, the top **Submit / Orders** segmented toggle (`TeamsTabSwitcher` using Fluent `TabList`), the "Hi {name} 👋" greeting, and the shared blue theming (both tabs use the default Teams blue brand). |
+| `client/src/pages/teams/SubmitTab.tsx` | **Submit** screen. AI-classify state machine (`input → classifying → followup → confirm → submitting → done`); debounced background pre-classify; the keyboard-safe textarea; the "Continue / Reading your note…" button; posts the final item to SharePoint. See *How the AI categorisation works* below. |
+| `client/src/pages/teams/OrdersTab.tsx` | **Orders** screen. Shared team order list (anyone adds; admins remove or clear); admin detection; admins delete an item by **swiping the card sideways** (framer-motion). |
 | `client/src/pages/teams/TeamsPageShell.tsx` | Reusable layout shell shared by both tabs: `TeamsPage`, `TeamsPinned` (keyboard-safe, never scrolls), `TeamsScroll` (the single scroll region), `TeamsCenter`, `TeamsFullScreen` (sign-in / error template), and the `useKeyboardSafeFocus` hook. |
 | `client/src/hooks/useTeamsTheme.tsx` | Reads the Teams theme mode (`default` / `dark` / `contrast`) from `@microsoft/teams-js` and provides it via `TeamsThemeProvider` + `useTeamsTheme()`, so the tab follows the user's Teams light/dark/high-contrast setting. |
 
@@ -56,6 +56,121 @@ audience and apply OBO only for Teams SSO tokens (see *Authentication* below).
 | File | Role |
 |------|------|
 | `shared/schema.ts` | The `orderItems` table (`order_items`), `insertOrderItemSchema`, and the `OrderItem` / `InsertOrderItem` types used by both the Orders tab and the server. |
+
+## How the AI categorisation works
+
+This is the heart of the **Submit** tab: a staff member types a plain-English note
+("the third rung on the warehouse ladder is cracked"), and the AI decides whether
+that is a **Near Miss**, a **Safety** item, or a **Business** item, then routes it to
+the correct SharePoint list — without the staff member having to know those
+categories exist.
+
+### The big picture
+
+```mermaid
+flowchart TD
+    A["Staff types a note in the Submit tab<br/>(SubmitTab.tsx)"] --> B{"Note length<br/>≥ 20 chars?"}
+    B -- "No" --> A
+    B -- "Yes" --> C["Debounced 900ms background pre-classify<br/>POST /api/ai-classify (result cached)"]
+    C --> D["Server validates the Teams SSO token<br/>(routes.ts)"]
+    D --> E["OpenAIService.classifySubmission(text)<br/>model: gpt-4o-mini, temp 0.1, JSON-only"]
+    E --> F["AI returns JSON:<br/>category · listTarget · confidence · reasoning · followUpQuestions"]
+    F --> G{"Staff clicks<br/>Continue"}
+    G --> H{"confidence ≥ 0.8<br/>AND no follow-up<br/>questions?"}
+    H -- "No (unsure)" --> I["followup step:<br/>show AI's follow-up questions<br/>answers appended to the note"]
+    H -- "Yes (confident)" --> J["confirm step:<br/>staff reviews category + text"]
+    I --> J
+    J --> K["handleSubmit()<br/>map listTarget → listType<br/>POST /api/sharepoint/create-item (deferTitle)"]
+    K --> L{"Which listTarget?"}
+    L -- "near-miss" --> M["SharePoint:<br/>Near Miss – Accident Safety Register<br/>(IncidentsReports site)"]
+    L -- "safety-ideas" --> N["SharePoint:<br/>Safety Ideas list"]
+    L -- "business-ideas" --> O["SharePoint:<br/>Business Ideas list"]
+    K --> P["Background: generateSmartTitle()<br/>writes a short human title afterwards"]
+```
+
+### Step by step
+
+1. **Typing (frontend — `SubmitTab.tsx`).** As the staff member types, once the note
+   reaches **20 characters** a **debounced** call (fires ~900ms after they stop
+   typing) runs in the background to `POST /api/ai-classify`. The *"Reading your
+   note…"* state only shows once that request is actually in flight, not while they
+   are still typing. This "pre-classify" means the answer is usually already
+   waiting by the time they press **Continue**, so the UI feels instant. The result
+   is cached per-note-text so identical text isn't re-sent.
+
+2. **Token check (backend — `server/routes.ts`).** `/api/ai-classify` first validates
+   the incoming **Teams SSO token** (the same OBO-aware auth used everywhere — see
+   *Authentication* below). No valid user, no classification.
+
+3. **The actual decision (backend — `server/openai-service.ts`).**
+   `OpenAIService.classifySubmission(text)` sends the note to **OpenAI `gpt-4o-mini`**
+   with a **system prompt** that defines Cranfield Glass's categories and rules. It
+   runs at **temperature 0.1** (near-deterministic, so the same note classifies the
+   same way) and is forced to reply as **JSON only**. The model returns:
+
+   | Field | Meaning |
+   |-------|---------|
+   | `category` | One of: *Near Miss*, *Safety Observation*, *Improvement Idea*, *Business Improvement*, *Supply Request*, *Meeting Agenda Item*, *Other* |
+   | `listTarget` | The destination bucket: `near-miss`, `safety-ideas`, or `business-ideas` |
+   | `confidence` | `0.0`–`1.0` — how sure the AI is |
+   | `reasoning` | A short plain-English explanation (shown for transparency) |
+   | `followUpQuestions` | Extra questions to ask **only when the AI is unsure** |
+
+4. **How the seven categories collapse into three lists.** Several categories share a
+   list — staff never see the SharePoint plumbing:
+
+   | AI `category` | `listTarget` | SharePoint list |
+   |---------------|--------------|-----------------|
+   | Near Miss | `near-miss` | Near Miss – Accident Safety Register |
+   | Safety Observation | `safety-ideas` | Safety Ideas |
+   | Improvement Idea | `safety-ideas` | Safety Ideas |
+   | Business Improvement | `business-ideas` | Business Ideas |
+   | Supply Request | `business-ideas` | Business Ideas |
+   | Meeting Agenda Item | `business-ideas` | Business Ideas |
+   | Other | `business-ideas` | Business Ideas |
+
+5. **Confidence gate (the `followup` step).** If `confidence` is **below 0.8** (or the
+   AI supplied follow-up questions), the UI does **not** guess — it shows those
+   follow-up questions (e.g. *"Where did this happen?"*, *"What task were you
+   doing?"*). The answers are appended to the original note so the final record is
+   richer. If the AI is confident, this step is skipped and the user goes straight to
+   the **confirm** screen showing the chosen category and a *"NN% sure"* badge.
+
+6. **Submission (frontend → backend).** On confirm, `handleSubmit()` maps the
+   `listTarget` to a `listType` (`LIST_TYPE_MAP`: `near-miss → "Near Miss"`,
+   `safety-ideas → "Safety Ideas"`, `business-ideas → "Business Ideas"`) and posts to
+   `POST /api/sharepoint/create-item` with `deferTitle: true`.
+
+7. **Fast title generation.** The create-item endpoint returns immediately, then a
+   **background** `generateSmartTitle()` call (also `gpt-4o-mini`) writes a short,
+   tradesperson-style title (e.g. *"Cracked rung on warehouse ladder"*) onto the
+   SharePoint item a moment later — so the staff member's success screen isn't blocked
+   waiting on a second AI call.
+
+### Where to change things (future enhancements)
+
+- **Add or reword a category, or change the routing rules** → edit the `systemPrompt`
+  in `server/openai-service.ts` (`classifySubmission`). The category list, the
+  list-target mapping, and the per-category follow-up questions all live in that one
+  prompt string.
+- **Add a brand-new SharePoint list as a destination** → add it to `LIST_CONFIGS` in
+  `server/sharepoint-lists-service.ts` (field mappings + site URL), add the new
+  `listTarget` value to the prompt, and extend `LIST_TYPE_MAP` in `SubmitTab.tsx`.
+- **Make the AI more/less cautious about asking follow-up questions** → change the
+  **0.8** confidence threshold in `SubmitTab.tsx`.
+- **Swap the model or tune determinism** → the `model` and `temperature` are set in
+  `server/openai-service.ts`. `gpt-4o-mini` is chosen for speed; `gpt-4o` would be
+  more accurate but slower and dearer.
+- **Change the title style** → edit the `generateSmartTitle` prompt in
+  `server/openai-service.ts`.
+- **API key** → the OpenAI key is read from the `OPENAI_API_KEY` environment
+  variable. If the key is missing or OpenAI errors, `classifySubmission` does **not**
+  block the user — it returns a safe **fallback** (`category: "Other"`,
+  `listTarget: "business-ideas"`, `confidence: 0.5`, plus generic follow-up
+  questions), so the note still goes through, just into Business Ideas. (Submission
+  is only blocked earlier, in `SubmitTab.handleContinue`, if the *network/auth*
+  request itself fails — token invalid, offline, etc.) Title generation in step 7
+  likewise falls back gracefully since the item is already saved by then.
 
 ## How to package and upload
 
