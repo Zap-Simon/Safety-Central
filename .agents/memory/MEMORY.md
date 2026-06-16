@@ -5,3 +5,4 @@
 - [PDF/HTML export page footers](pdf-export-page-footers.md) — browser print ignores @page counter margin boxes; inline Paged.js (base64-bundled) into the standalone export for reliable offline "Page X of Y".
 - [Teams manifest icons & color override](teams-manifest-icons.md) — outline.png must be 32×32 transparent + white glyph or Teams shows your literal color instead of its theme tint; app name "Improve+".
 - [Dual-token backend (Teams OBO + main-app MSAL)](dual-token-teams-obo.md) — shared API endpoints detect token audience: Teams SSO tokens get OBO-exchanged server-side, main-app MSAL tokens pass through unchanged; never re-add browser MSAL to Teams tabs.
+- [Orders admin authorization](orders-admin-allowlist.md) — order-admin gate is an ORDER_ADMINS email/name allowlist (not staff role); prefer email (display names are mutable); remove/clear are soft-archive.

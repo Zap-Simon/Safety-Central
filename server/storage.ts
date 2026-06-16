@@ -213,6 +213,7 @@ export interface IStorage {
   getActiveOrderItems(): Promise<OrderItem[]>;
   createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   updateOrderItemStatus(id: number, status: string, orderedBy?: string): Promise<OrderItem>;
+  clearActiveOrderItems(): Promise<number>;
 }
 
 
@@ -1091,6 +1092,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orderItems.id, id))
       .returning();
     return updated;
+  }
+
+  async clearActiveOrderItems(): Promise<number> {
+    const rows = await db
+      .update(orderItems)
+      .set({ status: "archived" })
+      .where(eq(orderItems.status, "active"))
+      .returning({ id: orderItems.id });
+    return rows.length;
   }
 }
 

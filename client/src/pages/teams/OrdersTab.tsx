@@ -8,6 +8,13 @@ import {
   Spinner,
   Badge,
   Text,
+  Dialog,
+  DialogTrigger,
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogContent,
+  DialogActions,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -20,6 +27,8 @@ import {
   Box24Regular,
   Person16Regular,
   Shield16Regular,
+  Delete16Regular,
+  Delete20Regular,
 } from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
 import {
@@ -76,9 +85,18 @@ const useStyles = makeStyles({
   },
   input: { flexGrow: 1 },
   adminWrap: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: tokens.spacingHorizontalS,
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
     paddingTop: tokens.spacingVerticalS,
+  },
+  clearBtn: {
+    flexShrink: 0,
+    color: tokens.colorPaletteRedForeground1,
+    ...allBorderColor(tokens.colorPaletteRedBorder1),
   },
   list: {
     paddingLeft: tokens.spacingHorizontalL,
@@ -143,6 +161,13 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteGreenForeground1,
     ...allBorderColor(tokens.colorPaletteGreenBorder1),
   },
+  itemActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    flexShrink: 0,
+  },
+  removeBtn: { color: tokens.colorPaletteRedForeground1 },
 });
 
 export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
@@ -276,6 +301,62 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     },
   });
 
+  // ─── Remove a single item (admin) ─────────────────────────────────────────
+  const removeMutation = useMutation({
+    mutationFn: async ({ id }: { id: number }) => {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${teamsToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to remove item");
+      return data;
+    },
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: ["/api/orders"] });
+      const prev = qc.getQueryData(["/api/orders"]);
+      qc.setQueryData<{ success: boolean; items: OrderItem[] }>(["/api/orders"], (old) => ({
+        success: true,
+        items: (old?.items ?? []).filter((i) => i.id !== id),
+      }));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["/api/orders"], ctx.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["/api/orders"] });
+    },
+  });
+
+  // ─── Clear the whole list (admin) ─────────────────────────────────────────
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/orders/clear", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${teamsToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to clear list");
+      return data;
+    },
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ["/api/orders"] });
+      const prev = qc.getQueryData(["/api/orders"]);
+      qc.setQueryData<{ success: boolean; items: OrderItem[] }>(["/api/orders"], {
+        success: true,
+        items: [],
+      });
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["/api/orders"], ctx.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["/api/orders"] });
+    },
+  });
+
   function handleAdd() {
     const text = itemText.trim();
     if (!text) return;
@@ -349,8 +430,45 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
               shape="rounded"
               icon={<Shield16Regular style={{ width: "12px", height: "12px" }} />}
             >
-              Admin — you can mark items as ordered
+              Admin — mark ordered, remove or clear
             </Badge>
+            {items.length > 0 && (
+              <Dialog>
+                <DialogTrigger disableButtonEnhancement>
+                  <Button
+                    size="small"
+                    appearance="outline"
+                    className={styles.clearBtn}
+                    icon={<Delete20Regular />}
+                    disabled={clearMutation.isPending}
+                  >
+                    Clear list
+                  </Button>
+                </DialogTrigger>
+                <DialogSurface>
+                  <DialogBody>
+                    <DialogTitle>Clear the whole order list?</DialogTitle>
+                    <DialogContent>
+                      This removes all {items.length} item{items.length !== 1 ? "s" : ""} from the
+                      list for everyone on the team. You can't undo this from here.
+                    </DialogContent>
+                    <DialogActions>
+                      <DialogTrigger disableButtonEnhancement>
+                        <Button appearance="secondary">Cancel</Button>
+                      </DialogTrigger>
+                      <DialogTrigger disableButtonEnhancement>
+                        <Button
+                          appearance="primary"
+                          onClick={() => clearMutation.mutate()}
+                        >
+                          Clear list
+                        </Button>
+                      </DialogTrigger>
+                    </DialogActions>
+                  </DialogBody>
+                </DialogSurface>
+              </Dialog>
+            )}
           </div>
         )}
       </TeamsPinned>
@@ -397,22 +515,40 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
               </div>
             </div>
             {userIsAdmin && (
-              <Button
-                size="small"
-                appearance="outline"
-                className={styles.orderedBtn}
-                onClick={() => orderMutation.mutate({ id: item.id })}
-                disabled={orderMutation.isPending && orderMutation.variables?.id === item.id}
-                icon={
-                  orderMutation.isPending && orderMutation.variables?.id === item.id ? (
-                    <Spinner size="tiny" />
-                  ) : (
-                    <CheckmarkCircle16Regular />
-                  )
-                }
-              >
-                Ordered
-              </Button>
+              <div className={styles.itemActions}>
+                <Button
+                  size="small"
+                  appearance="outline"
+                  className={styles.orderedBtn}
+                  onClick={() => orderMutation.mutate({ id: item.id })}
+                  disabled={orderMutation.isPending && orderMutation.variables?.id === item.id}
+                  icon={
+                    orderMutation.isPending && orderMutation.variables?.id === item.id ? (
+                      <Spinner size="tiny" />
+                    ) : (
+                      <CheckmarkCircle16Regular />
+                    )
+                  }
+                >
+                  Ordered
+                </Button>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  className={styles.removeBtn}
+                  aria-label={`Remove ${item.itemName}`}
+                  title="Remove item"
+                  onClick={() => removeMutation.mutate({ id: item.id })}
+                  disabled={removeMutation.isPending && removeMutation.variables?.id === item.id}
+                  icon={
+                    removeMutation.isPending && removeMutation.variables?.id === item.id ? (
+                      <Spinner size="tiny" />
+                    ) : (
+                      <Delete16Regular />
+                    )
+                  }
+                />
+              </div>
             )}
           </Card>
         ))}

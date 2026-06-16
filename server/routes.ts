@@ -5916,13 +5916,29 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     }
   }
 
-  // Helper: verify caller is admin/supervisor via staff table (email from Graph token).
+  // Order admins — the only people who can mark items ordered, remove items, and clear
+  // the list. Everyone else just adds items. The caller's identity is resolved server-side
+  // from their token via Graph /me, so it cannot be spoofed from the browser.
+  //
+  // Each allowlist entry is matched against the signed-in user's email (UPN) OR their
+  // display name. Prefer emails — they are a stable, unique identity; display names can be
+  // changed and are not guaranteed unique. To add the rest of the team, list their entries
+  // here (or set the ORDER_ADMINS env var, comma-separated), e.g.
+  //   'simon.hubbard@cranfieldglass.co.nz, hoani.hunt@cranfieldglass.co.nz, ...'
+  // Later this can be swapped for a Microsoft 365 group membership check — note group
+  // lookups in Microsoft 365 match on user identity (UPN/object id), not display name.
+  const ORDER_ADMINS = (process.env.ORDER_ADMINS || 'Simon Hubbard')
+    .split(',')
+    .map((n) => n.trim().toLowerCase())
+    .filter(Boolean);
+
+  // Helper: verify caller is an order admin (email or display name on the allowlist above).
   async function resolveOrderAdminFromToken(authHeader: string | undefined): Promise<string | null> {
     const caller = await resolveCallerFromToken(authHeader);
     if (!caller) return null;
-    const staffMember = await storage.getStaffByEmail(caller.email);
-    if (!staffMember) return null;
-    if (staffMember.role === 'admin' || staffMember.role === 'supervisor') {
+    const email = caller.email.trim().toLowerCase();
+    const name = caller.displayName.trim().toLowerCase();
+    if (ORDER_ADMINS.includes(email) || ORDER_ADMINS.includes(name)) {
       return caller.displayName;
     }
     return null;
@@ -5990,10 +6006,46 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
         return res.status(403).json({ success: false, error: 'Only admin or supervisor staff can mark items as ordered' });
       }
       const item = await storage.updateOrderItemStatus(id, status, callerName);
+      if (!item) return res.status(404).json({ success: false, error: 'Order item not found' });
       res.json({ success: true, item });
     } catch (error) {
       console.error('Error updating order item:', error);
       res.status(500).json({ success: false, error: 'Failed to update order item' });
+    }
+  });
+
+  // DELETE /api/orders/:id — remove a single item (order admins only).
+  // Soft-removes by archiving so nothing is permanently lost.
+  app.delete('/api/orders/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
+      const callerName = await resolveOrderAdminFromToken(req.headers.authorization);
+      if (!callerName) {
+        return res.status(403).json({ success: false, error: 'Only order admins can remove items' });
+      }
+      const item = await storage.updateOrderItemStatus(id, 'archived', callerName);
+      if (!item) return res.status(404).json({ success: false, error: 'Order item not found' });
+      res.json({ success: true, item });
+    } catch (error) {
+      console.error('Error removing order item:', error);
+      res.status(500).json({ success: false, error: 'Failed to remove order item' });
+    }
+  });
+
+  // POST /api/orders/clear — clear the whole list (order admins only).
+  // Soft-removes by archiving every active item so nothing is permanently lost.
+  app.post('/api/orders/clear', async (req, res) => {
+    try {
+      const callerName = await resolveOrderAdminFromToken(req.headers.authorization);
+      if (!callerName) {
+        return res.status(403).json({ success: false, error: 'Only order admins can clear the list' });
+      }
+      const cleared = await storage.clearActiveOrderItems();
+      res.json({ success: true, cleared });
+    } catch (error) {
+      console.error('Error clearing order items:', error);
+      res.status(500).json({ success: false, error: 'Failed to clear order items' });
     }
   });
 
