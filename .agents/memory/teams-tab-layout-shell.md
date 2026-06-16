@@ -30,3 +30,9 @@ The two Teams personal tabs (Submit, Orders) share one layout contract. Keep the
 **Why:** `min-h-screen` inside a tab makes it taller than its viewport slot → phantom page scroll and inputs pinned awkwardly high; the user disliked both. A bottom app-nav duplicated Teams' own nav; a second app header duplicated Teams' app-name chrome.
 
 **How to apply:** Never reintroduce `min-h-screen` inside a tab, a fixed bottom nav, a per-tab app header, or a `my-auto`/centered input region (breaks keyboard safety). Submit greeting stays a prominent pinned heading; Orders stays greeting-free and shared-list-labelled.
+
+## Keyboard-focus page-shift (Teams mobile)
+- **Symptom:** opening a tab auto-focuses an input and the whole page jumps up. It happens when the auto-focused input sits *low* in the layout (Submit's textarea is below the greeting); the webview scrolls it into view on focus. Orders never jumped only because its input is pinned at the very top.
+- **Fix:** never rely on the bare `autoFocus` attribute (or a plain `.focus()`) for an input that isn't at the very top. Use a ref + `el.focus({ preventScroll: true })` in an effect gated on the relevant state (e.g. authenticated + correct step). `preventScroll` suppresses the scroll-into-view that shifts the page.
+- **Viewport:** the shared Teams shell uses `h-[100dvh]` (dynamic viewport), NOT `h-screen`/`100vh` — `dvh` matches the actual visible area when the keyboard is up and avoids extra layout shift on mobile webviews. Don't revert to `100vh`.
+- **Why:** these two together make a lower-positioned auto-focused input behave like Orders' top-pinned one (no page jump). **How to apply:** any new auto-focused Teams input that isn't top-pinned must use the `focus({ preventScroll: true })` pattern.

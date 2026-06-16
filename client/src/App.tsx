@@ -73,7 +73,7 @@ function TeamsRouterContent() {
 
   return (
     <div
-      className={`flex flex-col h-screen overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-white"}`}
+      className={`flex flex-col h-[100dvh] overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-white"}`}
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",

@@ -155,10 +155,21 @@ export default function SubmitTab() {
   const classifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const classifyCache = useRef<Map<string, ClassifyResult>>(new Map());
   const classifyInFlight = useRef<Map<string, Promise<ClassifyResult>>>(new Map());
+  const mainInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     initAuth();
   }, []);
+
+  // Focus the input without scrolling the page. The plain `autoFocus`/`focus()`
+  // makes the mobile webview scroll the (lower-positioned) textarea into view,
+  // shifting the whole page up. `preventScroll` keeps the layout still — matching
+  // the Orders tab, whose input sits at the very top so it never needs scrolling.
+  useEffect(() => {
+    if (authState === "authenticated" && step === "input") {
+      mainInputRef.current?.focus({ preventScroll: true });
+    }
+  }, [authState, step]);
 
   useEffect(() => {
     if (step !== "input" || inputText) return;
@@ -427,6 +438,7 @@ export default function SubmitTab() {
               </p>
               <div className="relative">
                 <Textarea
+                  ref={mainInputRef}
                   placeholder={EXAMPLES[exampleIdx]}
                   value={inputText}
                   onChange={(e) => handleTextChange(e.target.value)}
@@ -436,7 +448,6 @@ export default function SubmitTab() {
                       ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
                       : "border-gray-200 focus:border-blue-400"
                   }`}
-                  autoFocus
                 />
                 {prefetching && (
                   <div className="absolute bottom-2.5 right-3 flex items-center gap-1.5 text-xs text-blue-500 animate-fade-in">
