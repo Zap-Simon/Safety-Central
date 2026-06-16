@@ -1067,11 +1067,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Error fetching meeting history:', error);
-      res.status(500).json({
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      // Expired/invalid SharePoint tokens surface as 401/403 from Microsoft Graph/SharePoint.
+      // Return 401 so the client can prompt re-authentication instead of treating it as a server fault.
+      const isAuthError = /\b(401|403)\b/.test(message) || /unauthor|forbidden|invalid.*token|token.*expired/i.test(message);
+      res.status(isAuthError ? 401 : 500).json({
         configured: true,
         authenticated: false,
-        error: 'Failed to fetch meeting data',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: isAuthError ? 'Authentication expired. Please sign in again.' : 'Failed to fetch meeting data',
+        message,
         data: []
       });
     }

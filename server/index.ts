@@ -62,12 +62,14 @@ app.use(helmet({
       baseUri: ["'self'"],
       // Allow Teams, SharePoint, and Microsoft auth domains to embed the tab
       frameAncestors: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com", "https://teams.microsoft.com", "https://*.teams.microsoft.com", "https://*.sharepoint.com", "https://*.office.com"],
-      styleSrc: isProduction 
-        ? ["'self'", "https:"]
-        : ["'self'", "'unsafe-inline'", "https:"], // Allow unsafe-inline only in dev for Vite HMR
-      scriptSrc: isProduction 
-        ? ["'self'"]
-        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Allow for Vite HMR in dev
+      // UI libraries (Radix/shadcn) inject inline styles at runtime, so 'unsafe-inline'
+      // is required for styles in production as well as dev.
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"],
+      // Allow our own scripts plus the CDN-hosted mermaid library and the Replit dev banner.
+      // In dev we additionally need 'unsafe-inline'/'unsafe-eval' for Vite HMR.
+      scriptSrc: isProduction
+        ? ["'self'", "https://unpkg.com", "https://replit.com"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://replit.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: isProduction
         ? ["'self'", "https:", "https://login.microsoftonline.com", "https://graph.microsoft.com"]
