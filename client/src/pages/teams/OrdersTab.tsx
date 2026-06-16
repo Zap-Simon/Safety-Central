@@ -13,15 +13,9 @@ import {
   DialogBody,
   DialogContent,
   DialogActions,
-  FluentProvider,
-  teamsLightTheme,
-  teamsDarkTheme,
-  teamsHighContrastTheme,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import type { Theme } from "@fluentui/react-components";
-import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 import {
   Cart20Regular,
@@ -33,44 +27,6 @@ import {
 } from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
 import { TeamsPage, TeamsPinned, TeamsScroll, TeamsCenter, TeamsFullScreen } from "./TeamsPageShell";
-
-// Berry-purple theme for the Orders tab — overrides brand tokens so all
-// Fluent primitives (primary buttons, input focus ring, icons, spinner) are
-// purple rather than the default Teams blue. Derived from the *active* base
-// theme (light/dark/contrast) so dark + high-contrast modes still work — the
-// berry palette tokens already carry mode-appropriate values.
-function makeBerryTheme(base: Theme): Theme {
-  return {
-    ...base,
-    colorBrandBackground: base.colorPaletteBerryForeground2,
-    colorBrandBackgroundHover: base.colorPaletteBerryForeground1,
-    colorBrandBackgroundPressed: base.colorPaletteBerryForeground3,
-    colorBrandBackgroundSelected: base.colorPaletteBerryForeground2,
-    colorBrandForeground1: base.colorPaletteBerryForeground1,
-    colorBrandForeground2: base.colorPaletteBerryForeground2,
-    colorBrandForegroundLink: base.colorPaletteBerryForeground1,
-    colorBrandForegroundLinkHover: base.colorPaletteBerryForeground2,
-    colorBrandStroke1: base.colorPaletteBerryBorderActive,
-    colorBrandStroke2: base.colorPaletteBerryBorder1,
-    colorCompoundBrandBackground: base.colorPaletteBerryForeground2,
-    colorCompoundBrandBackgroundHover: base.colorPaletteBerryForeground1,
-    colorCompoundBrandBackgroundPressed: base.colorPaletteBerryForeground3,
-  };
-}
-
-export const berryThemes: Record<string, Theme> = {
-  default: makeBerryTheme(teamsLightTheme),
-  dark: makeBerryTheme(teamsDarkTheme),
-  contrast: makeBerryTheme(teamsHighContrastTheme),
-};
-
-// Base (Submit/blue) themes — used to keep primary action buttons on the shared
-// brand colour even inside the berry-tinted Orders tab.
-const baseThemes: Record<string, Theme> = {
-  default: teamsLightTheme,
-  dark: teamsDarkTheme,
-  contrast: teamsHighContrastTheme,
-};
 
 function timeAgo(dateStr: string | Date): string {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
@@ -147,9 +103,6 @@ const useStyles = makeStyles({
 
 export default function OrdersTab() {
   const styles = useStyles();
-  const { theme } = useTeamsTheme();
-  const berryTheme = berryThemes[theme] ?? berryThemes.default;
-  const baseTheme = baseThemes[theme] ?? baseThemes.default;
   const qc = useQueryClient();
   // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
   // never re-triggers the "Signing you in…" loader.
@@ -291,37 +244,32 @@ export default function OrdersTab() {
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
-        <TeamsCenter className="animate-fade-in">
-          <Spinner size="large" label="Signing you in automatically…" />
-        </TeamsCenter>
-      </FluentProvider>
+      <TeamsCenter className="animate-fade-in">
+        <Spinner size="large" label="Signing you in automatically…" />
+      </TeamsCenter>
     );
   }
 
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
-        <TeamsFullScreen
-          icon={<Cart20Regular />}
-          title="Sign in required"
-          description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
-          actionLabel="Try again"
-          onAction={retry}
-          error={authError || undefined}
-          accent={{
-            bg: tokens.colorPaletteBerryBackground1,
-            fg: tokens.colorPaletteBerryForeground1,
-          }}
-        />
-      </FluentProvider>
+      <TeamsFullScreen
+        icon={<Cart20Regular />}
+        title="Sign in required"
+        description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
+        actionLabel="Try again"
+        onAction={retry}
+        error={authError || undefined}
+        accent={{
+          bg: tokens.colorBrandBackground2,
+          fg: tokens.colorBrandForeground1,
+        }}
+      />
     );
   }
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
-    <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
     <TeamsPage>
       <TeamsPinned>
         {/* ── Quick-add bar (keyboard-safe — never scrolls away) ── */}
@@ -335,18 +283,15 @@ export default function OrdersTab() {
             onKeyDown={handleKeyDown}
             size="large"
           />
-          {/* Primary action stays on the shared Submit/blue brand, not berry. */}
-          <FluentProvider theme={baseTheme} style={{ display: "contents" }}>
-            <Button
-              appearance="primary"
-              size="large"
-              onClick={handleAdd}
-              disabled={!itemText.trim() || addMutation.isPending}
-              icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
-            >
-              Add
-            </Button>
-          </FluentProvider>
+          <Button
+            appearance="primary"
+            size="large"
+            onClick={handleAdd}
+            disabled={!itemText.trim() || addMutation.isPending}
+            icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
+          >
+            Add
+          </Button>
         </div>
       </TeamsPinned>
 
@@ -378,14 +323,11 @@ export default function OrdersTab() {
                     <DialogTrigger disableButtonEnhancement>
                       <Button appearance="secondary">Cancel</Button>
                     </DialogTrigger>
-                    {/* Confirm action on the shared Submit/blue brand, not berry. */}
-                    <FluentProvider theme={baseTheme} style={{ display: "contents" }}>
-                      <DialogTrigger disableButtonEnhancement>
-                        <Button appearance="primary" onClick={() => clearMutation.mutate()}>
-                          Clear list
-                        </Button>
-                      </DialogTrigger>
-                    </FluentProvider>
+                    <DialogTrigger disableButtonEnhancement>
+                      <Button appearance="primary" onClick={() => clearMutation.mutate()}>
+                        Clear list
+                      </Button>
+                    </DialogTrigger>
                   </DialogActions>
                 </DialogBody>
               </DialogSurface>
@@ -446,6 +388,5 @@ export default function OrdersTab() {
         )}
       </TeamsScroll>
     </TeamsPage>
-    </FluentProvider>
   );
 }

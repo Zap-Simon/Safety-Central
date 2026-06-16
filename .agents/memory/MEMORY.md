@@ -5,6 +5,6 @@
 - [PDF/HTML export page footers](pdf-export-page-footers.md) — browser print ignores @page counter margin boxes; inline Paged.js (base64-bundled) into the standalone export for reliable offline "Page X of Y".
 - [Teams manifest icons & color override](teams-manifest-icons.md) — outline.png must be 32×32 transparent + white glyph or Teams shows your literal color instead of its theme tint; app name "Improve+".
 - [Dual-token backend (Teams OBO + main-app MSAL)](dual-token-teams-obo.md) — shared API endpoints detect token audience: Teams SSO tokens get OBO-exchanged server-side, main-app MSAL tokens pass through unchanged; never re-add browser MSAL to Teams tabs.
-- [Teams per-tab brand theming (Fluent v9)](teams-per-tab-theming.md) — recolour one tab: CSS var on `<Tab>` for indicator + nested FluentProvider(display:contents) for content; derive theme from active base, never hard-code light.
+- [Teams per-tab brand theming (Fluent v9)](teams-per-tab-theming.md) — both Teams tabs now share ONE blue brand (berry/purple removed); technique to recolour a single tab kept as reference only.
 - [Teams tabs share one auth provider](teams-shared-auth-provider.md) — run Teams SSO once in a provider above the tab routes; per-tab initAuth flashes the sign-in loader on every tab switch since tabs remount.
 - [Orders admin authorization](orders-admin-allowlist.md) — order-admin gate is an ORDER_ADMINS email/name allowlist (not staff role); prefer email (display names are mutable); remove/clear are soft-archive.

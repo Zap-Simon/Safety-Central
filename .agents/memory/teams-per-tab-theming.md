@@ -1,9 +1,18 @@
 ---
 name: Teams per-tab brand theming (Fluent v9)
-description: How to recolour ONE Fluent tab/section away from the global brand (e.g. purple Orders vs blue Submit) without breaking dark/high-contrast.
+description: How to recolour ONE Fluent tab/section away from the global brand without breaking dark/high-contrast. NOTE — no longer applied; both Teams tabs now share one blue brand.
 ---
 
-# Per-tab brand colour in Fluent v9
+# CURRENT STATE (durable)
+
+The project deliberately uses ONE shared default-Teams-blue brand for BOTH tabs
+(Submit + Orders). The earlier purple "berry" Orders accent was removed at the
+user's request — they wanted blue throughout. App.tsx applies a single
+`fluentTheme` (light/dark/contrast) at the shell; OrdersTab has NO per-tab or
+per-button FluentProvider wrappers. Do not re-introduce a second brand unless the
+user explicitly asks. The technique below is kept only as reference if they do.
+
+# Per-tab brand colour in Fluent v9 (reference only — not currently used)
 
 To give one tab/section a different brand accent than the rest of the app:
 

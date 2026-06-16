@@ -14,7 +14,7 @@ import HealthSafetyPolicy from "@/pages/health-safety-policy";
 import EnvironmentPolicy from "@/pages/environment-policy";
 import QualityPolicy from "@/pages/quality-policy";
 import SubmitTab from "@/pages/teams/SubmitTab";
-import OrdersTab, { berryThemes } from "@/pages/teams/OrdersTab";
+import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 import { TeamsAuthProvider, useTeamsAuth } from "@/hooks/useTeamsAuth";
@@ -123,16 +123,13 @@ function TeamsRouterContent() {
   const { userName } = useTeamsAuth();
   const isOrders = location === "/teams-tab/orders";
 
-  const baseTheme =
+  // Both tabs share the default Teams blue brand.
+  const fluentTheme =
     theme === "dark"
       ? teamsDarkTheme
       : theme === "contrast"
       ? teamsHighContrastTheme
       : teamsLightTheme;
-
-  // On Orders, theme the entire shell berry so the tab indicator and content
-  // read consistently purple; Submit keeps the default Teams blue.
-  const fluentTheme = isOrders ? berryThemes[theme] ?? berryThemes.default : baseTheme;
 
   return (
     <FluentProvider
