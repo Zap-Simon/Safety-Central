@@ -77,7 +77,7 @@ const meetingAttendees = {
   glaziers: [
     { name: 'Kevin Young', role: 'Glazier' },
     { name: 'Ryan Newman', role: 'Glazier' },
-    { name: 'Dan Conlan', role: 'Glazier' },
+    { name: 'Daniel Conlan', role: 'Glazier' },
     { name: 'Struan O\'Donnell', role: 'Glazier' },
     { name: 'Sam Chang', role: 'Glazier' }
   ]

@@ -2127,7 +2127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Emma White',
         'Kevin Young',
         'Ryan Newman',
-        'Dan Conlan',
+        'Daniel Conlan',
         'Struan O\'Donnell',
         'Sam Chang'
       ];
