@@ -417,7 +417,7 @@ export default function SubmitTab() {
           </p>
         </div>
       )}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1 pb-5">
+      <div className={`${step === "input" ? "shrink-0" : "flex-1 min-h-0 overflow-y-auto"} px-4 pt-1 pb-5`}>
         <Card className={`w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
           isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
         }`}>
@@ -431,7 +431,7 @@ export default function SubmitTab() {
                   placeholder={EXAMPLES[exampleIdx]}
                   value={inputText}
                   onChange={(e) => handleTextChange(e.target.value)}
-                  rows={5}
+                  rows={4}
                   className={`resize-none text-base transition-colors ${
                     isDark
                       ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
