@@ -8,7 +8,7 @@ import {
   Spinner,
   ProgressBar,
   Text,
-  Label,
+  Field,
   Skeleton,
   SkeletonItem,
   MessageBar,
@@ -29,6 +29,14 @@ import {
   ArrowCounterclockwise20Regular,
   Sparkle16Regular,
 } from "@fluentui/react-icons";
+import {
+  TeamsPage,
+  TeamsPinned,
+  TeamsScroll,
+  TeamsCenter,
+  TeamsFullScreen,
+  useKeyboardSafeFocus,
+} from "./TeamsPageShell";
 
 type Category =
   | "Near Miss"
@@ -146,32 +154,7 @@ const allBorderColor = (c: string) => ({
 });
 
 const useStyles = makeStyles({
-  fullscreen: {
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: tokens.spacingHorizontalXXL,
-    paddingRight: tokens.spacingHorizontalXXL,
-    boxSizing: "border-box",
-  },
   centered: { width: "100%", maxWidth: "340px", textAlign: "center" },
-  chip: {
-    width: "56px",
-    height: "56px",
-    borderTopLeftRadius: tokens.borderRadiusXLarge,
-    borderTopRightRadius: tokens.borderRadiusXLarge,
-    borderBottomLeftRadius: tokens.borderRadiusXLarge,
-    borderBottomRightRadius: tokens.borderRadiusXLarge,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginBottom: tokens.spacingVerticalL,
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground1,
-  },
   successChip: {
     width: "72px",
     height: "72px",
@@ -186,25 +169,13 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteGreenForeground1,
   },
   stack: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
-  root: { display: "flex", flexDirection: "column", height: "100%", minHeight: 0 },
   greeting: {
-    flexShrink: 0,
     paddingTop: tokens.spacingVerticalXS,
     paddingBottom: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalXXL,
     paddingRight: tokens.spacingHorizontalXXL,
   },
-  bodyStatic: {
-    flexShrink: 0,
-    paddingTop: tokens.spacingVerticalXS,
-    paddingBottom: tokens.spacingVerticalL,
-    paddingLeft: tokens.spacingHorizontalL,
-    paddingRight: tokens.spacingHorizontalL,
-  },
-  bodyScroll: {
-    flexGrow: 1,
-    minHeight: 0,
-    overflowY: "auto",
+  bodyPad: {
     paddingTop: tokens.spacingVerticalXS,
     paddingBottom: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalL,
@@ -325,15 +296,8 @@ export default function SubmitTab() {
     initAuth();
   }, []);
 
-  // Focus the input without scrolling the page. The plain `autoFocus`/`focus()`
-  // makes the mobile webview scroll the (lower-positioned) textarea into view,
-  // shifting the whole page up. `preventScroll` keeps the layout still — matching
-  // the Orders tab, whose input sits at the very top so it never needs scrolling.
-  useEffect(() => {
-    if (authState === "authenticated" && step === "input") {
-      mainInputRef.current?.focus({ preventScroll: true });
-    }
-  }, [authState, step]);
+  // Keyboard-safe auto-focus (see TeamsPageShell): focus without the page jumping.
+  useKeyboardSafeFocus(mainInputRef, authState === "authenticated" && step === "input");
 
   useEffect(() => {
     if (step !== "input" || inputText) return;
@@ -493,55 +457,28 @@ export default function SubmitTab() {
   // ─── Full-screen states ───────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`${styles.fullscreen} animate-fade-in`}>
+      <TeamsCenter className="animate-fade-in">
         <Spinner size="large" label="Signing you in automatically…" />
-      </div>
+      </TeamsCenter>
     );
   }
 
   if (authState === "unauthenticated") {
     return (
-      <div className={`${styles.fullscreen} animate-fade-in`}>
-        <div className={`${styles.centered} animate-scale-in`}>
-          <div className={styles.chip}>
-            <Shield24Regular />
-          </div>
-          <Text as="h1" size={500} weight="bold" block>
-            Sign in required
-          </Text>
-          <Text
-            size={300}
-            block
-            style={{
-              color: tokens.colorNeutralForeground3,
-              marginTop: tokens.spacingVerticalS,
-              marginBottom: tokens.spacingVerticalL,
-            }}
-          >
-            Sign in with your Cranfield Glass Microsoft account to submit ideas and reports.
-          </Text>
-          <Button
-            appearance="primary"
-            size="large"
-            className={styles.fullWidth}
-            icon={<ArrowCounterclockwise20Regular />}
-            onClick={() => initAuth()}
-          >
-            Try again
-          </Button>
-          {authError && (
-            <MessageBar intent="error" style={{ marginTop: tokens.spacingVerticalM, textAlign: "left" }}>
-              <MessageBarBody>{authError}</MessageBarBody>
-            </MessageBar>
-          )}
-        </div>
-      </div>
+      <TeamsFullScreen
+        icon={<Shield24Regular />}
+        title="Sign in required"
+        description="Sign in with your Cranfield Glass Microsoft account to submit ideas and reports."
+        actionLabel="Try again"
+        onAction={() => initAuth()}
+        error={authError || undefined}
+      />
     );
   }
 
   if (step === "done") {
     return (
-      <div className={`${styles.fullscreen} animate-fade-in`}>
+      <TeamsCenter className="animate-fade-in">
         <div className={styles.centered}>
           <div className={`${styles.successChip} animate-pop-in`}>
             <CheckmarkCircle48Filled />
@@ -575,27 +512,18 @@ export default function SubmitTab() {
             Submit another
           </Button>
         </div>
-      </div>
+      </TeamsCenter>
     );
   }
 
   // ─── Main form ────────────────────────────────────────────────────────────
   const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
 
-  return (
-    <div className={styles.root}>
-      {userName && (
-        <div className={styles.greeting}>
-          <Text as="h1" size={600} weight="bold" block>
-            Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
-          </Text>
-          <Text size={300} block style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalS }}>
-            Small ideas. Continuous improvement.
-          </Text>
-        </div>
-      )}
-      <div className={step === "input" ? styles.bodyStatic : styles.bodyScroll}>
-        <Card className={`${styles.card} animate-fade-in-up`}>
+  // The card sits in a pinned region during the "input" step so the focused
+  // textarea has no scrollable ancestor (keyboard-safe). Longer follow-up /
+  // confirm steps move into the single scroll region.
+  const cardEl = (
+    <Card className={`${styles.card} animate-fade-in-up`}>
           {step === "input" && (
             <div className={`${styles.group} animate-fade-in`}>
               <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
@@ -675,14 +603,12 @@ export default function SubmitTab() {
 
               <div className={styles.groupTight}>
                 {classifyResult.followUpQuestions.map((question, idx) => (
-                  <div
+                  <Field
                     key={idx}
-                    className={`${styles.field} animate-fade-in-up`}
+                    label={question}
+                    className="animate-fade-in-up"
                     style={{ animationDelay: `${idx * 60}ms` }}
                   >
-                    <Label weight="semibold" size="small">
-                      {question}
-                    </Label>
                     <Textarea
                       placeholder="Your answer…"
                       value={followUpAnswers[idx] || ""}
@@ -694,7 +620,7 @@ export default function SubmitTab() {
                       textarea={{ rows: 2 }}
                       resize="none"
                     />
-                  </div>
+                  </Field>
                 ))}
               </div>
 
@@ -790,9 +716,27 @@ export default function SubmitTab() {
               </Text>
             </div>
           )}
-        </Card>
-      </div>
-    </div>
+    </Card>
+  );
+
+  return (
+    <TeamsPage>
+      {userName && (
+        <TeamsPinned className={styles.greeting}>
+          <Text as="h1" size={600} weight="bold" block>
+            Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
+          </Text>
+          <Text size={300} block style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalS }}>
+            Small ideas. Continuous improvement.
+          </Text>
+        </TeamsPinned>
+      )}
+      {step === "input" ? (
+        <TeamsPinned className={styles.bodyPad}>{cardEl}</TeamsPinned>
+      ) : (
+        <TeamsScroll className={styles.bodyPad}>{cardEl}</TeamsScroll>
+      )}
+    </TeamsPage>
   );
 }
 

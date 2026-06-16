@@ -20,9 +20,15 @@ import {
   Box24Regular,
   Person16Regular,
   Shield16Regular,
-  ArrowCounterclockwise20Regular,
 } from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
+import {
+  TeamsPage,
+  TeamsPinned,
+  TeamsScroll,
+  TeamsCenter,
+  TeamsFullScreen,
+} from "./TeamsPageShell";
 
 function timeAgo(dateStr: string | Date): string {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
@@ -57,35 +63,7 @@ const allBorderColor = (c: string) => ({
 });
 
 const useStyles = makeStyles({
-  fullscreen: {
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: tokens.spacingHorizontalXXL,
-    paddingRight: tokens.spacingHorizontalXXL,
-    boxSizing: "border-box",
-  },
-  centered: { width: "100%", maxWidth: "340px", textAlign: "center" },
-  chip: {
-    width: "56px",
-    height: "56px",
-    borderTopLeftRadius: tokens.borderRadiusXLarge,
-    borderTopRightRadius: tokens.borderRadiusXLarge,
-    borderBottomLeftRadius: tokens.borderRadiusXLarge,
-    borderBottomRightRadius: tokens.borderRadiusXLarge,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginBottom: tokens.spacingVerticalL,
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground1,
-  },
-  root: { display: "flex", flexDirection: "column", height: "100%", minHeight: 0 },
   addBar: {
-    flexShrink: 0,
     display: "flex",
     gap: tokens.spacingHorizontalS,
     paddingLeft: tokens.spacingHorizontalL,
@@ -98,15 +76,11 @@ const useStyles = makeStyles({
   },
   input: { flexGrow: 1 },
   adminWrap: {
-    flexShrink: 0,
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
     paddingTop: tokens.spacingVerticalS,
   },
   list: {
-    flexGrow: 1,
-    minHeight: 0,
-    overflowY: "auto",
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
     paddingTop: tokens.spacingVerticalM,
@@ -317,107 +291,72 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`${styles.fullscreen} animate-fade-in`}>
+      <TeamsCenter className="animate-fade-in">
         <Spinner size="large" label="Signing you in automatically…" />
-      </div>
+      </TeamsCenter>
     );
   }
 
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <div className={`${styles.fullscreen} animate-fade-in`}>
-        <div className={`${styles.centered} animate-scale-in`}>
-          <div className={styles.chip}>
-            <Cart20Regular />
-          </div>
-          <Text as="h1" size={500} weight="bold" block>
-            Sign in required
-          </Text>
-          <Text
-            size={300}
-            block
-            style={{
-              color: tokens.colorNeutralForeground3,
-              marginTop: tokens.spacingVerticalS,
-              marginBottom: tokens.spacingVerticalL,
-            }}
-          >
-            Sign in with your Cranfield Glass Microsoft account to add and manage orders.
-          </Text>
-          <Button
-            appearance="primary"
-            size="large"
-            className={styles.input}
-            icon={<ArrowCounterclockwise20Regular />}
-            onClick={() => initAuth()}
-          >
-            Try again
-          </Button>
-          {authError && (
-            <Text
-              size={200}
-              block
-              style={{
-                marginTop: tokens.spacingVerticalM,
-                padding: tokens.spacingHorizontalS,
-                textAlign: "left",
-                fontFamily: tokens.fontFamilyMonospace,
-                color: tokens.colorPaletteRedForeground1,
-                backgroundColor: tokens.colorPaletteRedBackground1,
-                borderRadius: tokens.borderRadiusMedium,
-                wordBreak: "break-all",
-              }}
-            >
-              {authError}
-            </Text>
-          )}
-        </div>
-      </div>
+      <TeamsFullScreen
+        icon={<Cart20Regular />}
+        title="Sign in required"
+        description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
+        actionLabel="Try again"
+        onAction={() => initAuth()}
+        error={authError || undefined}
+        accent={{
+          bg: tokens.colorPaletteBerryBackground1,
+          fg: tokens.colorPaletteBerryForeground1,
+        }}
+      />
     );
   }
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
-    <div className={styles.root}>
-      {/* ── Quick add bar ── */}
-      <div className={styles.addBar}>
-        <Input
-          className={styles.input}
-          input={{ ref: inputRef, autoFocus: true }}
-          placeholder="Add item to order…"
-          value={itemText}
-          onChange={(_, d) => setItemText(d.value)}
-          onKeyDown={handleKeyDown}
-          size="large"
-        />
-        <Button
-          appearance="primary"
-          size="large"
-          onClick={handleAdd}
-          disabled={!itemText.trim() || addMutation.isPending}
-          icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
-        >
-          Add
-        </Button>
-      </div>
-
-      {/* ── Admin badge ── */}
-      {userIsAdmin && (
-        <div className={styles.adminWrap}>
-          <Badge
-            appearance="tint"
-            color="brand"
-            shape="rounded"
-            icon={<Shield16Regular style={{ width: "12px", height: "12px" }} />}
+    <TeamsPage>
+      {/* ── Pinned: quick-add bar + admin badge (keyboard-safe — never scrolls) ── */}
+      <TeamsPinned>
+        <div className={styles.addBar}>
+          <Input
+            className={styles.input}
+            input={{ ref: inputRef, autoFocus: true }}
+            placeholder="Add item to order…"
+            value={itemText}
+            onChange={(_, d) => setItemText(d.value)}
+            onKeyDown={handleKeyDown}
+            size="large"
+          />
+          <Button
+            appearance="primary"
+            size="large"
+            onClick={handleAdd}
+            disabled={!itemText.trim() || addMutation.isPending}
+            icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
           >
-            Admin — you can mark items as ordered
-          </Badge>
+            Add
+          </Button>
         </div>
-      )}
 
-      {/* ── Item list ── */}
-      <div className={styles.list}>
+        {userIsAdmin && (
+          <div className={styles.adminWrap}>
+            <Badge
+              appearance="tint"
+              color="brand"
+              shape="rounded"
+              icon={<Shield16Regular style={{ width: "12px", height: "12px" }} />}
+            >
+              Admin — you can mark items as ordered
+            </Badge>
+          </div>
+        )}
+      </TeamsPinned>
+
+      {/* ── The single scroll region: the shared item list ── */}
+      <TeamsScroll className={styles.list}>
         {isLoading && (
           <div className={styles.loadingRow}>
             <Spinner size="small" label="Loading…" />
@@ -483,7 +422,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
             {items.length} item{items.length !== 1 ? "s" : ""} to order · shared with your team
           </Text>
         )}
-      </div>
-    </div>
+      </TeamsScroll>
+    </TeamsPage>
   );
 }

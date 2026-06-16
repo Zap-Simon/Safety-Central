@@ -7,6 +7,17 @@ description: Fixed app-shell + top segmented switcher pattern for the Submit/Ord
 
 The two Teams personal tabs (Submit, Orders) share one layout contract. Keep them in lockstep when editing either.
 
+## Single reusable shell (the standard — use this, don't hand-roll layout)
+- All Teams tabs now compose `client/src/pages/teams/TeamsPageShell.tsx`. **Do not re-create per-tab flex/scroll layout by hand** — import the primitives. This is the permanent fix for the keyboard/focus class of bugs and the foundation for any future tab.
+- Exports:
+  - `TeamsPage` — the page root: `display:flex; flexDirection:column; height:100%; minHeight:0; overflow:hidden`. The `overflow:hidden` is **non-optional** — it hard-clamps overflow at the shell so the only scroller is `TeamsScroll`. Without it the single-scroll guarantee weakens and mobile keyboard page-jump can regress.
+  - `TeamsPinned` — `flexShrink:0`. The keyboard-safe home for anything that must never scroll away (greeting, the active/focused input step, add bar, admin badge). An auto-focused input placed here has NO scrollable ancestor, so the webview can't scroll-shift the page when the keyboard opens.
+  - `TeamsScroll` — THE one scroll region per page: `flexGrow:1; minHeight:0; overflowY:auto`. Accepts a `className` for padding/gap. Exactly one per page.
+  - `TeamsCenter` — full-height centered wrapper for loading/done states (Spinner, success).
+  - `TeamsFullScreen` — the shared sign-in/error template: centered, soft tinted rounded icon chip, sentence-case title, description, optional primary action button, and a Fluent `MessageBar` for the error (replaced the old per-tab custom monospace red error box). Per-tab difference is only the `accent={{bg,fg}}` chip color + `icon`: Submit = brand/blue, Orders = Berry/purple.
+  - `useKeyboardSafeFocus(ref, active)` — effect that calls `el.focus({ preventScroll: true })` on the slot ref when `active` becomes true.
+- Rule: an input is keyboard-safe iff it lives in `TeamsPinned` (or otherwise has no scrollable ancestor). On Submit, the input step's card is rendered into `TeamsPinned`; later steps render into `TeamsScroll`.
+
 ## Stack: Fluent UI v9 (Teams tabs only)
 - The Teams tabs were remastered from shadcn/Tailwind to **Microsoft Fluent UI v9** (`@fluentui/react-components` + `@fluentui/react-icons`) for a native Teams look. **The main Cranfield website stays on shadcn/Tailwind** — do NOT pull Fluent into `MainRouter`.
 - `FluentProvider` wraps ONLY the Teams shell (`TeamsRouterContent` in App.tsx), mapping `useTeamsTheme().theme` → `teamsLightTheme` / `teamsDarkTheme` / `teamsHighContrastTheme`. It must fill height (`height:100%`). Kept OUT of `MainRouter`.
@@ -19,7 +30,7 @@ The class-name specifics below (`bg-blue-50`, `focus-visible:ring-0`, `shrink-0`
 
 ## Chrome belongs to Teams, not us
 - **No in-app header bar on either tab.** Teams already shows the app name in its own chrome, so a second app header reads as duplicate. (User explicitly asked to remove them.)
-- **Navigation is native-style left-aligned pills** (`TeamsTabSwitcher` in App.tsx), NOT a bottom nav bar and NOT a centered segmented-control track. Mirrors Teams' own in-app tabs (e.g. Engage "Feed / Communities"): two `rounded-full` pills, left-aligned with `gap-2`, sitting close under the Teams header (`pt-2`). Active pill = tinted fill (`bg-blue-50/text-blue-700` Submit, `bg-purple-50/text-purple-700` Orders; dark = `bg-{color}-500/15`); inactive = subtle outline (`border-gray-200 text-gray-600`). Lives in the shell above content + outside the scroll region so it stays visible while content scrolls. (User compared against real Teams tabs and wanted them smaller and more native, not a big centered control.)
+- **Navigation is now a Fluent `TabList`/`Tab` row** (in App.tsx, wired to wouter `navigate`), NOT a bottom nav bar and NOT a centered segmented-control track. This replaced the earlier hand-rolled `rounded-full` pill `<Link>`s. It lives in the shell above content + outside the scroll region so it stays visible while content scrolls. Per-tab accent is the selected-indicator color via a `::after` makeStyles override: Submit indicator = `colorBrandStroke1` (blue), Orders indicator = `colorPaletteBerryForeground1` (purple). The override relies on Fluent merging the consumer `className` last (ours wins). (User wanted native, smaller Teams-style tabs, not a big centered control — Fluent's own TabList is the most native option.)
 - **Backgrounds are white** (`bg-white` light / `bg-gray-900` dark) on the shell and both tab roots — NOT gray. Native Teams apps use white/near-white pages; gray read as foreign. Cards/list items keep subtle gray borders for definition on white.
 
 ## Height / scroll contract (keyboard-safe)

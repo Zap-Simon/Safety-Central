@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation, Link } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,31 +22,14 @@ import {
   teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
+  TabList,
+  Tab,
   makeStyles,
-  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
+import type { SelectTabEvent, SelectTabData } from "@fluentui/react-components";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
-
-// Griffel blocks the `border*` 4-side shorthands (it can't safely expand them),
-// so we set each side longhand via these helpers.
-const thinBorderSides = {
-  borderTopWidth: tokens.strokeWidthThin,
-  borderRightWidth: tokens.strokeWidthThin,
-  borderBottomWidth: tokens.strokeWidthThin,
-  borderLeftWidth: tokens.strokeWidthThin,
-  borderTopStyle: "solid",
-  borderRightStyle: "solid",
-  borderBottomStyle: "solid",
-  borderLeftStyle: "solid",
-} as const;
-const allBorderColor = (c: string) => ({
-  borderTopColor: c,
-  borderRightColor: c,
-  borderBottomColor: c,
-  borderLeftColor: c,
-});
 
 const useShellStyles = makeStyles({
   shell: {
@@ -68,83 +51,49 @@ const useShellStyles = makeStyles({
 const useSwitcherStyles = makeStyles({
   bar: {
     flexShrink: 0,
-    display: "flex",
-    gap: tokens.spacingHorizontalS,
-    paddingLeft: tokens.spacingHorizontalL,
-    paddingRight: tokens.spacingHorizontalL,
-    paddingTop: tokens.spacingVerticalM,
-    paddingBottom: tokens.spacingVerticalS,
-  },
-  pill: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: tokens.spacingHorizontalL,
-    paddingRight: tokens.spacingHorizontalL,
+    paddingLeft: tokens.spacingHorizontalM,
+    paddingRight: tokens.spacingHorizontalM,
     paddingTop: tokens.spacingVerticalXS,
-    paddingBottom: tokens.spacingVerticalXS,
-    borderRadius: tokens.borderRadiusCircular,
-    fontSize: tokens.fontSizeBase200,
-    fontWeight: tokens.fontWeightMedium,
-    fontFamily: tokens.fontFamilyBase,
-    lineHeight: tokens.lineHeightBase200,
-    cursor: "pointer",
-    textDecorationLine: "none",
-    ...thinBorderSides,
-    ...allBorderColor(tokens.colorNeutralStroke2),
-    backgroundColor: tokens.colorTransparentBackground,
-    color: tokens.colorNeutralForeground3,
-    transitionProperty: "background-color, color, border-color",
-    transitionDuration: tokens.durationNormal,
-    ":hover": {
-      backgroundColor: tokens.colorNeutralBackground1Hover,
-      color: tokens.colorNeutralForeground2,
-    },
+    borderBottomWidth: tokens.strokeWidthThin,
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.colorNeutralStroke2,
   },
-  activeSubmit: {
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground1,
-    ...allBorderColor(tokens.colorTransparentStroke),
-    ":hover": {
-      backgroundColor: tokens.colorBrandBackground2Hover,
-      color: tokens.colorBrandForeground1,
-    },
-  },
-  activeOrders: {
-    backgroundColor: tokens.colorPaletteBerryBackground1,
-    color: tokens.colorPaletteBerryForeground1,
-    ...allBorderColor(tokens.colorTransparentStroke),
-    ":hover": {
-      backgroundColor: tokens.colorPaletteBerryBackground1,
-      color: tokens.colorPaletteBerryForeground1,
-    },
-  },
+  // The selected-tab indicator is a `::after` bar coloured by Fluent's brand
+  // token. We recolour it per tab so the blue=Submit / purple=Orders wayfinding
+  // survives the move to native Fluent tabs. Only applied to the selected tab,
+  // so the bar shape still comes from Fluent's own selected styles.
+  submitInd: { "::after": { backgroundColor: tokens.colorBrandStroke1 } },
+  ordersInd: { "::after": { backgroundColor: tokens.colorPaletteBerryForeground1 } },
 });
 
 // A quiet in-content segmented toggle — deliberately not a bottom app-nav bar,
 // so it reads as part of our content and stays visually separate from the
 // Teams navigation chrome that already lives along the bottom of the window.
 function TeamsTabSwitcher() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const s = useSwitcherStyles();
-  const isOrders = location === "/teams-tab/orders";
+  const selected = location === "/teams-tab/orders" ? "/teams-tab/orders" : "/teams-tab";
+
+  const onTabSelect = (_e: SelectTabEvent, data: SelectTabData) => {
+    navigate(data.value as string);
+  };
 
   return (
     <div className={s.bar}>
-      <Link
-        href="/teams-tab"
-        aria-current={!isOrders ? "page" : undefined}
-        className={mergeClasses(s.pill, !isOrders && s.activeSubmit)}
-      >
-        Submit
-      </Link>
-      <Link
-        href="/teams-tab/orders"
-        aria-current={isOrders ? "page" : undefined}
-        className={mergeClasses(s.pill, isOrders && s.activeOrders)}
-      >
-        Orders
-      </Link>
+      <TabList selectedValue={selected} onTabSelect={onTabSelect} size="large">
+        <Tab
+          value="/teams-tab"
+          className={selected === "/teams-tab" ? s.submitInd : undefined}
+        >
+          Submit
+        </Tab>
+        <Tab
+          value="/teams-tab/orders"
+          className={selected === "/teams-tab/orders" ? s.ordersInd : undefined}
+        >
+          Orders
+        </Tab>
+      </TabList>
     </div>
   );
 }
