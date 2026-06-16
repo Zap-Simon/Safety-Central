@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { msalInstance, loginRequest } from "@/auth/msalConfig";
-import { InteractionRequiredAuthError, BrowserAuthError, SsoSilentRequest } from "@azure/msal-browser";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,14 +37,6 @@ function decodeJwtPayload(token: string): Record<string, any> {
   }
 }
 
-function isTeamsMobile(): boolean {
-  try {
-    return window.parent !== window && /Teams|SkypeSpaces/i.test(navigator.userAgent);
-  } catch {
-    return false;
-  }
-}
-
 interface OrdersTabProps {
   userName?: string;
 }
@@ -56,7 +46,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   const { isDark } = useTeamsTheme();
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
-  const [graphToken, setGraphToken] = useState<string | null>(null);
+  const [teamsToken, setTeamsToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(propUserName);
   const [itemText, setItemText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,115 +55,36 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     initAuth();
   }, []);
 
-  // ─── Auth (Teams SSO → MSAL popup/redirect fallback) ──────────────────────
+  // ─── Auth — Teams SSO only ────────────────────────────────────────────────
+  // A single SSO token from getAuthToken() is sent to the backend, which
+  // exchanges it (on behalf of the user) for the Graph access it needs. No MSAL,
+  // popups, or redirects in the browser — so no iframe SSO races.
   async function initAuth() {
-    await msalInstance.initialize();
-
-    // Fast path: App.tsx already ran handleRedirectPromise() before navigating
-    // here, so tokens are in cache — skip the hidden-iframe ssoSilent entirely.
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      setUserName(accounts[0].name || "");
-      await acquireTokenSilently(accounts[0]);
-      return;
-    }
-
-    // No cached account — try Teams SSO to sign in for the first time
+    setAuthState("loading");
+    setAuthError("");
     try {
       await microsoftTeams.app.initialize();
-      await authenticateViaTeamsSSO();
-      return;
-    } catch {
-      // Not in Teams or SSO failed — show sign-in button
-    }
-
-    setAuthState("unauthenticated");
-  }
-
-  async function authenticateViaTeamsSSO() {
-    let teamsToken: string;
-    try {
-      teamsToken = await microsoftTeams.authentication.getAuthToken();
-    } catch (err: any) {
-      const msg = `getAuthToken FAILED: ${err?.message || JSON.stringify(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      throw err;
-    }
-
-    const payload = decodeJwtPayload(teamsToken);
-    const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
-    const displayName = payload.name || "";
-    setUserName(displayName);
-
-    const ssoRequest: SsoSilentRequest = { loginHint, scopes: loginRequest.scopes };
-    try {
-      const graphResp = await msalInstance.ssoSilent(ssoRequest);
-      setGraphToken(graphResp.accessToken);
-      setUserName(graphResp.account?.name || displayName);
+      const ssoToken = await microsoftTeams.authentication.getAuthToken();
+      const payload = decodeJwtPayload(ssoToken);
+      setUserName(payload.name || payload.preferred_username || payload.upn || propUserName);
+      setTeamsToken(ssoToken);
       setAuthState("authenticated");
     } catch (err: any) {
-      const msg = `ssoSilent FAILED: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
+      const msg = `Teams sign-in failed: ${err?.message || String(err)}`;
       console.error(msg, err);
       setAuthError(msg);
-      if (err instanceof InteractionRequiredAuthError) {
-        await signInWithPopupOrRedirect(loginHint);
-      } else {
-        setAuthState("unauthenticated");
-      }
-    }
-  }
-
-  async function acquireTokenSilently(account: any) {
-    try {
-      const graphResp = await msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account });
-      setGraphToken(graphResp.accessToken);
-      setAuthState("authenticated");
-    } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        await signInWithPopupOrRedirect(account.username);
-      } else {
-        setAuthState("unauthenticated");
-      }
-    }
-  }
-
-  async function signInWithPopupOrRedirect(loginHint?: string) {
-    const request = { ...loginRequest, ...(loginHint ? { loginHint } : {}) };
-    try {
-      if (isTeamsMobile()) {
-        sessionStorage.setItem("teams-auth-redirect-target", "/teams-tab/orders");
-        await msalInstance.loginRedirect(request);
-        return;
-      }
-      const resp = await msalInstance.loginPopup(request);
-      setUserName(resp.account?.name || "");
-      await acquireTokenSilently(resp.account!);
-    } catch (err) {
-      if (
-        err instanceof BrowserAuthError &&
-        (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
-      ) {
-        try {
-          sessionStorage.setItem("teams-auth-redirect-target", "/teams-tab/orders");
-          await msalInstance.loginRedirect(request);
-        } catch {
-          setAuthState("unauthenticated");
-        }
-      } else {
-        setAuthState("unauthenticated");
-      }
+      setAuthState("unauthenticated");
     }
   }
 
   // ─── Admin check ──────────────────────────────────────────────────────────
   const { data: adminData } = useQuery<{ success: boolean; isAdmin: boolean }>({
-    queryKey: ["/api/orders/is-admin", graphToken ? "token" : "none"],
-    enabled: authState === "authenticated" && !!graphToken,
+    queryKey: ["/api/orders/is-admin", teamsToken ? "token" : "none"],
+    enabled: authState === "authenticated" && !!teamsToken,
     staleTime: 5 * 60 * 1000,
     queryFn: () =>
       fetch("/api/orders/is-admin", {
-        headers: { Authorization: `Bearer ${graphToken}` },
+        headers: { Authorization: `Bearer ${teamsToken}` },
       }).then((r) => r.json()),
   });
 
@@ -195,7 +106,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${graphToken}`,
+          Authorization: `Bearer ${teamsToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -236,7 +147,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${graphToken}`,
+          Authorization: `Bearer ${teamsToken}`,
         },
         body: JSON.stringify({ status: "ordered" }),
       });
@@ -313,11 +224,11 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
           )}
         </div>
         <Button
-          onClick={() => signInWithPopupOrRedirect()}
+          onClick={() => initAuth()}
           className="bg-purple-600 hover:bg-purple-700 text-white w-full max-w-xs"
         >
           <LogIn className="h-4 w-4 mr-2" />
-          Sign in with Microsoft
+          Try again
         </Button>
       </div>
     );

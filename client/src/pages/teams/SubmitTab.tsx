@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { msalInstance, sharePointRequest, loginRequest } from "@/auth/msalConfig";
-import { InteractionRequiredAuthError, BrowserAuthError } from "@azure/msal-browser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -139,8 +137,7 @@ export default function SubmitTab() {
 
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
-  const [graphToken, setGraphToken] = useState<string | null>(null);
-  const [sharePointToken, setSharePointToken] = useState<string | null>(null);
+  const [teamsToken, setTeamsToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
 
   const [step, setStep] = useState<
@@ -169,128 +166,25 @@ export default function SubmitTab() {
     return () => clearInterval(id);
   }, [step, inputText]);
 
-  // ─── Auth ─────────────────────────────────────────────────────────────────
+  // ─── Auth — Teams SSO only ────────────────────────────────────────────────
+  // We acquire a single SSO token via getAuthToken(). The backend exchanges it
+  // (on behalf of the user) for Graph / SharePoint access, so the browser never
+  // touches MSAL, popups, or redirects — eliminating the iframe SSO races.
   async function initAuth() {
-    await msalInstance.initialize();
-
-    // Fast path: App.tsx already processed handleRedirectPromise() and cached the
-    // tokens before navigating here. Skip ssoSilent (hidden iframe) entirely.
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      try {
-        const [graphResp, spResp] = await Promise.all([
-          msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account: accounts[0] }),
-          msalInstance.acquireTokenSilent({ scopes: sharePointRequest.scopes, account: accounts[0] }),
-        ]);
-        setGraphToken(graphResp.accessToken);
-        setSharePointToken(spResp.accessToken);
-        setUserName(accounts[0].name || "");
-        setAuthState("authenticated");
-        return;
-      } catch (err) {
-        if (!(err instanceof InteractionRequiredAuthError)) {
-          const msg = `Token refresh failed: ${(err as any)?.errorCode || (err as any)?.message}`;
-          console.error(msg, err);
-          setAuthError(msg);
-          setAuthState("unauthenticated");
-          return;
-        }
-        // InteractionRequired — fall through to Teams SSO below
-      }
-    }
-
-    // Teams SSO path — get loginHint from Teams token
-    let loginHint = "";
+    setAuthState("loading");
+    setAuthError("");
     try {
       await microsoftTeams.app.initialize();
       const ssoToken = await microsoftTeams.authentication.getAuthToken();
       const payload = decodeJwtPayload(ssoToken);
-      loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
-      setUserName(payload.name || loginHint);
+      setUserName(payload.name || payload.preferred_username || payload.upn || "");
+      setTeamsToken(ssoToken);
+      setAuthState("authenticated");
     } catch (err: any) {
-      const msg = `Teams SSO failed: ${err?.message || String(err)}`;
+      const msg = `Teams sign-in failed: ${err?.message || String(err)}`;
       console.error(msg, err);
       setAuthError(msg);
       setAuthState("unauthenticated");
-      return;
-    }
-
-    try {
-      const [graphResp, spResp] = await Promise.all([
-        msalInstance.ssoSilent({ loginHint, scopes: loginRequest.scopes }),
-        msalInstance.ssoSilent({ loginHint, scopes: sharePointRequest.scopes }),
-      ]);
-      setGraphToken(graphResp.accessToken);
-      setSharePointToken(spResp.accessToken);
-      setUserName(graphResp.account?.name || loginHint);
-      setAuthState("authenticated");
-    } catch (err: any) {
-      const msg = `MSAL ssoSilent failed: ${err?.errorCode || err?.message || String(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      if (err instanceof InteractionRequiredAuthError) {
-        await signInWithPopupOrRedirect(loginHint);
-      } else {
-        setAuthState("unauthenticated");
-      }
-    }
-  }
-
-  async function signInWithPopupOrRedirect(loginHint?: string) {
-    const request = { ...loginRequest, ...(loginHint ? { loginHint } : {}) };
-    try {
-      const isMobile = window.parent !== window && /Teams|SkypeSpaces/i.test(navigator.userAgent);
-      if (isMobile) {
-        sessionStorage.setItem("teams-auth-redirect-target", "/teams-submit-cg7k2x9m");
-        await msalInstance.loginRedirect(request);
-        return;
-      }
-      const resp = await msalInstance.loginPopup(request);
-      const account = resp.account!;
-
-      // Graph token — already consented in the popup above
-      const graphResp = await msalInstance.acquireTokenSilent({
-        scopes: loginRequest.scopes,
-        account,
-      });
-      setGraphToken(graphResp.accessToken);
-      setUserName(account.name || "");
-
-      // SharePoint token — different resource, may need its own consent popup
-      let spToken: string;
-      try {
-        const spResp = await msalInstance.acquireTokenSilent({
-          scopes: sharePointRequest.scopes,
-          account,
-        });
-        spToken = spResp.accessToken;
-      } catch (spErr) {
-        if (spErr instanceof InteractionRequiredAuthError) {
-          const spResp = await msalInstance.acquireTokenPopup({
-            scopes: sharePointRequest.scopes,
-            account,
-          });
-          spToken = spResp.accessToken;
-        } else {
-          throw spErr;
-        }
-      }
-
-      setSharePointToken(spToken);
-      setAuthState("authenticated");
-    } catch (err: any) {
-      const msg = `Login failed: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      if (
-        err instanceof BrowserAuthError &&
-        (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
-      ) {
-        sessionStorage.setItem("teams-auth-redirect-target", "/teams-submit-cg7k2x9m");
-        await msalInstance.loginRedirect(request).catch(() => setAuthState("unauthenticated"));
-      } else {
-        setAuthState("unauthenticated");
-      }
     }
   }
 
@@ -305,7 +199,7 @@ export default function SubmitTab() {
     const promise = (async () => {
       const resp = await fetch("/api/ai-classify", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${graphToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${teamsToken}` },
         body: JSON.stringify({ text: key }),
       });
       const data = await resp.json();
@@ -331,7 +225,7 @@ export default function SubmitTab() {
     setInputText(value);
     if (classifyTimer.current) clearTimeout(classifyTimer.current);
     const key = value.trim();
-    if (key.length >= 20 && graphToken && !classifyCache.current.has(key)) {
+    if (key.length >= 20 && teamsToken && !classifyCache.current.has(key)) {
       setPrefetching(true);
       classifyTimer.current = setTimeout(() => {
         runClassify(value)
@@ -367,7 +261,7 @@ export default function SubmitTab() {
 
   // ─── Submission ───────────────────────────────────────────────────────────
   async function handleSubmit() {
-    if (!classifyResult || !sharePointToken) return;
+    if (!classifyResult || !teamsToken) return;
     setStep("submitting");
     setSubmitError("");
 
@@ -388,7 +282,7 @@ export default function SubmitTab() {
     try {
       const resp = await fetch("/api/sharepoint/create-item", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sharePointToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${teamsToken}` },
         body: JSON.stringify({
           listType,
           deferTitle: true,
@@ -495,11 +389,11 @@ export default function SubmitTab() {
             Sign in with your Cranfield Glass Microsoft account to submit ideas and reports.
           </p>
           <Button
-            onClick={() => signInWithPopupOrRedirect()}
+            onClick={() => initAuth()}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3"
           >
             <LogIn className="h-4 w-4 mr-2" />
-            Sign in with Microsoft
+            Try again
           </Button>
           {authError && (
             <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">

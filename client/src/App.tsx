@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from "react";
 import { Switch, Route, useLocation, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -19,20 +18,8 @@ import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { Send, ShoppingCart } from "lucide-react";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
-import { msalInstance } from "@/auth/msalConfig";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
-
-// Detect an MSAL redirect callback landing on "/" so we can restore the Teams UI
-function getMsalRedirectTarget(): string | null {
-  const hasMsalParams =
-    window.location.hash.includes("code=") ||
-    window.location.hash.includes("error=") ||
-    window.location.search.includes("code=") ||
-    window.location.search.includes("error=");
-  if (!hasMsalParams) return null;
-  return sessionStorage.getItem("teams-auth-redirect-target");
-}
 
 function TeamsBottomNav() {
   const [location] = useLocation();
@@ -130,37 +117,7 @@ function MainRouter() {
 }
 
 function Router() {
-  const [location, navigate] = useLocation();
-
-  // Capture the redirect target synchronously before any async work clears it
-  const msalTargetRef = useRef(getMsalRedirectTarget());
-  const needsRedirect = msalTargetRef.current !== null && location === "/";
-
-  // When MSAL sends the user back to "/" with code= in the URL we MUST call
-  // handleRedirectPromise() BEFORE changing the URL, otherwise MSAL can't read
-  // the auth code and leaves interaction_in_progress stuck in sessionStorage.
-  const [redirectReady, setRedirectReady] = useState(!needsRedirect);
-
-  useEffect(() => {
-    if (!needsRedirect || !msalTargetRef.current) return;
-    const target = msalTargetRef.current;
-    msalInstance.initialize()
-      .then(() => msalInstance.handleRedirectPromise())
-      .catch(() => {})
-      .finally(() => {
-        sessionStorage.removeItem("teams-auth-redirect-target");
-        navigate(target, { replace: true });
-        setRedirectReady(true);
-      });
-  }, []);
-
-  if (!redirectReady) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
-        <p style={{ color: "#9ca3af", fontSize: "14px" }}>Signing you in…</p>
-      </div>
-    );
-  }
+  const [location] = useLocation();
 
   if (TEAMS_PATHS.includes(location)) {
     return <TeamsRouter />;

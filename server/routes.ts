@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { SharePointListsService } from "./sharepoint-lists-service";
+import { resolveDownstreamToken, AuthError } from "./teams-obo-auth";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
@@ -1869,15 +1870,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new SharePoint list item
   app.post('/api/sharepoint/create-item', async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
+      let accessToken: string;
+      try {
+        accessToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      } catch (err) {
+        const status = err instanceof AuthError ? err.status : 401;
+        return res.status(status).json({
           success: false,
-          error: 'Authentication required'
+          error: err instanceof Error ? err.message : 'Authentication required',
         });
       }
-
-      const accessToken = authHeader.substring(7);
       const { listType, itemData, deferTitle } = req.body;
 
       if (!listType || !itemData) {
@@ -5853,11 +5855,16 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   app.post('/api/ai-classify', async (req, res) => {
     try {
       // Validate bearer token by calling Graph /me — prevents cost-abuse from fake tokens
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, error: 'Authentication required' });
+      let accessToken: string;
+      try {
+        accessToken = await resolveDownstreamToken(req.headers.authorization, 'graph');
+      } catch (err) {
+        const status = err instanceof AuthError ? err.status : 401;
+        return res.status(status).json({
+          success: false,
+          error: err instanceof Error ? err.message : 'Authentication required',
+        });
       }
-      const accessToken = authHeader.substring(7);
       const meResp = await fetch('https://graph.microsoft.com/v1.0/me', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
@@ -5893,8 +5900,8 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   // Returns displayName on success, null if token is missing or invalid.
   async function resolveCallerFromToken(authHeader: string | undefined): Promise<{ displayName: string; email: string } | null> {
     if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-    const token = authHeader.substring(7);
     try {
+      const token = await resolveDownstreamToken(authHeader, 'graph');
       const meRes = await fetch('https://graph.microsoft.com/v1.0/me?$select=userPrincipalName,displayName', {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       });
