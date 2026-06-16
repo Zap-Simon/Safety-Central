@@ -16,9 +16,13 @@ import {
   DialogActions,
   FluentProvider,
   teamsLightTheme,
+  teamsDarkTheme,
+  teamsHighContrastTheme,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
+import type { Theme } from "@fluentui/react-components";
+import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
   Cart20Regular,
   Cart16Regular,
@@ -33,22 +37,32 @@ import { TeamsPage, TeamsPinned, TeamsScroll, TeamsCenter, TeamsFullScreen } fro
 
 // Berry-purple theme for the Orders tab — overrides brand tokens so all
 // Fluent primitives (primary buttons, input focus ring, icons, spinner) are
-// purple rather than the default Teams blue.
-const berryTheme = {
-  ...teamsLightTheme,
-  colorBrandBackground: teamsLightTheme.colorPaletteBerryForeground2,
-  colorBrandBackgroundHover: teamsLightTheme.colorPaletteBerryForeground1,
-  colorBrandBackgroundPressed: teamsLightTheme.colorPaletteBerryForeground3,
-  colorBrandBackgroundSelected: teamsLightTheme.colorPaletteBerryForeground2,
-  colorBrandForeground1: teamsLightTheme.colorPaletteBerryForeground1,
-  colorBrandForeground2: teamsLightTheme.colorPaletteBerryForeground2,
-  colorBrandForegroundLink: teamsLightTheme.colorPaletteBerryForeground1,
-  colorBrandForegroundLinkHover: teamsLightTheme.colorPaletteBerryForeground2,
-  colorBrandStroke1: teamsLightTheme.colorPaletteBerryBorderActive,
-  colorBrandStroke2: teamsLightTheme.colorPaletteBerryBorder1,
-  colorCompoundBrandBackground: teamsLightTheme.colorPaletteBerryForeground2,
-  colorCompoundBrandBackgroundHover: teamsLightTheme.colorPaletteBerryForeground1,
-  colorCompoundBrandBackgroundPressed: teamsLightTheme.colorPaletteBerryForeground3,
+// purple rather than the default Teams blue. Derived from the *active* base
+// theme (light/dark/contrast) so dark + high-contrast modes still work — the
+// berry palette tokens already carry mode-appropriate values.
+function makeBerryTheme(base: Theme): Theme {
+  return {
+    ...base,
+    colorBrandBackground: base.colorPaletteBerryForeground2,
+    colorBrandBackgroundHover: base.colorPaletteBerryForeground1,
+    colorBrandBackgroundPressed: base.colorPaletteBerryForeground3,
+    colorBrandBackgroundSelected: base.colorPaletteBerryForeground2,
+    colorBrandForeground1: base.colorPaletteBerryForeground1,
+    colorBrandForeground2: base.colorPaletteBerryForeground2,
+    colorBrandForegroundLink: base.colorPaletteBerryForeground1,
+    colorBrandForegroundLinkHover: base.colorPaletteBerryForeground2,
+    colorBrandStroke1: base.colorPaletteBerryBorderActive,
+    colorBrandStroke2: base.colorPaletteBerryBorder1,
+    colorCompoundBrandBackground: base.colorPaletteBerryForeground2,
+    colorCompoundBrandBackgroundHover: base.colorPaletteBerryForeground1,
+    colorCompoundBrandBackgroundPressed: base.colorPaletteBerryForeground3,
+  };
+}
+
+const berryThemes: Record<string, Theme> = {
+  default: makeBerryTheme(teamsLightTheme),
+  dark: makeBerryTheme(teamsDarkTheme),
+  contrast: makeBerryTheme(teamsHighContrastTheme),
 };
 
 function timeAgo(dateStr: string | Date): string {
@@ -153,6 +167,8 @@ const useStyles = makeStyles({
 
 export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
   const styles = useStyles();
+  const { theme } = useTeamsTheme();
+  const berryTheme = berryThemes[theme] ?? berryThemes.default;
   const qc = useQueryClient();
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
