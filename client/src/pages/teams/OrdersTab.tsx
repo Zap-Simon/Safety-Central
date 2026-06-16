@@ -55,6 +55,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   const qc = useQueryClient();
   const { isDark } = useTeamsTheme();
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
+  const [authError, setAuthError] = useState<string>("");
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(propUserName);
   const [itemText, setItemText] = useState("");
@@ -95,7 +96,16 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   }
 
   async function authenticateViaTeamsSSO() {
-    const teamsToken = await microsoftTeams.authentication.getAuthToken();
+    let teamsToken: string;
+    try {
+      teamsToken = await microsoftTeams.authentication.getAuthToken();
+    } catch (err: any) {
+      const msg = `getAuthToken FAILED: ${err?.message || JSON.stringify(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
+      throw err;
+    }
+
     const payload = decodeJwtPayload(teamsToken);
     const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
     const displayName = payload.name || "";
@@ -107,7 +117,10 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
       setGraphToken(graphResp.accessToken);
       setUserName(graphResp.account?.name || displayName);
       setAuthState("authenticated");
-    } catch (err) {
+    } catch (err: any) {
+      const msg = `ssoSilent FAILED: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
       if (err instanceof InteractionRequiredAuthError) {
         await signInWithPopupOrRedirect(loginHint);
       } else {
@@ -287,6 +300,11 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
           <p className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             Sign in with your Cranfield Glass account to add and manage orders.
           </p>
+          {authError && (
+            <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
+              <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
+            </div>
+          )}
         </div>
         <Button
           onClick={() => signInWithPopupOrRedirect()}

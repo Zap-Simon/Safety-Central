@@ -136,6 +136,7 @@ export default function SubmitTab() {
   const { inTeams, isDark } = useTeamsTheme();
 
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
+  const [authError, setAuthError] = useState<string>("");
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [sharePointToken, setSharePointToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
@@ -170,14 +171,41 @@ export default function SubmitTab() {
   async function initAuth() {
     try {
       await microsoftTeams.app.initialize();
+    } catch (err: any) {
+      const msg = `Step 1 FAILED — Teams initialize: ${err?.message || err}`;
+      console.error(msg, err);
+      setAuthError(msg);
+      setAuthState("unauthenticated");
+      return;
+    }
 
-      const ssoToken = await microsoftTeams.authentication.getAuthToken();
-      const payload = decodeJwtPayload(ssoToken);
-      const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
-      const displayName = payload.name || loginHint;
-      setUserName(displayName);
+    let ssoToken: string;
+    try {
+      ssoToken = await microsoftTeams.authentication.getAuthToken();
+    } catch (err: any) {
+      const msg = `Step 2 FAILED — getAuthToken: ${err?.message || JSON.stringify(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
+      setAuthState("unauthenticated");
+      return;
+    }
 
+    const payload = decodeJwtPayload(ssoToken);
+    const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
+    const displayName = payload.name || loginHint;
+    setUserName(displayName);
+
+    try {
       await msalInstance.initialize();
+    } catch (err: any) {
+      const msg = `Step 3 FAILED — MSAL initialize: ${err?.message || err}`;
+      console.error(msg, err);
+      setAuthError(msg);
+      setAuthState("unauthenticated");
+      return;
+    }
+
+    try {
       const [graphResp, spResp] = await Promise.all([
         msalInstance.ssoSilent({ loginHint, scopes: loginRequest.scopes }),
         msalInstance.ssoSilent({ loginHint, scopes: sharePointRequest.scopes }),
@@ -186,8 +214,10 @@ export default function SubmitTab() {
       setSharePointToken(spResp.accessToken);
       setUserName(graphResp.account?.name || displayName);
       setAuthState("authenticated");
-    } catch (err) {
-      console.error("Teams SSO auth failed:", err);
+    } catch (err: any) {
+      const msg = `Step 4 FAILED — ssoSilent: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
       setAuthState("unauthenticated");
     }
   }
@@ -387,11 +417,16 @@ export default function SubmitTab() {
             <Shield className={`h-7 w-7 ${isDark ? "text-blue-400" : "text-blue-500"}`} />
           </div>
           <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-            Not available here
+            Sign-in failed
           </h1>
-          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+          <p className={`text-sm mb-3 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             Please open this tab inside Microsoft Teams. If you're already in Teams, try refreshing the tab.
           </p>
+          {authError && (
+            <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
+              <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
+            </div>
+          )}
         </div>
       </div>
     );
