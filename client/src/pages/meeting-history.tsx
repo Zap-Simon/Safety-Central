@@ -1642,7 +1642,7 @@ export default function MeetingHistory() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              meetingData: dataToUse,
+              meetingData: meetingItems,
               selectedMeeting: meetingDate,
               selectedType: 'all',
             }),
@@ -1688,7 +1688,7 @@ export default function MeetingHistory() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            meetingData: dataToUse,
+            meetingData: meetingItems,
             selectedMeeting: meetingDate,
             selectedType: 'all',
           }),
@@ -1771,7 +1771,7 @@ export default function MeetingHistory() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              meetingData: dataToUse,
+              meetingData: meetingItems,
               selectedMeeting: meetingDate,
               selectedType: 'all',
               meetingAttendance: meetingAttendance,
@@ -1818,7 +1818,7 @@ export default function MeetingHistory() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            meetingData: dataToUse,
+            meetingData: meetingItems,
             selectedMeeting: meetingDate,
             selectedType: 'all',
             meetingAttendance: meetingAttendance,
@@ -2336,7 +2336,7 @@ export default function MeetingHistory() {
                             {formatDate(date)}
                           </span>
                           <span className="ml-2 text-xs text-gray-500">
-                            ({dataToUse.filter(item => isSameDay(item.meetingDate, date)).length})
+                            ({meetingItems.filter(item => isSameDay(item.meetingDate, date)).length})
                           </span>
                         </div>
                       </label>
