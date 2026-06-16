@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import compression from "compression";
 import pino from "pino";
 import pinoHttp from "pino-http";
@@ -107,8 +107,9 @@ const limiter = rateLimit({
       // Use the token itself as the key so each authenticated user has their own counter
       return auth.slice(7);
     }
-    // Fall back to IP for unauthenticated requests
-    return (req.ip || req.socket?.remoteAddress || 'unknown');
+    // Fall back to IP for unauthenticated requests (IPv6-safe via helper)
+    const ip = req.ip || req.socket?.remoteAddress;
+    return ip ? ipKeyGenerator(ip) : 'unknown';
   },
 });
 app.use('/api', limiter);
