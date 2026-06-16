@@ -238,15 +238,42 @@ export default function SubmitTab() {
         return;
       }
       const resp = await msalInstance.loginPopup(request);
-      const [graphResp, spResp] = await Promise.all([
-        msalInstance.acquireTokenSilent({ scopes: loginRequest.scopes, account: resp.account! }),
-        msalInstance.acquireTokenSilent({ scopes: sharePointRequest.scopes, account: resp.account! }),
-      ]);
+      const account = resp.account!;
+
+      // Graph token — already consented in the popup above
+      const graphResp = await msalInstance.acquireTokenSilent({
+        scopes: loginRequest.scopes,
+        account,
+      });
       setGraphToken(graphResp.accessToken);
-      setSharePointToken(spResp.accessToken);
-      setUserName(resp.account?.name || "");
+      setUserName(account.name || "");
+
+      // SharePoint token — different resource, may need its own consent popup
+      let spToken: string;
+      try {
+        const spResp = await msalInstance.acquireTokenSilent({
+          scopes: sharePointRequest.scopes,
+          account,
+        });
+        spToken = spResp.accessToken;
+      } catch (spErr) {
+        if (spErr instanceof InteractionRequiredAuthError) {
+          const spResp = await msalInstance.acquireTokenPopup({
+            scopes: sharePointRequest.scopes,
+            account,
+          });
+          spToken = spResp.accessToken;
+        } else {
+          throw spErr;
+        }
+      }
+
+      setSharePointToken(spToken);
       setAuthState("authenticated");
     } catch (err: any) {
+      const msg = `Login failed: ${err?.errorCode || err?.message || JSON.stringify(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
       if (
         err instanceof BrowserAuthError &&
         (err.errorCode === "popup_window_error" || err.errorCode === "empty_window_error")
