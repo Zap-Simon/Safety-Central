@@ -5,6 +5,7 @@ import { InteractionRequiredAuthError, BrowserAuthError, SsoSilentRequest } from
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
   ShoppingCart,
   Plus,
@@ -52,6 +53,7 @@ interface OrdersTabProps {
 
 export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
   const qc = useQueryClient();
+  const { isDark } = useTeamsTheme();
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [userName, setUserName] = useState(propUserName);
@@ -62,7 +64,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     initAuth();
   }, []);
 
-  // ─── Auth (mirrors SubmitTab — Teams SSO → MSAL silent → popup/redirect) ──
+  // ─── Auth (Teams SSO → MSAL popup/redirect fallback) ──────────────────────
   async function initAuth() {
     await msalInstance.initialize();
 
@@ -156,7 +158,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     }
   }
 
-  // ─── Server-side admin check via Bearer token (server verifies via Graph /me) ─
+  // ─── Admin check ──────────────────────────────────────────────────────────
   const { data: adminData } = useQuery<{ success: boolean; isAdmin: boolean }>({
     queryKey: ["/api/orders/is-admin", graphToken ? "token" : "none"],
     enabled: authState === "authenticated" && !!graphToken,
@@ -219,8 +221,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     },
   });
 
-  // ─── Mark ordered — Authorization header carries the MSAL graph token;
-  //     server verifies identity + role via Graph /me + staff table ─────────
+  // ─── Mark ordered ─────────────────────────────────────────────────────────
   const orderMutation = useMutation({
     mutationFn: async ({ id }: { id: number }) => {
       const res = await fetch(`/api/orders/${id}`, {
@@ -264,17 +265,17 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
     if (e.key === "Enter") handleAdd();
   }
 
-  // ─── Loading state ────────────────────────────────────────────────────────
+  // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className="flex items-center justify-center py-16 text-gray-400">
+      <div className="flex items-center justify-center py-16 text-gray-400 dark:text-gray-500">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         <span className="text-sm">Signing you in…</span>
       </div>
     );
   }
 
-  // ─── Unauthenticated state ────────────────────────────────────────────────
+  // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 gap-4 text-center">
@@ -282,8 +283,8 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
           <LogIn className="h-7 w-7 text-white" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Sign In Required</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Sign In Required</h2>
+          <p className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             Sign in with your Cranfield Glass account to add and manage orders.
           </p>
         </div>
@@ -302,14 +303,20 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   return (
     <div className="flex flex-col min-h-0 h-full">
       {/* ── Sticky add bar ── */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex gap-2">
+      <div className={`sticky top-0 z-10 border-b px-4 py-3 flex gap-2 ${
+        isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
+      }`}>
         <Input
           ref={inputRef}
           placeholder="Add item to order…"
           value={itemText}
           onChange={(e) => setItemText(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 text-base border-gray-200 focus:border-purple-400"
+          className={`flex-1 text-base ${
+            isDark
+              ? "bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-purple-500"
+              : "border-gray-200 focus:border-purple-400"
+          }`}
           autoFocus
         />
         <Button
@@ -329,7 +336,11 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
       {/* ── Admin badge ── */}
       {userIsAdmin && (
         <div className="px-4 pt-2 pb-0">
-          <div className="inline-flex items-center gap-1.5 text-xs text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-2.5 py-1">
+          <div className={`inline-flex items-center gap-1.5 text-xs rounded-full px-2.5 py-1 border ${
+            isDark
+              ? "text-purple-300 bg-purple-900/30 border-purple-700/40"
+              : "text-purple-700 bg-purple-50 border-purple-200"
+          }`}>
             <Shield className="h-3 w-3" />
             Admin — you can mark items as ordered
           </div>
@@ -339,7 +350,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
       {/* ── Item list ── */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 pb-6">
         {isLoading && (
-          <div className="flex items-center justify-center py-12 text-gray-400">
+          <div className="flex items-center justify-center py-12 text-gray-400 dark:text-gray-500">
             <Loader2 className="h-5 w-5 animate-spin mr-2" />
             <span className="text-sm">Loading…</span>
           </div>
@@ -347,28 +358,38 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
 
         {!isLoading && items.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Package className="h-7 w-7 text-gray-400" />
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+              isDark ? "bg-gray-700" : "bg-gray-100"
+            }`}>
+              <Package className={`h-7 w-7 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
             </div>
-            <p className="text-gray-500 text-sm font-medium">Nothing to order yet</p>
-            <p className="text-gray-400 text-xs">Type an item above and tap Add.</p>
+            <p className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+              Nothing to order yet
+            </p>
+            <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+              Type an item above and tap Add.
+            </p>
           </div>
         )}
 
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-sm"
+            className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
+              isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+            }`}
           >
             <ShoppingCart className="h-4 w-4 text-purple-400 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{item.itemName}</p>
+              <p className={`text-sm font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>
+                {item.itemName}
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <User className="h-3 w-3 text-gray-400" />
-                <span className="text-xs text-gray-500">{item.addedBy}</span>
-                <span className="text-gray-300">·</span>
-                <Clock className="h-3 w-3 text-gray-400" />
-                <span className="text-xs text-gray-400">{timeAgo(item.addedAt)}</span>
+                <User className={`h-3 w-3 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
+                <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.addedBy}</span>
+                <span className={isDark ? "text-gray-600" : "text-gray-300"}>·</span>
+                <Clock className={`h-3 w-3 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
+                <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{timeAgo(item.addedAt)}</span>
               </div>
             </div>
             {userIsAdmin && (
@@ -377,7 +398,11 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
                 variant="outline"
                 onClick={() => orderMutation.mutate({ id: item.id })}
                 disabled={orderMutation.isPending && orderMutation.variables?.id === item.id}
-                className="shrink-0 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 active:scale-95 text-xs px-2.5"
+                className={`shrink-0 text-xs px-2.5 active:scale-95 ${
+                  isDark
+                    ? "border-green-700/50 text-green-400 hover:bg-green-900/30 hover:border-green-600 bg-transparent"
+                    : "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
+                }`}
               >
                 {orderMutation.isPending && orderMutation.variables?.id === item.id ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -393,7 +418,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         ))}
 
         {!isLoading && items.length > 0 && (
-          <p className="text-center text-xs text-gray-400 pt-2">
+          <p className={`text-center text-xs pt-2 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
             {items.length} item{items.length !== 1 ? "s" : ""} to order
           </p>
         )}

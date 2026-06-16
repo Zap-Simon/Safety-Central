@@ -17,6 +17,7 @@ import SubmitTab from "@/pages/teams/SubmitTab";
 import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { Send, ShoppingCart } from "lucide-react";
+import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
 
@@ -33,14 +34,24 @@ function getMsalRedirectTarget(): string | null {
 
 function TeamsBottomNav() {
   const [location] = useLocation();
+  const { isDark } = useTeamsTheme();
   const isOrders = location === "/teams-tab/orders";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-50 safe-bottom">
+    <nav
+      className={`fixed bottom-0 left-0 right-0 border-t flex z-50 ${
+        isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
+      }`}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <Link
         href="/teams-tab"
         className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-          !isOrders ? "text-blue-600" : "text-gray-400 hover:text-gray-600"
+          !isOrders
+            ? "text-blue-500"
+            : isDark
+            ? "text-gray-500 hover:text-gray-300"
+            : "text-gray-400 hover:text-gray-600"
         }`}
       >
         <Send className="h-5 w-5" />
@@ -49,7 +60,11 @@ function TeamsBottomNav() {
       <Link
         href="/teams-tab/orders"
         className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-          isOrders ? "text-purple-600" : "text-gray-400 hover:text-gray-600"
+          isOrders
+            ? "text-purple-500"
+            : isDark
+            ? "text-gray-500 hover:text-gray-300"
+            : "text-gray-400 hover:text-gray-600"
         }`}
       >
         <ShoppingCart className="h-5 w-5" />
@@ -59,27 +74,50 @@ function TeamsBottomNav() {
   );
 }
 
-function TeamsRouter() {
+function TeamsRouterContent() {
   const [location] = useLocation();
+  const { isDark } = useTeamsTheme();
   const isOrders = location === "/teams-tab/orders";
 
   return (
-    <div className="flex flex-col min-h-screen pb-14">
+    <div
+      className={`flex flex-col min-h-screen ${isDark ? "dark bg-gray-900" : "bg-white"}`}
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "calc(3.5rem + env(safe-area-inset-bottom))",
+      }}
+    >
       {isOrders ? (
         <div className="flex flex-col flex-1 min-h-0">
-          <div className="bg-gradient-to-r from-purple-700 to-purple-500 px-5 pt-6 pb-7 text-white">
-            <div className="max-w-lg mx-auto flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
-                <ShoppingCart className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold leading-tight">Ordering List</h1>
-                <p className="text-xs text-purple-100/90">Cranfield Glass Christchurch</p>
-              </div>
+          <div
+            className={`px-5 py-4 flex items-center gap-3 border-b ${
+              isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
+            }`}
+          >
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                isDark ? "bg-purple-900/50" : "bg-purple-100"
+              }`}
+            >
+              <ShoppingCart
+                className={`h-4 w-4 ${isDark ? "text-purple-300" : "text-purple-600"}`}
+              />
+            </div>
+            <div>
+              <h1
+                className={`text-sm font-semibold leading-tight ${
+                  isDark ? "text-white" : "text-gray-900"
+                }`}
+              >
+                Ordering List
+              </h1>
+              <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                Cranfield Glass Christchurch
+              </p>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden -mt-4">
-            <div className="bg-gray-50 rounded-t-2xl h-full pt-4">
+          <div className="flex-1 overflow-hidden">
+            <div className={`${isDark ? "bg-gray-900" : "bg-gray-50"} h-full pt-2`}>
               <OrdersTab />
             </div>
           </div>
@@ -89,6 +127,14 @@ function TeamsRouter() {
       )}
       <TeamsBottomNav />
     </div>
+  );
+}
+
+function TeamsRouter() {
+  return (
+    <TeamsThemeProvider>
+      <TeamsRouterContent />
+    </TeamsThemeProvider>
   );
 }
 
@@ -119,8 +165,6 @@ function Router() {
   const msalTarget = getMsalRedirectTarget();
   if (msalTarget && location === "/") {
     sessionStorage.removeItem("teams-auth-redirect-target");
-    // Navigate to the stored Teams path so TeamsRouter renders and OrdersTab
-    // can call handleRedirectPromise() to consume the auth tokens.
     navigate(msalTarget, { replace: true });
     return null;
   }

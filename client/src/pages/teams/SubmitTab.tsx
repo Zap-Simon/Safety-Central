@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
   AlertTriangle,
   Lightbulb,
@@ -41,13 +42,15 @@ interface ClassifyResult {
 
 const CATEGORY_META: Record<
   Category,
-  { icon: React.ReactNode; color: string; bg: string; ring: string; listLabel: string }
+  { icon: React.ReactNode; color: string; bg: string; ring: string; darkBg: string; darkRing: string; listLabel: string }
 > = {
   "Near Miss": {
     icon: <AlertTriangle className="h-5 w-5" />,
     color: "text-red-600",
     bg: "bg-red-50 border-red-200",
     ring: "ring-red-100",
+    darkBg: "bg-red-900/20 border-red-700/40",
+    darkRing: "ring-red-900/30",
     listLabel: "Near Miss Register",
   },
   "Safety Observation": {
@@ -55,41 +58,53 @@ const CATEGORY_META: Record<
     color: "text-orange-600",
     bg: "bg-orange-50 border-orange-200",
     ring: "ring-orange-100",
+    darkBg: "bg-orange-900/20 border-orange-700/40",
+    darkRing: "ring-orange-900/30",
     listLabel: "Safety Ideas List",
   },
   "Improvement Idea": {
     icon: <Shield className="h-5 w-5" />,
-    color: "text-blue-600",
+    color: "text-blue-500",
     bg: "bg-blue-50 border-blue-200",
     ring: "ring-blue-100",
+    darkBg: "bg-blue-900/20 border-blue-700/40",
+    darkRing: "ring-blue-900/30",
     listLabel: "Safety Ideas List",
   },
   "Business Improvement": {
     icon: <Lightbulb className="h-5 w-5" />,
-    color: "text-amber-600",
+    color: "text-amber-500",
     bg: "bg-amber-50 border-amber-200",
     ring: "ring-amber-100",
+    darkBg: "bg-amber-900/20 border-amber-700/40",
+    darkRing: "ring-amber-900/30",
     listLabel: "Business Ideas List",
   },
   "Supply Request": {
     icon: <ShoppingCart className="h-5 w-5" />,
-    color: "text-purple-600",
+    color: "text-purple-500",
     bg: "bg-purple-50 border-purple-200",
     ring: "ring-purple-100",
+    darkBg: "bg-purple-900/20 border-purple-700/40",
+    darkRing: "ring-purple-900/30",
     listLabel: "Business Ideas List",
   },
   "Meeting Agenda Item": {
     icon: <MessageSquare className="h-5 w-5" />,
-    color: "text-teal-600",
+    color: "text-teal-500",
     bg: "bg-teal-50 border-teal-200",
     ring: "ring-teal-100",
+    darkBg: "bg-teal-900/20 border-teal-700/40",
+    darkRing: "ring-teal-900/30",
     listLabel: "Business Ideas List",
   },
   Other: {
     icon: <HelpCircle className="h-5 w-5" />,
-    color: "text-gray-600",
+    color: "text-gray-500",
     bg: "bg-gray-50 border-gray-200",
     ring: "ring-gray-100",
+    darkBg: "bg-gray-700/40 border-gray-600/40",
+    darkRing: "ring-gray-700/30",
     listLabel: "Business Ideas List",
   },
 };
@@ -117,8 +132,9 @@ function decodeJwtPayload(token: string): Record<string, any> {
   }
 }
 
-
 export default function SubmitTab() {
+  const { inTeams, isDark } = useTeamsTheme();
+
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [graphToken, setGraphToken] = useState<string | null>(null);
   const [sharePointToken, setSharePointToken] = useState<string | null>(null);
@@ -144,26 +160,23 @@ export default function SubmitTab() {
     initAuth();
   }, []);
 
-  // Rotate the placeholder example to hint at what to type (cheap perceived liveliness)
   useEffect(() => {
     if (step !== "input" || inputText) return;
     const id = setInterval(() => setExampleIdx((i) => (i + 1) % EXAMPLES.length), 3500);
     return () => clearInterval(id);
   }, [step, inputText]);
 
-  // ─── Auth (Teams SSO only — company personal tab, no interactive fallback) ──
+  // ─── Auth ─────────────────────────────────────────────────────────────────
   async function initAuth() {
     try {
       await microsoftTeams.app.initialize();
 
-      // Get identity from Teams SSO token
       const ssoToken = await microsoftTeams.authentication.getAuthToken();
       const payload = decodeJwtPayload(ssoToken);
       const loginHint = payload.upn || payload.preferred_username || payload.unique_name || "";
       const displayName = payload.name || loginHint;
       setUserName(displayName);
 
-      // Acquire resource tokens silently using the Teams identity
       await msalInstance.initialize();
       const [graphResp, spResp] = await Promise.all([
         msalInstance.ssoSilent({ loginHint, scopes: loginRequest.scopes }),
@@ -179,9 +192,7 @@ export default function SubmitTab() {
     }
   }
 
-  // ─── Classification (eager + de-duped + cached) ──────────────────────────
-  // Kicks off in the background while the user is still typing so that, by the
-  // time they press Continue, the answer is usually already waiting → instant.
+  // ─── Classification ───────────────────────────────────────────────────────
   function runClassify(text: string): Promise<ClassifyResult> {
     const key = text.trim();
     const cached = classifyCache.current.get(key);
@@ -240,14 +251,8 @@ export default function SubmitTab() {
     const key = inputText.trim();
     if (key.length < 10) return;
     setSubmitError("");
-
-    // Already classified in the background → jump straight there, zero wait.
     const cached = classifyCache.current.get(key);
-    if (cached) {
-      applyResult(cached);
-      return;
-    }
-
+    if (cached) { applyResult(cached); return; }
     setStep("classifying");
     try {
       const result = await runClassify(inputText);
@@ -258,7 +263,7 @@ export default function SubmitTab() {
     }
   }
 
-  // ─── Submission (deferred AI title → instant response) ───────────────────
+  // ─── Submission ───────────────────────────────────────────────────────────
   async function handleSubmit() {
     if (!classifyResult || !sharePointToken) return;
     setStep("submitting");
@@ -314,8 +319,24 @@ export default function SubmitTab() {
     setPrefetching(false);
   }
 
-  // ─── Shared chrome ────────────────────────────────────────────────────────
+  // ─── Header — slim flat bar in Teams, gradient banner in browser ──────────
   function Header() {
+    if (inTeams) {
+      return (
+        <div className={`px-5 py-3 flex items-center gap-3 border-b ${
+          isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
+        }`}>
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+            isDark ? "bg-blue-900/50" : "bg-blue-50"
+          }`}>
+            <Shield className={`h-4 w-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+          </div>
+          <span className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
+            {userName ? `Hi ${userName.split(" ")[0]}` : "Safety & Ideas"}
+          </span>
+        </div>
+      );
+    }
     return (
       <div className="bg-gradient-to-r from-blue-700 to-blue-500 px-5 pt-6 pb-7 text-white">
         <div className="max-w-lg mx-auto flex items-center gap-3">
@@ -333,10 +354,12 @@ export default function SubmitTab() {
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ─── Full-screen states ───────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white animate-fade-in">
+      <div className={`min-h-screen flex items-center justify-center animate-fade-in ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}>
         <div className="text-center">
           <div className="relative w-12 h-12 mx-auto mb-4">
             <div className="absolute inset-0 rounded-full bg-blue-600 flex items-center justify-center">
@@ -344,7 +367,9 @@ export default function SubmitTab() {
             </div>
             <div className="absolute -inset-1 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
           </div>
-          <p className="text-gray-500 text-sm">Signing you in automatically…</p>
+          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Signing you in automatically…
+          </p>
         </div>
       </div>
     );
@@ -352,13 +377,19 @@ export default function SubmitTab() {
 
   if (authState === "unauthenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-4 animate-fade-in">
+      <div className={`min-h-screen flex items-center justify-center p-4 animate-fade-in ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}>
         <div className="w-full max-w-sm text-center animate-scale-in">
-          <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Shield className="h-7 w-7 text-blue-500" />
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+            isDark ? "bg-blue-900/40" : "bg-blue-100"
+          }`}>
+            <Shield className={`h-7 w-7 ${isDark ? "text-blue-400" : "text-blue-500"}`} />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Not available here</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+            Not available here
+          </h1>
+          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
             Please open this tab inside Microsoft Teams. If you're already in Teams, try refreshing the tab.
           </p>
         </div>
@@ -368,7 +399,9 @@ export default function SubmitTab() {
 
   if (step === "done") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-4 animate-fade-in">
+      <div className={`min-h-screen flex items-center justify-center p-4 animate-fade-in ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}>
         <div className="w-full max-w-sm text-center">
           <div className="relative w-20 h-20 mx-auto mb-5">
             <div className="absolute inset-0 rounded-full bg-green-100 animate-pop-in" />
@@ -376,11 +409,13 @@ export default function SubmitTab() {
               <CheckCircle2 className="h-11 w-11 text-green-600" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2 animate-fade-in-up">Submitted!</h1>
-          <p className="text-gray-600 text-sm mb-1 animate-fade-in-up">
+          <h1 className={`text-2xl font-bold mb-2 animate-fade-in-up ${isDark ? "text-white" : "text-gray-900"}`}>
+            Submitted!
+          </h1>
+          <p className={`text-sm mb-1 animate-fade-in-up ${isDark ? "text-gray-300" : "text-gray-600"}`}>
             Your <strong>{submittedCategory}</strong> has been recorded.
           </p>
-          <p className="text-gray-400 text-xs mb-7 animate-fade-in-up">
+          <p className={`text-xs mb-7 animate-fade-in-up ${isDark ? "text-gray-500" : "text-gray-400"}`}>
             It will appear in the next H&amp;S meeting agenda.
           </p>
           <Button onClick={reset} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
@@ -392,14 +427,21 @@ export default function SubmitTab() {
     );
   }
 
+  // ─── Main form ────────────────────────────────────────────────────────────
+  const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
+  const categoryBg = meta ? (isDark ? meta.darkBg : meta.bg) : "";
+  const categoryRing = meta ? (isDark ? meta.darkRing : meta.ring) : "";
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <Header />
-      <div className="max-w-lg mx-auto px-4 -mt-4 pb-24">
-        <Card className="p-5 shadow-sm border-gray-200 animate-fade-in-up">
+      <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
+        <Card className={`p-5 shadow-sm animate-fade-in-up ${
+          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        }`}>
           {step === "input" && (
             <div className="space-y-4 animate-fade-in">
-              <p className="text-sm text-gray-600 font-medium">
+              <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                 Describe what you saw, a near miss, or an improvement idea.
               </p>
               <div className="relative">
@@ -408,7 +450,11 @@ export default function SubmitTab() {
                   value={inputText}
                   onChange={(e) => handleTextChange(e.target.value)}
                   rows={5}
-                  className="resize-none text-base border-gray-200 focus:border-blue-400 transition-colors"
+                  className={`resize-none text-base transition-colors ${
+                    isDark
+                      ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
+                      : "border-gray-200 focus:border-blue-400"
+                  }`}
                   autoFocus
                 />
                 {prefetching && (
@@ -419,10 +465,16 @@ export default function SubmitTab() {
                 )}
               </div>
               {inputText.trim().length >= 10 && inputText.trim().length < 20 && (
-                <p className="text-xs text-gray-400">Keep typing — a bit more detail helps…</p>
+                <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                  Keep typing — a bit more detail helps…
+                </p>
               )}
               {submitError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 animate-fade-in">
+                <p className={`text-sm border rounded-lg p-3 animate-fade-in ${
+                  isDark
+                    ? "text-red-400 bg-red-900/20 border-red-700/50"
+                    : "text-red-600 bg-red-50 border-red-200"
+                }`}>
                   {submitError}
                 </p>
               )}
@@ -446,19 +498,19 @@ export default function SubmitTab() {
             </div>
           )}
 
-          {step === "classifying" && <ClassifyingSkeleton />}
+          {step === "classifying" && <ClassifyingSkeleton isDark={isDark} />}
 
-          {step === "followup" && classifyResult && (
+          {step === "followup" && classifyResult && meta && (
             <div className="space-y-4 animate-fade-in-up">
-              <div className={`p-4 rounded-xl border ring-4 ${CATEGORY_META[classifyResult.category]?.bg} ${CATEGORY_META[classifyResult.category]?.ring}`}>
-                <div className={`flex items-center gap-2 ${CATEGORY_META[classifyResult.category]?.color}`}>
-                  {CATEGORY_META[classifyResult.category]?.icon}
+              <div className={`p-4 rounded-xl border ring-4 ${categoryBg} ${categoryRing}`}>
+                <div className={`flex items-center gap-2 ${meta.color}`}>
+                  {meta.icon}
                   <span className="font-semibold text-sm">{classifyResult.category}</span>
-                  <Badge variant="outline" className="ml-auto text-xs bg-white/60">
+                  <Badge variant="outline" className={`ml-auto text-xs ${isDark ? "bg-gray-900/50 border-gray-600 text-gray-300" : "bg-white/60"}`}>
                     {Math.round(classifyResult.confidence * 100)}% sure
                   </Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className={`text-xs mt-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                   A couple of quick questions will help us record this accurately.
                 </p>
               </div>
@@ -466,7 +518,9 @@ export default function SubmitTab() {
               <div className="space-y-3">
                 {classifyResult.followUpQuestions.map((question, idx) => (
                   <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 60}ms` }}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{question}</label>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                      {question}
+                    </label>
                     <Textarea
                       placeholder="Your answer…"
                       value={followUpAnswers[idx] || ""}
@@ -476,7 +530,11 @@ export default function SubmitTab() {
                         setFollowUpAnswers(updated);
                       }}
                       rows={2}
-                      className="resize-none text-sm border-gray-200"
+                      className={`resize-none text-sm ${
+                        isDark
+                          ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500"
+                          : "border-gray-200"
+                      }`}
                     />
                   </div>
                 ))}
@@ -489,35 +547,38 @@ export default function SubmitTab() {
                 <ChevronRight className="h-4 w-4 mr-2" />
                 Review &amp; Submit
               </Button>
-              <Button variant="ghost" onClick={reset} className="w-full text-gray-500 text-sm">
+              <Button variant="ghost" onClick={reset} className={`w-full text-sm ${isDark ? "text-gray-400 hover:text-gray-300 hover:bg-gray-700" : "text-gray-500"}`}>
                 Start over
               </Button>
             </div>
           )}
 
-          {step === "confirm" && classifyResult && (
+          {step === "confirm" && classifyResult && meta && (
             <div className="space-y-4 animate-fade-in-up">
-              <div className={`p-4 rounded-xl border ${CATEGORY_META[classifyResult.category]?.bg}`}>
-                <div className={`flex items-center gap-2 font-semibold text-sm mb-2 ${CATEGORY_META[classifyResult.category]?.color}`}>
-                  {CATEGORY_META[classifyResult.category]?.icon}
+              <div className={`p-4 rounded-xl border ${categoryBg}`}>
+                <div className={`flex items-center gap-2 font-semibold text-sm mb-2 ${meta.color}`}>
+                  {meta.icon}
                   {classifyResult.category}
                 </div>
-                <p className="text-xs text-gray-500">
-                  → Goes to:{" "}
-                  <span className="font-medium">{CATEGORY_META[classifyResult.category]?.listLabel}</span>
+                <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  → Goes to: <span className="font-medium">{meta.listLabel}</span>
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Your submission</p>
-                <p className="text-sm text-gray-800 whitespace-pre-wrap">{inputText}</p>
+              <div className={`rounded-xl border p-4 ${isDark ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
+                <p className={`text-xs font-medium uppercase tracking-wide mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  Your submission
+                </p>
+                <p className={`text-sm whitespace-pre-wrap ${isDark ? "text-gray-100" : "text-gray-800"}`}>
+                  {inputText}
+                </p>
                 {followUpAnswers.some((a) => a.trim()) && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                  <div className={`mt-3 pt-3 border-t space-y-2 ${isDark ? "border-gray-600" : "border-gray-200"}`}>
                     {classifyResult.followUpQuestions.map((q, i) =>
                       followUpAnswers[i]?.trim() ? (
                         <div key={i}>
-                          <p className="text-xs text-gray-500">{q}</p>
-                          <p className="text-sm text-gray-800">{followUpAnswers[i]}</p>
+                          <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{q}</p>
+                          <p className={`text-sm ${isDark ? "text-gray-100" : "text-gray-800"}`}>{followUpAnswers[i]}</p>
                         </div>
                       ) : null
                     )}
@@ -526,7 +587,11 @@ export default function SubmitTab() {
               </div>
 
               {submitError && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 animate-fade-in">
+                <p className={`text-sm border rounded-lg p-3 animate-fade-in ${
+                  isDark
+                    ? "text-red-400 bg-red-900/20 border-red-700/50"
+                    : "text-red-600 bg-red-50 border-red-200"
+                }`}>
                   {submitError}
                 </p>
               )}
@@ -541,7 +606,7 @@ export default function SubmitTab() {
               <Button
                 variant="ghost"
                 onClick={() => (classifyResult.followUpQuestions.length > 0 ? setStep("followup") : setStep("input"))}
-                className="w-full text-gray-500 text-sm"
+                className={`w-full text-sm ${isDark ? "text-gray-400 hover:text-gray-300 hover:bg-gray-700" : "text-gray-500"}`}
               >
                 Go back
               </Button>
@@ -550,10 +615,12 @@ export default function SubmitTab() {
 
           {step === "submitting" && (
             <div className="py-10 animate-fade-in">
-              <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden mb-5">
+              <div className="relative h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-5">
                 <div className="absolute top-0 h-full bg-green-500 rounded-full animate-bar-indeterminate" />
               </div>
-              <p className="text-center text-gray-500 text-sm">Saving your submission…</p>
+              <p className={`text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                Saving your submission…
+              </p>
             </div>
           )}
         </Card>
@@ -562,34 +629,33 @@ export default function SubmitTab() {
   );
 }
 
-// Skeleton that mirrors the result card layout so the transition feels seamless
-function ClassifyingSkeleton() {
+function ClassifyingSkeleton({ isDark }: { isDark: boolean }) {
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2 text-blue-600">
+      <div className="flex items-center gap-2 text-blue-500">
         <Sparkles className="h-4 w-4 animate-pulse" />
         <span className="text-sm font-medium">Reading your submission…</span>
       </div>
-      <div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+      <div className="relative h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
         <div className="absolute top-0 h-full bg-blue-500 rounded-full animate-bar-indeterminate" />
       </div>
-      <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-        <Shimmer className="h-5 w-32" />
-        <Shimmer className="h-3 w-full" />
-        <Shimmer className="h-3 w-3/4" />
+      <div className={`rounded-xl border p-4 space-y-3 ${isDark ? "border-gray-700" : "border-gray-200"}`}>
+        <Shimmer isDark={isDark} className="h-5 w-32" />
+        <Shimmer isDark={isDark} className="h-3 w-full" />
+        <Shimmer isDark={isDark} className="h-3 w-3/4" />
       </div>
       <div className="space-y-2">
-        <Shimmer className="h-3 w-40" />
-        <Shimmer className="h-9 w-full" />
+        <Shimmer isDark={isDark} className="h-3 w-40" />
+        <Shimmer isDark={isDark} className="h-9 w-full" />
       </div>
     </div>
   );
 }
 
-function Shimmer({ className = "" }: { className?: string }) {
+function Shimmer({ className = "", isDark }: { className?: string; isDark: boolean }) {
   return (
-    <div className={`relative overflow-hidden rounded-md bg-gray-100 ${className}`}>
-      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+    <div className={`relative overflow-hidden rounded-md ${isDark ? "bg-gray-700" : "bg-gray-100"} ${className}`}>
+      <div className={`absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent ${isDark ? "via-gray-600/50" : "via-white/70"} to-transparent`} />
     </div>
   );
 }
