@@ -4810,7 +4810,10 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             color: #333;
             background-color: #ffffff;
             margin: 0;
-            padding: 20px;
+            /* No body padding: the @page rule already supplies the A4 page
+               margins. Extra padding here would stack on top and shrink the
+               usable content width. */
+            padding: 0;
         }
         
         .container {
@@ -4820,7 +4823,8 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             background: #ffffff;
             border-radius: 0;
             box-shadow: none;
-            padding: 20px;
+            /* Let content fill the full A4 content area defined by @page. */
+            padding: 0;
             border: none;
         }
         
