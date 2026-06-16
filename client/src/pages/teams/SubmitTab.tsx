@@ -1,25 +1,34 @@
 import { useState, useEffect, useRef } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
-  AlertTriangle,
-  Lightbulb,
-  Shield,
-  ShoppingCart,
-  MessageSquare,
-  HelpCircle,
-  CheckCircle2,
-  Loader2,
-  Send,
-  ChevronRight,
-  RotateCcw,
-  Sparkles,
-  LogIn,
-} from "lucide-react";
+  Button,
+  Textarea,
+  Card,
+  Badge,
+  Spinner,
+  ProgressBar,
+  Text,
+  Label,
+  Skeleton,
+  SkeletonItem,
+  MessageBar,
+  MessageBarBody,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+import {
+  Warning24Regular,
+  Shield24Regular,
+  Lightbulb24Regular,
+  Cart24Regular,
+  Chat24Regular,
+  QuestionCircle24Regular,
+  CheckmarkCircle48Filled,
+  Send20Regular,
+  ChevronRight20Regular,
+  ArrowCounterclockwise20Regular,
+  Sparkle16Regular,
+} from "@fluentui/react-icons";
 
 type Category =
   | "Near Miss"
@@ -42,69 +51,55 @@ interface ClassifyResult {
 
 const CATEGORY_META: Record<
   Category,
-  { icon: React.ReactNode; color: string; bg: string; ring: string; darkBg: string; darkRing: string; listLabel: string }
+  { icon: React.ReactNode; fg: string; bg: string; border: string; listLabel: string }
 > = {
   "Near Miss": {
-    icon: <AlertTriangle className="h-5 w-5" />,
-    color: "text-red-600",
-    bg: "bg-red-50 border-red-200",
-    ring: "ring-red-100",
-    darkBg: "bg-red-900/20 border-red-700/40",
-    darkRing: "ring-red-900/30",
+    icon: <Warning24Regular />,
+    fg: tokens.colorPaletteRedForeground1,
+    bg: tokens.colorPaletteRedBackground1,
+    border: tokens.colorPaletteRedBorder1,
     listLabel: "Near Miss Register",
   },
   "Safety Observation": {
-    icon: <Shield className="h-5 w-5" />,
-    color: "text-orange-600",
-    bg: "bg-orange-50 border-orange-200",
-    ring: "ring-orange-100",
-    darkBg: "bg-orange-900/20 border-orange-700/40",
-    darkRing: "ring-orange-900/30",
+    icon: <Shield24Regular />,
+    fg: tokens.colorPaletteDarkOrangeForeground1,
+    bg: tokens.colorPaletteDarkOrangeBackground1,
+    border: tokens.colorPaletteDarkOrangeBorder1,
     listLabel: "Safety Ideas List",
   },
   "Improvement Idea": {
-    icon: <Shield className="h-5 w-5" />,
-    color: "text-blue-500",
-    bg: "bg-blue-50 border-blue-200",
-    ring: "ring-blue-100",
-    darkBg: "bg-blue-900/20 border-blue-700/40",
-    darkRing: "ring-blue-900/30",
+    icon: <Shield24Regular />,
+    fg: tokens.colorPaletteGreenForeground1,
+    bg: tokens.colorPaletteGreenBackground1,
+    border: tokens.colorPaletteGreenBorder1,
     listLabel: "Safety Ideas List",
   },
   "Business Improvement": {
-    icon: <Lightbulb className="h-5 w-5" />,
-    color: "text-amber-500",
-    bg: "bg-amber-50 border-amber-200",
-    ring: "ring-amber-100",
-    darkBg: "bg-amber-900/20 border-amber-700/40",
-    darkRing: "ring-amber-900/30",
+    icon: <Lightbulb24Regular />,
+    fg: tokens.colorPaletteMarigoldForeground1,
+    bg: tokens.colorPaletteMarigoldBackground1,
+    border: tokens.colorPaletteMarigoldBorder1,
     listLabel: "Business Ideas List",
   },
   "Supply Request": {
-    icon: <ShoppingCart className="h-5 w-5" />,
-    color: "text-purple-500",
-    bg: "bg-purple-50 border-purple-200",
-    ring: "ring-purple-100",
-    darkBg: "bg-purple-900/20 border-purple-700/40",
-    darkRing: "ring-purple-900/30",
+    icon: <Cart24Regular />,
+    fg: tokens.colorPaletteBerryForeground1,
+    bg: tokens.colorPaletteBerryBackground1,
+    border: tokens.colorPaletteBerryBorder1,
     listLabel: "Business Ideas List",
   },
   "Meeting Agenda Item": {
-    icon: <MessageSquare className="h-5 w-5" />,
-    color: "text-teal-500",
-    bg: "bg-teal-50 border-teal-200",
-    ring: "ring-teal-100",
-    darkBg: "bg-teal-900/20 border-teal-700/40",
-    darkRing: "ring-teal-900/30",
+    icon: <Chat24Regular />,
+    fg: tokens.colorPaletteLightGreenForeground1,
+    bg: tokens.colorPaletteLightGreenBackground1,
+    border: tokens.colorPaletteLightGreenBorder1,
     listLabel: "Business Ideas List",
   },
   Other: {
-    icon: <HelpCircle className="h-5 w-5" />,
-    color: "text-gray-500",
-    bg: "bg-gray-50 border-gray-200",
-    ring: "ring-gray-100",
-    darkBg: "bg-gray-700/40 border-gray-600/40",
-    darkRing: "ring-gray-700/30",
+    icon: <QuestionCircle24Regular />,
+    fg: tokens.colorNeutralForeground2,
+    bg: tokens.colorNeutralBackground3,
+    border: tokens.colorNeutralStroke2,
     listLabel: "Business Ideas List",
   },
 };
@@ -132,8 +127,177 @@ function decodeJwtPayload(token: string): Record<string, any> {
   }
 }
 
+// Griffel blocks `border*` 4-side shorthands; set each side longhand.
+const thinBorderSides = {
+  borderTopWidth: tokens.strokeWidthThin,
+  borderRightWidth: tokens.strokeWidthThin,
+  borderBottomWidth: tokens.strokeWidthThin,
+  borderLeftWidth: tokens.strokeWidthThin,
+  borderTopStyle: "solid",
+  borderRightStyle: "solid",
+  borderBottomStyle: "solid",
+  borderLeftStyle: "solid",
+} as const;
+const allBorderColor = (c: string) => ({
+  borderTopColor: c,
+  borderRightColor: c,
+  borderBottomColor: c,
+  borderLeftColor: c,
+});
+
+const useStyles = makeStyles({
+  fullscreen: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
+    boxSizing: "border-box",
+  },
+  centered: { width: "100%", maxWidth: "340px", textAlign: "center" },
+  chip: {
+    width: "56px",
+    height: "56px",
+    borderTopLeftRadius: tokens.borderRadiusXLarge,
+    borderTopRightRadius: tokens.borderRadiusXLarge,
+    borderBottomLeftRadius: tokens.borderRadiusXLarge,
+    borderBottomRightRadius: tokens.borderRadiusXLarge,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginBottom: tokens.spacingVerticalL,
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+  },
+  successChip: {
+    width: "72px",
+    height: "72px",
+    borderRadius: tokens.borderRadiusCircular,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginBottom: tokens.spacingVerticalL,
+    backgroundColor: tokens.colorPaletteGreenBackground1,
+    color: tokens.colorPaletteGreenForeground1,
+  },
+  stack: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
+  root: { display: "flex", flexDirection: "column", height: "100%", minHeight: 0 },
+  greeting: {
+    flexShrink: 0,
+    paddingTop: tokens.spacingVerticalXS,
+    paddingBottom: tokens.spacingVerticalL,
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
+  },
+  bodyStatic: {
+    flexShrink: 0,
+    paddingTop: tokens.spacingVerticalXS,
+    paddingBottom: tokens.spacingVerticalL,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+  },
+  bodyScroll: {
+    flexGrow: 1,
+    minHeight: 0,
+    overflowY: "auto",
+    paddingTop: tokens.spacingVerticalXS,
+    paddingBottom: tokens.spacingVerticalL,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+  },
+  card: {
+    width: "100%",
+    maxWidth: "520px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    padding: tokens.spacingHorizontalL,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalL,
+  },
+  group: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL },
+  groupTight: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
+  textareaWrap: { position: "relative", display: "flex", flexDirection: "column" },
+  prefetch: {
+    position: "absolute",
+    bottom: tokens.spacingVerticalS,
+    right: tokens.spacingHorizontalM,
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorBrandForeground1,
+  },
+  fullWidth: { width: "100%" },
+  field: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalXS },
+  banner: {
+    padding: tokens.spacingHorizontalM,
+    borderTopLeftRadius: tokens.borderRadiusLarge,
+    borderTopRightRadius: tokens.borderRadiusLarge,
+    borderBottomLeftRadius: tokens.borderRadiusLarge,
+    borderBottomRightRadius: tokens.borderRadiusLarge,
+    ...thinBorderSides,
+  },
+  bannerHead: { display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS },
+  summaryBox: {
+    borderTopLeftRadius: tokens.borderRadiusLarge,
+    borderTopRightRadius: tokens.borderRadiusLarge,
+    borderBottomLeftRadius: tokens.borderRadiusLarge,
+    borderBottomRightRadius: tokens.borderRadiusLarge,
+    ...thinBorderSides,
+    ...allBorderColor(tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorNeutralBackground2,
+    padding: tokens.spacingHorizontalM,
+  },
+  divider: {
+    marginTop: tokens.spacingVerticalM,
+    paddingTop: tokens.spacingVerticalM,
+    borderTopWidth: tokens.strokeWidthThin,
+    borderTopStyle: "solid",
+    borderTopColor: tokens.colorNeutralStroke2,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+  },
+  skeletonBox: {
+    borderTopLeftRadius: tokens.borderRadiusLarge,
+    borderTopRightRadius: tokens.borderRadiusLarge,
+    borderBottomLeftRadius: tokens.borderRadiusLarge,
+    borderBottomRightRadius: tokens.borderRadiusLarge,
+    ...thinBorderSides,
+    ...allBorderColor(tokens.colorNeutralStroke2),
+    padding: tokens.spacingHorizontalM,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+  },
+  brandRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    color: tokens.colorBrandForeground1,
+  },
+  submitting: {
+    paddingTop: tokens.spacingVerticalXXL,
+    paddingBottom: tokens.spacingVerticalXXL,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalL,
+  },
+  uppercase: {
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+    color: tokens.colorNeutralForeground3,
+  },
+});
+
 export default function SubmitTab() {
-  const { isDark } = useTeamsTheme();
+  const styles = useStyles();
 
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
@@ -329,52 +493,46 @@ export default function SubmitTab() {
   // ─── Full-screen states ───────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`h-full flex items-center justify-center animate-fade-in ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
-        <div className="text-center">
-          <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full bg-blue-600 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <div className="absolute -inset-1 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
-          </div>
-          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Signing you in automatically…
-          </p>
-        </div>
+      <div className={`${styles.fullscreen} animate-fade-in`}>
+        <Spinner size="large" label="Signing you in automatically…" />
       </div>
     );
   }
 
   if (authState === "unauthenticated") {
     return (
-      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
-        <div className="w-full max-w-sm text-center animate-scale-in">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-            isDark ? "bg-blue-900/40" : "bg-blue-100"
-          }`}>
-            <Shield className={`h-7 w-7 ${isDark ? "text-blue-400" : "text-blue-500"}`} />
+      <div className={`${styles.fullscreen} animate-fade-in`}>
+        <div className={`${styles.centered} animate-scale-in`}>
+          <div className={styles.chip}>
+            <Shield24Regular />
           </div>
-          <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+          <Text as="h1" size={500} weight="bold" block>
             Sign in required
-          </h1>
-          <p className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Sign in with your Cranfield Glass Microsoft account to submit ideas and reports.
-          </p>
-          <Button
-            onClick={() => initAuth()}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3"
+          </Text>
+          <Text
+            size={300}
+            block
+            style={{
+              color: tokens.colorNeutralForeground3,
+              marginTop: tokens.spacingVerticalS,
+              marginBottom: tokens.spacingVerticalL,
+            }}
           >
-            <LogIn className="h-4 w-4 mr-2" />
+            Sign in with your Cranfield Glass Microsoft account to submit ideas and reports.
+          </Text>
+          <Button
+            appearance="primary"
+            size="large"
+            className={styles.fullWidth}
+            icon={<ArrowCounterclockwise20Regular />}
+            onClick={() => initAuth()}
+          >
             Try again
           </Button>
           {authError && (
-            <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
-              <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
-            </div>
+            <MessageBar intent="error" style={{ marginTop: tokens.spacingVerticalM, textAlign: "left" }}>
+              <MessageBarBody>{authError}</MessageBarBody>
+            </MessageBar>
           )}
         </div>
       </div>
@@ -383,27 +541,37 @@ export default function SubmitTab() {
 
   if (step === "done") {
     return (
-      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
-        <div className="w-full max-w-sm text-center">
-          <div className="relative w-20 h-20 mx-auto mb-5">
-            <div className="absolute inset-0 rounded-full bg-green-100 animate-pop-in" />
-            <div className="absolute inset-0 flex items-center justify-center animate-pop-in">
-              <CheckCircle2 className="h-11 w-11 text-green-600" />
-            </div>
+      <div className={`${styles.fullscreen} animate-fade-in`}>
+        <div className={styles.centered}>
+          <div className={`${styles.successChip} animate-pop-in`}>
+            <CheckmarkCircle48Filled />
           </div>
-          <h1 className={`text-2xl font-bold mb-2 animate-fade-in-up ${isDark ? "text-white" : "text-gray-900"}`}>
+          <Text as="h1" size={600} weight="bold" block className="animate-fade-in-up">
             Submitted!
-          </h1>
-          <p className={`text-sm mb-1 animate-fade-in-up ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+          </Text>
+          <Text
+            size={300}
+            block
+            className="animate-fade-in-up"
+            style={{ marginTop: tokens.spacingVerticalXS }}
+          >
             Your <strong>{submittedCategory}</strong> has been recorded.
-          </p>
-          <p className={`text-xs mb-7 animate-fade-in-up ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+          </Text>
+          <Text
+            size={200}
+            block
+            className="animate-fade-in-up"
+            style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, marginBottom: tokens.spacingVerticalXXL }}
+          >
             It will appear in the next H&amp;S meeting agenda.
-          </p>
-          <Button onClick={reset} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-            <RotateCcw className="h-4 w-4 mr-2" />
+          </Text>
+          <Button
+            appearance="primary"
+            size="large"
+            className={styles.fullWidth}
+            icon={<ArrowCounterclockwise20Regular />}
+            onClick={reset}
+          >
             Submit another
           </Button>
         </div>
@@ -413,164 +581,173 @@ export default function SubmitTab() {
 
   // ─── Main form ────────────────────────────────────────────────────────────
   const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
-  const categoryBg = meta ? (isDark ? meta.darkBg : meta.bg) : "";
 
   return (
-    <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-white"}`}>
+    <div className={styles.root}>
       {userName && (
-        <div className="shrink-0 px-5 pt-1 pb-5">
-          <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
-            Hi {userName.split(" ")[0]} <span className="ml-0.5">👋</span>
-          </p>
-          <p className={`mt-2 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+        <div className={styles.greeting}>
+          <Text as="h1" size={600} weight="bold" block>
+            Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
+          </Text>
+          <Text size={300} block style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalS }}>
             Small ideas. Continuous improvement.
-          </p>
+          </Text>
         </div>
       )}
-      <div className={`${step === "input" ? "shrink-0" : "flex-1 min-h-0 overflow-y-auto"} px-4 pt-1 pb-5`}>
-        <Card className={`w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
-          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        }`}>
+      <div className={step === "input" ? styles.bodyStatic : styles.bodyScroll}>
+        <Card className={`${styles.card} animate-fade-in-up`}>
           {step === "input" && (
-            <div className="space-y-4 animate-fade-in">
-              <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className={`${styles.group} animate-fade-in`}>
+              <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
                 Describe what you saw, a near miss, or an improvement idea.
-              </p>
-              <div className="relative">
+              </Text>
+              <div className={styles.textareaWrap}>
                 <Textarea
-                  ref={mainInputRef}
+                  textarea={{ ref: mainInputRef, rows: 4 }}
                   placeholder={EXAMPLES[exampleIdx]}
                   value={inputText}
-                  onChange={(e) => handleTextChange(e.target.value)}
-                  rows={4}
-                  className={`resize-none text-base transition-colors focus-visible:ring-0 focus-visible:ring-offset-0 ${
-                    isDark
-                      ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
-                      : "border-gray-200 focus:border-blue-400"
-                  }`}
+                  onChange={(_, data) => handleTextChange(data.value)}
+                  resize="none"
+                  size="large"
                 />
                 {prefetching && (
-                  <div className="absolute bottom-2.5 right-3 flex items-center gap-1.5 text-xs text-blue-500 animate-fade-in">
-                    <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                  <div className={`${styles.prefetch} animate-fade-in`}>
+                    <Sparkle16Regular className="animate-pulse" />
                     reading…
                   </div>
                 )}
               </div>
               {inputText.trim().length >= 10 && inputText.trim().length < 20 && (
-                <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
                   Keep typing — a bit more detail helps…
-                </p>
+                </Text>
               )}
               {submitError && (
-                <p className={`text-sm border rounded-lg p-3 animate-fade-in ${
-                  isDark
-                    ? "text-red-400 bg-red-900/20 border-red-700/50"
-                    : "text-red-600 bg-red-50 border-red-200"
-                }`}>
-                  {submitError}
-                </p>
+                <MessageBar intent="error" className="animate-fade-in">
+                  <MessageBarBody>{submitError}</MessageBarBody>
+                </MessageBar>
               )}
               <Button
-                onClick={handleContinue}
+                appearance="primary"
+                size="large"
+                className={styles.fullWidth}
                 disabled={inputText.trim().length < 10}
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-transform text-white"
+                icon={
+                  classifyCache.current.has(inputText.trim()) ? (
+                    <Sparkle16Regular />
+                  ) : (
+                    <ChevronRight20Regular />
+                  )
+                }
+                onClick={handleContinue}
               >
-                {classifyCache.current.has(inputText.trim()) ? (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Ready — Continue
-                  </>
-                ) : (
-                  <>
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                    Continue
-                  </>
-                )}
+                {classifyCache.current.has(inputText.trim()) ? "Ready — Continue" : "Continue"}
               </Button>
             </div>
           )}
 
-          {step === "classifying" && <ClassifyingSkeleton isDark={isDark} />}
+          {step === "classifying" && <ClassifyingSkeleton />}
 
           {step === "followup" && classifyResult && meta && (
-            <div className="space-y-4 animate-fade-in-up">
-              <div className={`p-4 rounded-xl border ${categoryBg}`}>
-                <div className={`flex items-center gap-2 ${meta.color}`}>
+            <div className={`${styles.group} animate-fade-in-up`}>
+              <div
+                className={styles.banner}
+                style={{ backgroundColor: meta.bg, borderColor: meta.border }}
+              >
+                <div className={styles.bannerHead} style={{ color: meta.fg }}>
                   {meta.icon}
-                  <span className="font-semibold text-sm">{classifyResult.category}</span>
-                  <Badge variant="outline" className={`ml-auto text-xs ${isDark ? "bg-gray-900/50 border-gray-600 text-gray-300" : "bg-white/60"}`}>
+                  <Text weight="semibold" size={300} style={{ color: meta.fg }}>
+                    {classifyResult.category}
+                  </Text>
+                  <Badge
+                    appearance="tint"
+                    color="informative"
+                    shape="rounded"
+                    style={{ marginLeft: "auto" }}
+                  >
                     {Math.round(classifyResult.confidence * 100)}% sure
                   </Badge>
                 </div>
-                <p className={`text-xs mt-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, display: "block" }}>
                   A couple of quick questions will help us record this accurately.
-                </p>
+                </Text>
               </div>
 
-              <div className="space-y-3">
+              <div className={styles.groupTight}>
                 {classifyResult.followUpQuestions.map((question, idx) => (
-                  <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 60}ms` }}>
-                    <label className={`block text-sm font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  <div
+                    key={idx}
+                    className={`${styles.field} animate-fade-in-up`}
+                    style={{ animationDelay: `${idx * 60}ms` }}
+                  >
+                    <Label weight="semibold" size="small">
                       {question}
-                    </label>
+                    </Label>
                     <Textarea
                       placeholder="Your answer…"
                       value={followUpAnswers[idx] || ""}
-                      onChange={(e) => {
+                      onChange={(_, data) => {
                         const updated = [...followUpAnswers];
-                        updated[idx] = e.target.value;
+                        updated[idx] = data.value;
                         setFollowUpAnswers(updated);
                       }}
-                      rows={2}
-                      className={`resize-none text-sm focus-visible:ring-0 focus-visible:ring-offset-0 ${
-                        isDark
-                          ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-500 focus:border-blue-500"
-                          : "border-gray-200 focus:border-blue-400"
-                      }`}
+                      textarea={{ rows: 2 }}
+                      resize="none"
                     />
                   </div>
                 ))}
               </div>
 
               <Button
+                appearance="primary"
+                size="large"
+                className={styles.fullWidth}
+                icon={<ChevronRight20Regular />}
                 onClick={() => setStep("confirm")}
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-transform text-white"
               >
-                <ChevronRight className="h-4 w-4 mr-2" />
                 Review &amp; Submit
               </Button>
-              <Button variant="ghost" onClick={reset} className={`w-full text-sm ${isDark ? "text-gray-400 hover:text-gray-300 hover:bg-gray-700" : "text-gray-500"}`}>
+              <Button appearance="subtle" className={styles.fullWidth} onClick={reset}>
                 Start over
               </Button>
             </div>
           )}
 
           {step === "confirm" && classifyResult && meta && (
-            <div className="space-y-4 animate-fade-in-up">
-              <div className={`p-4 rounded-xl border ${categoryBg}`}>
-                <div className={`flex items-center gap-2 font-semibold text-sm mb-2 ${meta.color}`}>
+            <div className={`${styles.group} animate-fade-in-up`}>
+              <div
+                className={styles.banner}
+                style={{ backgroundColor: meta.bg, borderColor: meta.border }}
+              >
+                <div className={styles.bannerHead} style={{ color: meta.fg, marginBottom: tokens.spacingVerticalXS }}>
                   {meta.icon}
-                  {classifyResult.category}
+                  <Text weight="semibold" size={300} style={{ color: meta.fg }}>
+                    {classifyResult.category}
+                  </Text>
                 </div>
-                <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                  → Goes to: <span className="font-medium">{meta.listLabel}</span>
-                </p>
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
+                  → Goes to: <strong>{meta.listLabel}</strong>
+                </Text>
               </div>
 
-              <div className={`rounded-xl border p-4 ${isDark ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
-                <p className={`text-xs font-medium uppercase tracking-wide mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+              <div className={styles.summaryBox}>
+                <Text size={200} weight="semibold" className={styles.uppercase} block>
                   Your submission
-                </p>
-                <p className={`text-sm whitespace-pre-wrap ${isDark ? "text-gray-100" : "text-gray-800"}`}>
+                </Text>
+                <Text size={300} block style={{ whiteSpace: "pre-wrap", marginTop: tokens.spacingVerticalS }}>
                   {inputText}
-                </p>
+                </Text>
                 {followUpAnswers.some((a) => a.trim()) && (
-                  <div className={`mt-3 pt-3 border-t space-y-2 ${isDark ? "border-gray-600" : "border-gray-200"}`}>
+                  <div className={styles.divider}>
                     {classifyResult.followUpQuestions.map((q, i) =>
                       followUpAnswers[i]?.trim() ? (
                         <div key={i}>
-                          <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{q}</p>
-                          <p className={`text-sm ${isDark ? "text-gray-100" : "text-gray-800"}`}>{followUpAnswers[i]}</p>
+                          <Text size={200} block style={{ color: tokens.colorNeutralForeground3 }}>
+                            {q}
+                          </Text>
+                          <Text size={300} block>
+                            {followUpAnswers[i]}
+                          </Text>
                         </div>
                       ) : null
                     )}
@@ -579,26 +756,26 @@ export default function SubmitTab() {
               </div>
 
               {submitError && (
-                <p className={`text-sm border rounded-lg p-3 animate-fade-in ${
-                  isDark
-                    ? "text-red-400 bg-red-900/20 border-red-700/50"
-                    : "text-red-600 bg-red-50 border-red-200"
-                }`}>
-                  {submitError}
-                </p>
+                <MessageBar intent="error" className="animate-fade-in">
+                  <MessageBarBody>{submitError}</MessageBarBody>
+                </MessageBar>
               )}
 
               <Button
+                appearance="primary"
+                size="large"
+                className={styles.fullWidth}
+                icon={<Send20Regular />}
                 onClick={handleSubmit}
-                className="w-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-transform text-white"
               >
-                <Send className="h-4 w-4 mr-2" />
                 Submit
               </Button>
               <Button
-                variant="ghost"
-                onClick={() => (classifyResult.followUpQuestions.length > 0 ? setStep("followup") : setStep("input"))}
-                className={`w-full text-sm ${isDark ? "text-gray-400 hover:text-gray-300 hover:bg-gray-700" : "text-gray-500"}`}
+                appearance="subtle"
+                className={styles.fullWidth}
+                onClick={() =>
+                  classifyResult.followUpQuestions.length > 0 ? setStep("followup") : setStep("input")
+                }
               >
                 Go back
               </Button>
@@ -606,13 +783,11 @@ export default function SubmitTab() {
           )}
 
           {step === "submitting" && (
-            <div className="py-10 animate-fade-in">
-              <div className="relative h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-5">
-                <div className="absolute top-0 h-full bg-green-500 rounded-full animate-bar-indeterminate" />
-              </div>
-              <p className={`text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <div className={`${styles.submitting} animate-fade-in`}>
+              <ProgressBar color="success" thickness="large" />
+              <Text size={300} align="center" style={{ color: tokens.colorNeutralForeground3 }}>
                 Saving your submission…
-              </p>
+              </Text>
             </div>
           )}
         </Card>
@@ -621,33 +796,36 @@ export default function SubmitTab() {
   );
 }
 
-function ClassifyingSkeleton({ isDark }: { isDark: boolean }) {
+function ClassifyingSkeleton() {
+  const styles = useStyles();
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2 text-blue-500">
-        <Sparkles className="h-4 w-4 animate-pulse" />
-        <span className="text-sm font-medium">Reading your submission…</span>
+    <div className={`${styles.group} animate-fade-in`}>
+      <div className={styles.brandRow}>
+        <Sparkle16Regular className="animate-pulse" />
+        <Text size={300} weight="semibold">
+          Reading your submission…
+        </Text>
       </div>
-      <div className="relative h-1.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-        <div className="absolute top-0 h-full bg-blue-500 rounded-full animate-bar-indeterminate" />
+      <ProgressBar />
+      <div className={styles.skeletonBox}>
+        <Skeleton>
+          <SkeletonItem style={{ width: "8rem", height: "1.25rem" }} />
+        </Skeleton>
+        <Skeleton>
+          <SkeletonItem style={{ height: "0.75rem" }} />
+        </Skeleton>
+        <Skeleton>
+          <SkeletonItem style={{ width: "75%", height: "0.75rem" }} />
+        </Skeleton>
       </div>
-      <div className={`rounded-xl border p-4 space-y-3 ${isDark ? "border-gray-700" : "border-gray-200"}`}>
-        <Shimmer isDark={isDark} className="h-5 w-32" />
-        <Shimmer isDark={isDark} className="h-3 w-full" />
-        <Shimmer isDark={isDark} className="h-3 w-3/4" />
+      <div className={styles.field}>
+        <Skeleton>
+          <SkeletonItem style={{ width: "10rem", height: "0.75rem" }} />
+        </Skeleton>
+        <Skeleton>
+          <SkeletonItem style={{ height: "2.25rem" }} />
+        </Skeleton>
       </div>
-      <div className="space-y-2">
-        <Shimmer isDark={isDark} className="h-3 w-40" />
-        <Shimmer isDark={isDark} className="h-9 w-full" />
-      </div>
-    </div>
-  );
-}
-
-function Shimmer({ className = "", isDark }: { className?: string; isDark: boolean }) {
-  return (
-    <div className={`relative overflow-hidden rounded-md ${isDark ? "bg-gray-700" : "bg-gray-100"} ${className}`}>
-      <div className={`absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent ${isDark ? "via-gray-600/50" : "via-white/70"} to-transparent`} />
     </div>
   );
 }

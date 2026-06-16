@@ -17,48 +17,131 @@ import SubmitTab from "@/pages/teams/SubmitTab";
 import OrdersTab from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
+import {
+  FluentProvider,
+  teamsLightTheme,
+  teamsDarkTheme,
+  teamsHighContrastTheme,
+  makeStyles,
+  mergeClasses,
+  tokens,
+} from "@fluentui/react-components";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
+
+// Griffel blocks the `border*` 4-side shorthands (it can't safely expand them),
+// so we set each side longhand via these helpers.
+const thinBorderSides = {
+  borderTopWidth: tokens.strokeWidthThin,
+  borderRightWidth: tokens.strokeWidthThin,
+  borderBottomWidth: tokens.strokeWidthThin,
+  borderLeftWidth: tokens.strokeWidthThin,
+  borderTopStyle: "solid",
+  borderRightStyle: "solid",
+  borderBottomStyle: "solid",
+  borderLeftStyle: "solid",
+} as const;
+const allBorderColor = (c: string) => ({
+  borderTopColor: c,
+  borderRightColor: c,
+  borderBottomColor: c,
+  borderLeftColor: c,
+});
+
+const useShellStyles = makeStyles({
+  shell: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100dvh",
+    overflow: "hidden",
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  content: {
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
+    minHeight: 0,
+    overflow: "hidden",
+  },
+});
+
+const useSwitcherStyles = makeStyles({
+  bar: {
+    flexShrink: 0,
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalS,
+  },
+  pill: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalXS,
+    paddingBottom: tokens.spacingVerticalXS,
+    borderRadius: tokens.borderRadiusCircular,
+    fontSize: tokens.fontSizeBase200,
+    fontWeight: tokens.fontWeightMedium,
+    fontFamily: tokens.fontFamilyBase,
+    lineHeight: tokens.lineHeightBase200,
+    cursor: "pointer",
+    textDecorationLine: "none",
+    ...thinBorderSides,
+    ...allBorderColor(tokens.colorNeutralStroke2),
+    backgroundColor: tokens.colorTransparentBackground,
+    color: tokens.colorNeutralForeground3,
+    transitionProperty: "background-color, color, border-color",
+    transitionDuration: tokens.durationNormal,
+    ":hover": {
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+      color: tokens.colorNeutralForeground2,
+    },
+  },
+  activeSubmit: {
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+    ...allBorderColor(tokens.colorTransparentStroke),
+    ":hover": {
+      backgroundColor: tokens.colorBrandBackground2Hover,
+      color: tokens.colorBrandForeground1,
+    },
+  },
+  activeOrders: {
+    backgroundColor: tokens.colorPaletteBerryBackground1,
+    color: tokens.colorPaletteBerryForeground1,
+    ...allBorderColor(tokens.colorTransparentStroke),
+    ":hover": {
+      backgroundColor: tokens.colorPaletteBerryBackground1,
+      color: tokens.colorPaletteBerryForeground1,
+    },
+  },
+});
 
 // A quiet in-content segmented toggle — deliberately not a bottom app-nav bar,
 // so it reads as part of our content and stays visually separate from the
 // Teams navigation chrome that already lives along the bottom of the window.
 function TeamsTabSwitcher() {
   const [location] = useLocation();
-  const { isDark } = useTeamsTheme();
+  const s = useSwitcherStyles();
   const isOrders = location === "/teams-tab/orders";
 
-  const base =
-    "inline-flex items-center justify-center rounded-full px-4 py-1 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/50";
-  const inactive = isDark
-    ? "border border-gray-700 text-gray-400"
-    : "border border-gray-200 text-gray-600";
-
   return (
-    <div className="shrink-0 flex gap-2 px-4 pt-3 pb-2">
+    <div className={s.bar}>
       <Link
         href="/teams-tab"
         aria-current={!isOrders ? "page" : undefined}
-        className={`${base} ${
-          !isOrders
-            ? isDark
-              ? "bg-blue-500/15 text-blue-300"
-              : "bg-blue-50 text-blue-700"
-            : inactive
-        }`}
+        className={mergeClasses(s.pill, !isOrders && s.activeSubmit)}
       >
         Submit
       </Link>
       <Link
         href="/teams-tab/orders"
         aria-current={isOrders ? "page" : undefined}
-        className={`${base} ${
-          isOrders
-            ? isDark
-              ? "bg-purple-500/15 text-purple-300"
-              : "bg-purple-50 text-purple-700"
-            : inactive
-        }`}
+        className={mergeClasses(s.pill, isOrders && s.activeOrders)}
       >
         Orders
       </Link>
@@ -68,22 +151,31 @@ function TeamsTabSwitcher() {
 
 function TeamsRouterContent() {
   const [location] = useLocation();
-  const { isDark } = useTeamsTheme();
+  const { theme } = useTeamsTheme();
+  const styles = useShellStyles();
   const isOrders = location === "/teams-tab/orders";
 
+  const fluentTheme =
+    theme === "dark"
+      ? teamsDarkTheme
+      : theme === "contrast"
+      ? teamsHighContrastTheme
+      : teamsLightTheme;
+
   return (
-    <div
-      className={`flex flex-col h-[100dvh] overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-white"}`}
+    <FluentProvider
+      theme={fluentTheme}
+      className={styles.shell}
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <TeamsTabSwitcher />
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className={styles.content}>
         {isOrders ? <OrdersTab /> : <SubmitTab />}
       </div>
-    </div>
+    </FluentProvider>
   );
 }
 

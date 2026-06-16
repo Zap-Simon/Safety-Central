@@ -1,20 +1,27 @@
 import { useState, useRef, useEffect } from "react";
 import * as microsoftTeams from "@microsoft/teams-js";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useTeamsTheme } from "@/hooks/useTeamsTheme";
 import {
-  ShoppingCart,
-  Plus,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  Package,
-  User,
-  LogIn,
-  Shield,
-} from "lucide-react";
+  Button,
+  Input,
+  Card,
+  Spinner,
+  Badge,
+  Text,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+import {
+  Cart20Regular,
+  Cart16Regular,
+  Add20Regular,
+  CheckmarkCircle16Regular,
+  Clock16Regular,
+  Box24Regular,
+  Person16Regular,
+  Shield16Regular,
+  ArrowCounterclockwise20Regular,
+} from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
 
 function timeAgo(dateStr: string | Date): string {
@@ -41,9 +48,132 @@ interface OrdersTabProps {
   userName?: string;
 }
 
+// Griffel blocks `border*` 4-side shorthands; set each side longhand.
+const allBorderColor = (c: string) => ({
+  borderTopColor: c,
+  borderRightColor: c,
+  borderBottomColor: c,
+  borderLeftColor: c,
+});
+
+const useStyles = makeStyles({
+  fullscreen: {
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: tokens.spacingHorizontalXXL,
+    paddingRight: tokens.spacingHorizontalXXL,
+    boxSizing: "border-box",
+  },
+  centered: { width: "100%", maxWidth: "340px", textAlign: "center" },
+  chip: {
+    width: "56px",
+    height: "56px",
+    borderTopLeftRadius: tokens.borderRadiusXLarge,
+    borderTopRightRadius: tokens.borderRadiusXLarge,
+    borderBottomLeftRadius: tokens.borderRadiusXLarge,
+    borderBottomRightRadius: tokens.borderRadiusXLarge,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginBottom: tokens.spacingVerticalL,
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+  },
+  root: { display: "flex", flexDirection: "column", height: "100%", minHeight: 0 },
+  addBar: {
+    flexShrink: 0,
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalM,
+    borderBottomWidth: tokens.strokeWidthThin,
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.colorNeutralStroke2,
+  },
+  input: { flexGrow: 1 },
+  adminWrap: {
+    flexShrink: 0,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalS,
+  },
+  list: {
+    flexGrow: 1,
+    minHeight: 0,
+    overflowY: "auto",
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalXL,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+  },
+  loadingRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: tokens.spacingVerticalXXXL,
+    paddingBottom: tokens.spacingVerticalXXXL,
+  },
+  empty: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    paddingTop: "4rem",
+    paddingBottom: "4rem",
+    gap: tokens.spacingVerticalM,
+  },
+  emptyChip: {
+    width: "56px",
+    height: "56px",
+    borderTopLeftRadius: tokens.borderRadiusXLarge,
+    borderTopRightRadius: tokens.borderRadiusXLarge,
+    borderBottomLeftRadius: tokens.borderRadiusXLarge,
+    borderBottomRightRadius: tokens.borderRadiusXLarge,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorNeutralForeground3,
+  },
+  itemCard: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+    padding: tokens.spacingHorizontalM,
+  },
+  itemIcon: { color: tokens.colorBrandForeground1, flexShrink: 0 },
+  itemBody: { flexGrow: 1, minWidth: 0 },
+  metaRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    marginTop: "2px",
+    color: tokens.colorNeutralForeground3,
+  },
+  metaIcon: { width: "12px", height: "12px", flexShrink: 0 },
+  dot: { color: tokens.colorNeutralForeground4 },
+  footer: { paddingTop: tokens.spacingVerticalS },
+  orderedBtn: {
+    flexShrink: 0,
+    color: tokens.colorPaletteGreenForeground1,
+    ...allBorderColor(tokens.colorPaletteGreenBorder1),
+  },
+});
+
 export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
+  const styles = useStyles();
   const qc = useQueryClient();
-  const { isDark } = useTeamsTheme();
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
   const [authError, setAuthError] = useState<string>("");
   const [teamsToken, setTeamsToken] = useState<string | null>(null);
@@ -187,20 +317,8 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className={`h-full flex items-center justify-center animate-fade-in ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
-        <div className="text-center">
-          <div className="relative w-12 h-12 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full bg-purple-600 flex items-center justify-center">
-              <ShoppingCart className="h-6 w-6 text-white" />
-            </div>
-            <div className="absolute -inset-1 rounded-full border-2 border-purple-600/30 border-t-purple-600 animate-spin" />
-          </div>
-          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Signing you in automatically…
-          </p>
-        </div>
+      <div className={`${styles.fullscreen} animate-fade-in`}>
+        <Spinner size="large" label="Signing you in automatically…" />
       </div>
     );
   }
@@ -208,32 +326,51 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
-        isDark ? "bg-gray-900" : "bg-white"
-      }`}>
-        <div className="w-full max-w-sm text-center animate-scale-in">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-            isDark ? "bg-purple-900/40" : "bg-purple-100"
-          }`}>
-            <LogIn className={`h-7 w-7 ${isDark ? "text-purple-400" : "text-purple-500"}`} />
+      <div className={`${styles.fullscreen} animate-fade-in`}>
+        <div className={`${styles.centered} animate-scale-in`}>
+          <div className={styles.chip}>
+            <Cart20Regular />
           </div>
-          <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+          <Text as="h1" size={500} weight="bold" block>
             Sign in required
-          </h1>
-          <p className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Sign in with your Cranfield Glass Microsoft account to add and manage orders.
-          </p>
-          <Button
-            onClick={() => initAuth()}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white mb-3"
+          </Text>
+          <Text
+            size={300}
+            block
+            style={{
+              color: tokens.colorNeutralForeground3,
+              marginTop: tokens.spacingVerticalS,
+              marginBottom: tokens.spacingVerticalL,
+            }}
           >
-            <LogIn className="h-4 w-4 mr-2" />
+            Sign in with your Cranfield Glass Microsoft account to add and manage orders.
+          </Text>
+          <Button
+            appearance="primary"
+            size="large"
+            className={styles.input}
+            icon={<ArrowCounterclockwise20Regular />}
+            onClick={() => initAuth()}
+          >
             Try again
           </Button>
           {authError && (
-            <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
-              <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
-            </div>
+            <Text
+              size={200}
+              block
+              style={{
+                marginTop: tokens.spacingVerticalM,
+                padding: tokens.spacingHorizontalS,
+                textAlign: "left",
+                fontFamily: tokens.fontFamilyMonospace,
+                color: tokens.colorPaletteRedForeground1,
+                backgroundColor: tokens.colorPaletteRedBackground1,
+                borderRadius: tokens.borderRadiusMedium,
+                wordBreak: "break-all",
+              }}
+            >
+              {authError}
+            </Text>
           )}
         </div>
       </div>
@@ -242,126 +379,109 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
-    <div className={`flex flex-col min-h-0 h-full ${isDark ? "bg-gray-900" : "bg-white"}`}>
+    <div className={styles.root}>
       {/* ── Quick add bar ── */}
-      <div className={`shrink-0 border-b px-4 py-3 flex gap-2 ${
-        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
-      }`}>
+      <div className={styles.addBar}>
         <Input
-          ref={inputRef}
+          className={styles.input}
+          input={{ ref: inputRef, autoFocus: true }}
           placeholder="Add item to order…"
           value={itemText}
-          onChange={(e) => setItemText(e.target.value)}
+          onChange={(_, d) => setItemText(d.value)}
           onKeyDown={handleKeyDown}
-          className={`flex-1 text-base focus-visible:ring-0 focus-visible:ring-offset-0 ${
-            isDark
-              ? "bg-gray-800 border-gray-600 text-white placeholder:text-gray-500 focus:border-purple-500"
-              : "border-gray-200 focus:border-purple-400"
-          }`}
-          autoFocus
+          size="large"
         />
         <Button
+          appearance="primary"
+          size="large"
           onClick={handleAdd}
           disabled={!itemText.trim() || addMutation.isPending}
-          className="bg-purple-600 hover:bg-purple-700 active:scale-95 text-white shrink-0"
+          icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
         >
-          {addMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
-          <span className="ml-1 hidden sm:inline">Add</span>
+          Add
         </Button>
       </div>
 
       {/* ── Admin badge ── */}
       {userIsAdmin && (
-        <div className="px-4 pt-2 pb-0">
-          <div className={`inline-flex items-center gap-1.5 text-xs rounded-full px-2.5 py-1 border ${
-            isDark
-              ? "text-purple-300 bg-purple-900/30 border-purple-700/40"
-              : "text-purple-700 bg-purple-50 border-purple-200"
-          }`}>
-            <Shield className="h-3 w-3" />
+        <div className={styles.adminWrap}>
+          <Badge
+            appearance="tint"
+            color="brand"
+            shape="rounded"
+            icon={<Shield16Regular style={{ width: "12px", height: "12px" }} />}
+          >
             Admin — you can mark items as ordered
-          </div>
+          </Badge>
         </div>
       )}
 
       {/* ── Item list ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2 pb-6">
+      <div className={styles.list}>
         {isLoading && (
-          <div className="flex items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            <span className="text-sm">Loading…</span>
+          <div className={styles.loadingRow}>
+            <Spinner size="small" label="Loading…" />
           </div>
         )}
 
         {!isLoading && items.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-              isDark ? "bg-gray-700" : "bg-gray-100"
-            }`}>
-              <Package className={`h-7 w-7 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
+          <div className={styles.empty}>
+            <div className={styles.emptyChip}>
+              <Box24Regular />
             </div>
-            <p className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            <Text size={300} weight="medium" style={{ color: tokens.colorNeutralForeground2 }}>
               Nothing to order yet
-            </p>
-            <p className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+            </Text>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
               Add one above — the whole team will see it here.
-            </p>
+            </Text>
           </div>
         )}
 
         {items.map((item) => (
-          <div
-            key={item.id}
-            className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-sm ${
-              isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-            }`}
-          >
-            <ShoppingCart className="h-4 w-4 text-purple-400 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>
+          <Card key={item.id} className={styles.itemCard}>
+            <Cart16Regular className={styles.itemIcon} />
+            <div className={styles.itemBody}>
+              <Text size={300} weight="semibold" truncate wrap={false} block>
                 {item.itemName}
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <User className={`h-3 w-3 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
-                <span className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.addedBy}</span>
-                <span className={isDark ? "text-gray-600" : "text-gray-300"}>·</span>
-                <Clock className={`h-3 w-3 ${isDark ? "text-gray-500" : "text-gray-400"}`} />
-                <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{timeAgo(item.addedAt)}</span>
+              </Text>
+              <div className={styles.metaRow}>
+                <Person16Regular className={styles.metaIcon} />
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                  {item.addedBy}
+                </Text>
+                <span className={styles.dot}>·</span>
+                <Clock16Regular className={styles.metaIcon} />
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                  {timeAgo(item.addedAt)}
+                </Text>
               </div>
             </div>
             {userIsAdmin && (
               <Button
-                size="sm"
-                variant="outline"
+                size="small"
+                appearance="outline"
+                className={styles.orderedBtn}
                 onClick={() => orderMutation.mutate({ id: item.id })}
                 disabled={orderMutation.isPending && orderMutation.variables?.id === item.id}
-                className={`shrink-0 text-xs px-2.5 active:scale-95 ${
-                  isDark
-                    ? "border-green-700/50 text-green-400 hover:bg-green-900/30 hover:border-green-600 bg-transparent"
-                    : "border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300"
-                }`}
+                icon={
+                  orderMutation.isPending && orderMutation.variables?.id === item.id ? (
+                    <Spinner size="tiny" />
+                  ) : (
+                    <CheckmarkCircle16Regular />
+                  )
+                }
               >
-                {orderMutation.isPending && orderMutation.variables?.id === item.id ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                    Ordered
-                  </>
-                )}
+                Ordered
               </Button>
             )}
-          </div>
+          </Card>
         ))}
 
         {!isLoading && items.length > 0 && (
-          <p className={`text-center text-xs pt-2 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+          <Text size={200} align="center" className={styles.footer} style={{ color: tokens.colorNeutralForeground3 }}>
             {items.length} item{items.length !== 1 ? "s" : ""} to order · shared with your team
-          </p>
+          </Text>
         )}
       </div>
     </div>
