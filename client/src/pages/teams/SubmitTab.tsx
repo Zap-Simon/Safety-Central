@@ -403,7 +403,6 @@ export default function SubmitTab() {
   // ─── Main form ────────────────────────────────────────────────────────────
   const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
   const categoryBg = meta ? (isDark ? meta.darkBg : meta.bg) : "";
-  const categoryRing = meta ? (isDark ? meta.darkRing : meta.ring) : "";
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-white"}`}>
@@ -484,7 +483,7 @@ export default function SubmitTab() {
 
           {step === "followup" && classifyResult && meta && (
             <div className="space-y-4 animate-fade-in-up">
-              <div className={`p-4 rounded-xl border ring-4 ${categoryBg} ${categoryRing}`}>
+              <div className={`p-4 rounded-xl border ${categoryBg}`}>
                 <div className={`flex items-center gap-2 ${meta.color}`}>
                   {meta.icon}
                   <span className="font-semibold text-sm">{classifyResult.category}</span>

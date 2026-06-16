@@ -208,28 +208,34 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-6 gap-4 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg">
-          <LogIn className="h-7 w-7 text-white" />
-        </div>
-        <div>
-          <h2 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Sign In Required</h2>
-          <p className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Sign in with your Cranfield Glass account to add and manage orders.
+      <div className={`h-full flex items-center justify-center p-4 animate-fade-in ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}>
+        <div className="w-full max-w-sm text-center animate-scale-in">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+            isDark ? "bg-purple-900/40" : "bg-purple-100"
+          }`}>
+            <LogIn className={`h-7 w-7 ${isDark ? "text-purple-400" : "text-purple-500"}`} />
+          </div>
+          <h1 className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+            Sign in required
+          </h1>
+          <p className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Sign in with your Cranfield Glass Microsoft account to add and manage orders.
           </p>
+          <Button
+            onClick={() => initAuth()}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white mb-3"
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Try again
+          </Button>
           {authError && (
-            <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
+            <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-left">
               <p className="text-xs font-mono text-red-700 break-all">{authError}</p>
             </div>
           )}
         </div>
-        <Button
-          onClick={() => initAuth()}
-          className="bg-purple-600 hover:bg-purple-700 text-white w-full max-w-xs"
-        >
-          <LogIn className="h-4 w-4 mr-2" />
-          Try again
-        </Button>
       </div>
     );
   }
