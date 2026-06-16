@@ -56,14 +56,15 @@ const useSwitcherStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: tokens.spacingHorizontalXXL,
-    paddingLeft: tokens.spacingHorizontalM,
+    paddingLeft: tokens.spacingHorizontalXXL,
     paddingRight: tokens.spacingHorizontalM,
     paddingTop: tokens.spacingVerticalXS,
     borderBottomWidth: tokens.strokeWidthThin,
     borderBottomStyle: "solid",
     borderBottomColor: tokens.colorNeutralStroke2,
   },
-  // Greeting lives on the left of the tab row; the tabs start to its right.
+  // Greeting always occupies space so the tabs never shift position when
+  // switching between Submit (greeting visible) and Orders (greeting hidden).
   greeting: {
     flexShrink: 1,
     minWidth: 0,
@@ -103,11 +104,14 @@ function TeamsTabSwitcher({
 
   return (
     <div className={s.bar}>
-      {showGreeting && userName && (
-        <Text className={s.greeting}>
-          Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
-        </Text>
-      )}
+      {/* Always rendered so the tabs never shift when switching tabs — just invisible on Orders */}
+      <Text
+        className={s.greeting}
+        style={{ visibility: showGreeting && userName ? "visible" : "hidden" }}
+      >
+        Hi {userName.split(" ")[0] || "there"}{" "}
+        <span style={{ marginLeft: "2px", fontSize: "1.6rem", lineHeight: 1 }}>👋</span>
+      </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab
           value="/teams-tab"
