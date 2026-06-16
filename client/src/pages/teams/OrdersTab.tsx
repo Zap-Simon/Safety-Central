@@ -23,8 +23,9 @@ import {
   Add20Regular,
   Clock16Regular,
   Person16Regular,
-  Delete16Regular,
+  Delete20Regular,
 } from "@fluentui/react-icons";
+import { motion } from "framer-motion";
 import type { OrderItem } from "@shared/schema";
 import { TeamsPage, TeamsPinned, TeamsScroll, TeamsCenter, TeamsFullScreen } from "./TeamsPageShell";
 
@@ -98,7 +99,32 @@ const useStyles = makeStyles({
   metaIcon: { width: "12px", height: "12px", flexShrink: 0 },
   dot: { color: tokens.colorNeutralForeground4 },
   footer: { paddingTop: tokens.spacingVerticalS },
-  removeBtn: { color: tokens.colorPaletteRedForeground1, flexShrink: 0 },
+  swipeWrap: {
+    position: "relative",
+    borderTopLeftRadius: tokens.borderRadiusMedium,
+    borderTopRightRadius: tokens.borderRadiusMedium,
+    borderBottomLeftRadius: tokens.borderRadiusMedium,
+    borderBottomRightRadius: tokens.borderRadiusMedium,
+    overflow: "hidden",
+  },
+  deleteLayer: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingRight: tokens.spacingHorizontalXL,
+    backgroundColor: tokens.colorPaletteRedBackground3,
+    color: tokens.colorNeutralForegroundOnBrand,
+  },
+  swipeFront: {
+    position: "relative",
+    touchAction: "pan-y",
+    cursor: "grab",
+  },
 });
 
 export default function OrdersTab() {
@@ -306,7 +332,7 @@ export default function OrdersTab() {
                   size="small"
                   appearance="subtle"
                   className={styles.clearBtn}
-                  icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete16Regular />}
+                  icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete20Regular />}
                   disabled={clearMutation.isPending}
                 >
                   Clear list
@@ -341,45 +367,58 @@ export default function OrdersTab() {
           </div>
         )}
 
-        {items.map((item) => (
-          <Card key={item.id} className={styles.itemCard}>
-            <Cart16Regular className={styles.itemIcon} />
-            <div className={styles.itemBody}>
-              <Text size={300} weight="semibold" truncate wrap={false} block>
-                {item.itemName}
-              </Text>
-              <div className={styles.metaRow}>
-                <Person16Regular className={styles.metaIcon} />
-                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                  {item.addedBy}
+        {items.map((item) => {
+          const deleting =
+            removeMutation.isPending && removeMutation.variables?.id === item.id;
+          const cardInner = (
+            <Card className={styles.itemCard}>
+              <Cart16Regular className={styles.itemIcon} />
+              <div className={styles.itemBody}>
+                <Text size={300} weight="semibold" truncate wrap={false} block>
+                  {item.itemName}
                 </Text>
-                <span className={styles.dot}>·</span>
-                <Clock16Regular className={styles.metaIcon} />
-                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                  {timeAgo(item.addedAt)}
-                </Text>
+                <div className={styles.metaRow}>
+                  <Person16Regular className={styles.metaIcon} />
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {item.addedBy}
+                  </Text>
+                  <span className={styles.dot}>·</span>
+                  <Clock16Regular className={styles.metaIcon} />
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {timeAgo(item.addedAt)}
+                  </Text>
+                </div>
               </div>
+            </Card>
+          );
+
+          if (!userIsAdmin) {
+            return <div key={item.id}>{cardInner}</div>;
+          }
+
+          return (
+            <div key={item.id} className={styles.swipeWrap}>
+              <div className={styles.deleteLayer} aria-hidden>
+                {deleting ? <Spinner size="tiny" /> : <Delete20Regular />}
+              </div>
+              <motion.div
+                className={styles.swipeFront}
+                drag="x"
+                dragDirectionLock
+                dragConstraints={{ left: -96, right: 0 }}
+                dragElastic={{ left: 0.15, right: 0 }}
+                dragSnapToOrigin
+                onDragEnd={(_, info) => {
+                  if (!deleting && (info.offset.x < -72 || info.velocity.x < -500)) {
+                    removeMutation.mutate({ id: item.id });
+                  }
+                }}
+              >
+                {cardInner}
+              </motion.div>
             </div>
-            {userIsAdmin && (
-              <Button
-                size="small"
-                appearance="subtle"
-                className={styles.removeBtn}
-                aria-label={`Remove ${item.itemName}`}
-                title="Remove item"
-                onClick={() => removeMutation.mutate({ id: item.id })}
-                disabled={removeMutation.isPending && removeMutation.variables?.id === item.id}
-                icon={
-                  removeMutation.isPending && removeMutation.variables?.id === item.id ? (
-                    <Spinner size="tiny" />
-                  ) : (
-                    <Delete16Regular />
-                  )
-                }
-              />
-            )}
-          </Card>
-        ))}
+          );
+        })}
 
         {!isLoading && items.length > 0 && (
           <Text size={200} align="center" className={styles.footer} style={{ color: tokens.colorNeutralForeground3 }}>

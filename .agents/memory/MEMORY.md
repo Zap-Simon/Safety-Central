@@ -8,3 +8,4 @@
 - [Teams per-tab brand theming (Fluent v9)](teams-per-tab-theming.md) — both Teams tabs now share ONE blue brand (berry/purple removed); technique to recolour a single tab kept as reference only.
 - [Teams tabs share one auth provider](teams-shared-auth-provider.md) — run Teams SSO once in a provider above the tab routes; per-tab initAuth flashes the sign-in loader on every tab switch since tabs remount.
 - [Orders admin authorization](orders-admin-allowlist.md) — order-admin gate is an ORDER_ADMINS email/name allowlist (not staff role); prefer email (display names are mutable); remove/clear are soft-archive.
+- [Teams swipe-to-delete (framer-motion)](teams-swipe-to-delete.md) — admin order cards delete via left-swipe; Fluent v9 has no swipe primitive; need dragDirectionLock + touchAction pan-y or vertical scroll breaks.
