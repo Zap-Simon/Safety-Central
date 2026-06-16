@@ -22,7 +22,7 @@ import {
   Cart24Regular,
   Chat24Regular,
   QuestionCircle24Regular,
-  CheckmarkCircle48Filled,
+  CheckmarkCircle24Filled,
   Send20Regular,
   ChevronRight20Regular,
   ArrowCounterclockwise20Regular,
@@ -143,20 +143,6 @@ const allBorderColor = (c: string) => ({
 });
 
 const useStyles = makeStyles({
-  centered: { width: "100%", maxWidth: "340px", textAlign: "center" },
-  successChip: {
-    width: "72px",
-    height: "72px",
-    borderRadius: tokens.borderRadiusCircular,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: "auto",
-    marginRight: "auto",
-    marginBottom: tokens.spacingVerticalL,
-    backgroundColor: tokens.colorPaletteGreenBackground1,
-    color: tokens.colorPaletteGreenForeground1,
-  },
   inputStack: {
     display: "flex",
     flexDirection: "column",
@@ -441,41 +427,50 @@ export default function SubmitTab() {
 
   if (step === "done") {
     return (
-      <TeamsCenter className="animate-fade-in">
-        <div className={styles.centered}>
-          <div className={`${styles.successChip} animate-pop-in`}>
-            <CheckmarkCircle48Filled />
+      <TeamsPage>
+        <TeamsScroll className={styles.bodyPad}>
+        <Card className={`${styles.card} animate-fade-in-up`}>
+          <div className={styles.group}>
+            <div
+              className={styles.banner}
+              style={{
+                backgroundColor: tokens.colorPaletteGreenBackground1,
+                borderColor: tokens.colorPaletteGreenBorder2,
+              }}
+            >
+              <div
+                className={styles.bannerHead}
+                style={{ color: tokens.colorPaletteGreenForeground1, marginBottom: tokens.spacingVerticalXS }}
+              >
+                <CheckmarkCircle24Filled />
+                <Text weight="semibold" size={400} style={{ color: tokens.colorPaletteGreenForeground1 }}>
+                  Submitted!
+                </Text>
+              </div>
+              <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
+                Your <strong>{submittedCategory}</strong> has been recorded.
+              </Text>
+            </div>
+
+            <div className={styles.summaryBox}>
+              <Text size={300} block>
+                It will appear in the next H&amp;S meeting agenda.
+              </Text>
+            </div>
+
+            <Button
+              appearance="primary"
+              size="large"
+              className={styles.fullWidth}
+              icon={<ArrowCounterclockwise20Regular />}
+              onClick={reset}
+            >
+              Submit another
+            </Button>
           </div>
-          <Text as="h1" size={600} weight="bold" block className="animate-fade-in-up">
-            Submitted!
-          </Text>
-          <Text
-            size={300}
-            block
-            className="animate-fade-in-up"
-            style={{ marginTop: tokens.spacingVerticalXS }}
-          >
-            Your <strong>{submittedCategory}</strong> has been recorded.
-          </Text>
-          <Text
-            size={200}
-            block
-            className="animate-fade-in-up"
-            style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, marginBottom: tokens.spacingVerticalXXL }}
-          >
-            It will appear in the next H&amp;S meeting agenda.
-          </Text>
-          <Button
-            appearance="primary"
-            size="large"
-            className={styles.fullWidth}
-            icon={<ArrowCounterclockwise20Regular />}
-            onClick={reset}
-          >
-            Submit another
-          </Button>
-        </div>
-      </TeamsCenter>
+        </Card>
+        </TeamsScroll>
+      </TeamsPage>
     );
   }
 
