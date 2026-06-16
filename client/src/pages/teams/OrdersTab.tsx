@@ -281,9 +281,20 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <div className="flex items-center justify-center py-16 text-gray-400 dark:text-gray-500">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        <span className="text-sm">Signing you in…</span>
+      <div className={`min-h-screen flex items-center justify-center animate-fade-in ${
+        isDark ? "bg-gray-900" : "bg-white"
+      }`}>
+        <div className="text-center">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full bg-purple-600 flex items-center justify-center">
+              <ShoppingCart className="h-6 w-6 text-white" />
+            </div>
+            <div className="absolute -inset-1 rounded-full border-2 border-purple-600/30 border-t-purple-600 animate-spin" />
+          </div>
+          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Signing you in automatically…
+          </p>
+        </div>
       </div>
     );
   }

@@ -88,39 +88,8 @@ function TeamsRouterContent() {
       }}
     >
       {isOrders ? (
-        <div className="flex flex-col flex-1 min-h-0">
-          <div
-            className={`px-5 py-4 flex items-center gap-3 border-b ${
-              isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"
-            }`}
-          >
-            <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                isDark ? "bg-purple-900/50" : "bg-purple-100"
-              }`}
-            >
-              <ShoppingCart
-                className={`h-4 w-4 ${isDark ? "text-purple-300" : "text-purple-600"}`}
-              />
-            </div>
-            <div>
-              <h1
-                className={`text-sm font-semibold leading-tight ${
-                  isDark ? "text-white" : "text-gray-900"
-                }`}
-              >
-                Ordering List
-              </h1>
-              <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                Cranfield Glass Christchurch
-              </p>
-            </div>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <div className={`${isDark ? "bg-gray-900" : "bg-gray-50"} h-full pt-2`}>
-              <OrdersTab />
-            </div>
-          </div>
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <OrdersTab />
         </div>
       ) : (
         <SubmitTab />
