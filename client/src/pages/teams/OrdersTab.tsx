@@ -6,7 +6,6 @@ import {
   Input,
   Card,
   Spinner,
-  Badge,
   Text,
   Dialog,
   DialogTrigger,
@@ -22,11 +21,8 @@ import {
   Cart20Regular,
   Cart16Regular,
   Add20Regular,
-  CheckmarkCircle16Regular,
   Clock16Regular,
-  Box24Regular,
   Person16Regular,
-  Shield16Regular,
   Delete16Regular,
   Delete20Regular,
 } from "@fluentui/react-icons";
@@ -84,17 +80,20 @@ const useStyles = makeStyles({
     borderBottomColor: tokens.colorNeutralStroke2,
   },
   input: { flexGrow: 1 },
-  adminWrap: {
+  adminStrip: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: tokens.spacingHorizontalS,
+    justifyContent: "flex-end",
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
-    paddingTop: tokens.spacingVerticalS,
+    paddingTop: tokens.spacingVerticalXS,
+    paddingBottom: tokens.spacingVerticalXS,
+    backgroundColor: tokens.colorPaletteRedBackground1,
+    borderBottomWidth: tokens.strokeWidthThin,
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.colorPaletteRedBorder1,
   },
   clearBtn: {
-    flexShrink: 0,
     color: tokens.colorPaletteRedForeground1,
     ...allBorderColor(tokens.colorPaletteRedBorder1),
   },
@@ -113,29 +112,6 @@ const useStyles = makeStyles({
     justifyContent: "center",
     paddingTop: tokens.spacingVerticalXXXL,
     paddingBottom: tokens.spacingVerticalXXXL,
-  },
-  empty: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    paddingTop: "4rem",
-    paddingBottom: "4rem",
-    gap: tokens.spacingVerticalM,
-  },
-  emptyChip: {
-    width: "56px",
-    height: "56px",
-    borderTopLeftRadius: tokens.borderRadiusXLarge,
-    borderTopRightRadius: tokens.borderRadiusXLarge,
-    borderBottomLeftRadius: tokens.borderRadiusXLarge,
-    borderBottomRightRadius: tokens.borderRadiusXLarge,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: tokens.colorNeutralBackground3,
-    color: tokens.colorNeutralForeground3,
   },
   itemCard: {
     display: "flex",
@@ -156,18 +132,7 @@ const useStyles = makeStyles({
   metaIcon: { width: "12px", height: "12px", flexShrink: 0 },
   dot: { color: tokens.colorNeutralForeground4 },
   footer: { paddingTop: tokens.spacingVerticalS },
-  orderedBtn: {
-    flexShrink: 0,
-    color: tokens.colorPaletteGreenForeground1,
-    ...allBorderColor(tokens.colorPaletteGreenBorder1),
-  },
-  itemActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalXS,
-    flexShrink: 0,
-  },
-  removeBtn: { color: tokens.colorPaletteRedForeground1 },
+  removeBtn: { color: tokens.colorPaletteRedForeground1, flexShrink: 0 },
 });
 
 export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
@@ -262,38 +227,6 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
       return { prev };
     },
     onError: (_err, _payload, ctx) => {
-      if (ctx?.prev) qc.setQueryData(["/api/orders"], ctx.prev);
-    },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["/api/orders"] });
-    },
-  });
-
-  // ─── Mark ordered ─────────────────────────────────────────────────────────
-  const orderMutation = useMutation({
-    mutationFn: async ({ id }: { id: number }) => {
-      const res = await fetch(`/api/orders/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${teamsToken}`,
-        },
-        body: JSON.stringify({ status: "ordered" }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update item");
-      return data;
-    },
-    onMutate: async ({ id }) => {
-      await qc.cancelQueries({ queryKey: ["/api/orders"] });
-      const prev = qc.getQueryData(["/api/orders"]);
-      qc.setQueryData<{ success: boolean; items: OrderItem[] }>(["/api/orders"], (old) => ({
-        success: true,
-        items: (old?.items ?? []).filter((i) => i.id !== id),
-      }));
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(["/api/orders"], ctx.prev);
     },
     onSettled: () => {
@@ -399,8 +332,46 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
     <TeamsPage>
-      {/* ── Pinned: quick-add bar + admin badge (keyboard-safe — never scrolls) ── */}
       <TeamsPinned>
+        {/* ── Admin clear strip — very top, red tint, only when admin + items exist ── */}
+        {userIsAdmin && items.length > 0 && (
+          <div className={styles.adminStrip}>
+            <Dialog>
+              <DialogTrigger disableButtonEnhancement>
+                <Button
+                  size="small"
+                  appearance="outline"
+                  className={styles.clearBtn}
+                  icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete20Regular />}
+                  disabled={clearMutation.isPending}
+                >
+                  Clear list
+                </Button>
+              </DialogTrigger>
+              <DialogSurface>
+                <DialogBody>
+                  <DialogTitle>Clear the whole order list?</DialogTitle>
+                  <DialogContent>
+                    This removes all {items.length} item{items.length !== 1 ? "s" : ""} for
+                    everyone on the team. Items are archived so nothing is permanently lost.
+                  </DialogContent>
+                  <DialogActions>
+                    <DialogTrigger disableButtonEnhancement>
+                      <Button appearance="secondary">Cancel</Button>
+                    </DialogTrigger>
+                    <DialogTrigger disableButtonEnhancement>
+                      <Button appearance="primary" onClick={() => clearMutation.mutate()}>
+                        Clear list
+                      </Button>
+                    </DialogTrigger>
+                  </DialogActions>
+                </DialogBody>
+              </DialogSurface>
+            </Dialog>
+          </div>
+        )}
+
+        {/* ── Quick-add bar (keyboard-safe — never scrolls away) ── */}
         <div className={styles.addBar}>
           <Input
             className={styles.input}
@@ -421,56 +392,6 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
             Add
           </Button>
         </div>
-
-        {userIsAdmin && (
-          <div className={styles.adminWrap}>
-            <Badge
-              appearance="tint"
-              color="brand"
-              shape="rounded"
-              icon={<Shield16Regular style={{ width: "12px", height: "12px" }} />}
-            >
-              Admin — mark ordered, remove or clear
-            </Badge>
-            {items.length > 0 && (
-              <Dialog>
-                <DialogTrigger disableButtonEnhancement>
-                  <Button
-                    size="small"
-                    appearance="outline"
-                    className={styles.clearBtn}
-                    icon={<Delete20Regular />}
-                    disabled={clearMutation.isPending}
-                  >
-                    Clear list
-                  </Button>
-                </DialogTrigger>
-                <DialogSurface>
-                  <DialogBody>
-                    <DialogTitle>Clear the whole order list?</DialogTitle>
-                    <DialogContent>
-                      This removes all {items.length} item{items.length !== 1 ? "s" : ""} from the
-                      list for everyone on the team. You can't undo this from here.
-                    </DialogContent>
-                    <DialogActions>
-                      <DialogTrigger disableButtonEnhancement>
-                        <Button appearance="secondary">Cancel</Button>
-                      </DialogTrigger>
-                      <DialogTrigger disableButtonEnhancement>
-                        <Button
-                          appearance="primary"
-                          onClick={() => clearMutation.mutate()}
-                        >
-                          Clear list
-                        </Button>
-                      </DialogTrigger>
-                    </DialogActions>
-                  </DialogBody>
-                </DialogSurface>
-              </Dialog>
-            )}
-          </div>
-        )}
       </TeamsPinned>
 
       {/* ── The single scroll region: the shared item list ── */}
@@ -478,20 +399,6 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         {isLoading && (
           <div className={styles.loadingRow}>
             <Spinner size="small" label="Loading…" />
-          </div>
-        )}
-
-        {!isLoading && items.length === 0 && (
-          <div className={styles.empty}>
-            <div className={styles.emptyChip}>
-              <Box24Regular />
-            </div>
-            <Text size={300} weight="medium" style={{ color: tokens.colorNeutralForeground2 }}>
-              Nothing to order yet
-            </Text>
-            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-              Add one above — the whole team will see it here.
-            </Text>
           </div>
         )}
 
@@ -515,40 +422,22 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
               </div>
             </div>
             {userIsAdmin && (
-              <div className={styles.itemActions}>
-                <Button
-                  size="small"
-                  appearance="outline"
-                  className={styles.orderedBtn}
-                  onClick={() => orderMutation.mutate({ id: item.id })}
-                  disabled={orderMutation.isPending && orderMutation.variables?.id === item.id}
-                  icon={
-                    orderMutation.isPending && orderMutation.variables?.id === item.id ? (
-                      <Spinner size="tiny" />
-                    ) : (
-                      <CheckmarkCircle16Regular />
-                    )
-                  }
-                >
-                  Ordered
-                </Button>
-                <Button
-                  size="small"
-                  appearance="subtle"
-                  className={styles.removeBtn}
-                  aria-label={`Remove ${item.itemName}`}
-                  title="Remove item"
-                  onClick={() => removeMutation.mutate({ id: item.id })}
-                  disabled={removeMutation.isPending && removeMutation.variables?.id === item.id}
-                  icon={
-                    removeMutation.isPending && removeMutation.variables?.id === item.id ? (
-                      <Spinner size="tiny" />
-                    ) : (
-                      <Delete16Regular />
-                    )
-                  }
-                />
-              </div>
+              <Button
+                size="small"
+                appearance="subtle"
+                className={styles.removeBtn}
+                aria-label={`Remove ${item.itemName}`}
+                title="Remove item"
+                onClick={() => removeMutation.mutate({ id: item.id })}
+                disabled={removeMutation.isPending && removeMutation.variables?.id === item.id}
+                icon={
+                  removeMutation.isPending && removeMutation.variables?.id === item.id ? (
+                    <Spinner size="tiny" />
+                  ) : (
+                    <Delete16Regular />
+                  )
+                }
+              />
             )}
           </Card>
         ))}

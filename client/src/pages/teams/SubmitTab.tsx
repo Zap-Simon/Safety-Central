@@ -559,34 +559,37 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
         </Text>
       </div>
 
-      {inputText.trim().length >= 10 && inputText.trim().length < 20 && (
-        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-          Keep typing — a bit more detail helps…
-        </Text>
-      )}
-
       {submitError && (
         <MessageBar intent="error" className="animate-fade-in">
           <MessageBarBody>{submitError}</MessageBarBody>
         </MessageBar>
       )}
 
-      <Button
-        appearance="primary"
-        size="large"
-        className={styles.fullWidth}
-        disabled={inputText.trim().length < 10}
-        icon={
-          classifyCache.current.has(inputText.trim()) ? (
-            <Sparkle16Regular />
-          ) : (
-            <ChevronRight20Regular />
-          )
-        }
-        onClick={handleContinue}
-      >
-        {classifyCache.current.has(inputText.trim()) ? "Ready — Continue" : "Continue"}
-      </Button>
+      {(() => {
+        const n = inputText.trim().length;
+        const isReady = classifyCache.current.has(inputText.trim());
+        const label = isReady
+          ? "Ready — Continue"
+          : n < 10
+          ? "Continue"
+          : n < 30
+          ? "Add a bit more…"
+          : "Continue";
+        const appearance: "primary" | "outline" =
+          n >= 30 || isReady ? "primary" : n >= 10 ? "outline" : "primary";
+        return (
+          <Button
+            appearance={appearance}
+            size="large"
+            className={styles.fullWidth}
+            disabled={n < 10}
+            icon={isReady ? <Sparkle16Regular /> : <ChevronRight20Regular />}
+            onClick={handleContinue}
+          >
+            {label}
+          </Button>
+        );
+      })()}
     </>
   );
 
