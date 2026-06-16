@@ -407,18 +407,17 @@ export default function SubmitTab() {
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="min-h-full flex flex-col px-4 py-5">
-          {userName && (
-            <p className={`shrink-0 px-1 text-3xl font-extrabold tracking-tight leading-tight ${
-              isDark ? "text-gray-700" : "text-gray-300"
-            }`}>
-              Hi {userName.split(" ")[0]}
-            </p>
-          )}
-          <Card className={`my-auto w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
-            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-          }`}>
+      {userName && (
+        <div className="shrink-0 px-5 pt-1 pb-3">
+          <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+            Hi {userName.split(" ")[0]} <span className="ml-0.5">👋</span>
+          </p>
+        </div>
+      )}
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pt-1 pb-5">
+        <Card className={`w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
+          isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        }`}>
           {step === "input" && (
             <div className="space-y-4 animate-fade-in">
               <p className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>
@@ -603,8 +602,7 @@ export default function SubmitTab() {
               </p>
             </div>
           )}
-          </Card>
-        </div>
+        </Card>
       </div>
     </div>
   );

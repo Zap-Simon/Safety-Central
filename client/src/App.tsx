@@ -30,12 +30,12 @@ function TeamsTabSwitcher() {
   const isOrders = location === "/teams-tab/orders";
 
   const base =
-    "flex-1 flex items-center justify-center gap-1.5 rounded-full py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/60";
+    "flex-1 flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/60";
   const inactive = isDark ? "text-gray-400" : "text-gray-500";
 
   return (
-    <div className="shrink-0 px-4 pt-3 pb-1">
-      <div className={`mx-auto flex max-w-[240px] rounded-full p-1 ${isDark ? "bg-gray-800" : "bg-gray-200/70"}`}>
+    <div className="shrink-0 px-4 pt-5 pb-2">
+      <div className={`mx-auto flex max-w-[260px] rounded-full p-1 ${isDark ? "bg-gray-800 ring-1 ring-white/5" : "bg-gray-100 ring-1 ring-gray-200"}`}>
         <Link
           href="/teams-tab"
           aria-current={!isOrders ? "page" : undefined}
