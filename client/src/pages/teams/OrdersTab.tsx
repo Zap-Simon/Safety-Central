@@ -371,7 +371,7 @@ export default function OrdersTab() {
           const deleting =
             removeMutation.isPending && removeMutation.variables?.id === item.id;
           const cardInner = (
-            <Card className={styles.itemCard}>
+            <Card appearance="outline" className={styles.itemCard}>
               <Cart16Regular className={styles.itemIcon} />
               <div className={styles.itemBody}>
                 <Text size={300} weight="semibold" truncate wrap={false} block>

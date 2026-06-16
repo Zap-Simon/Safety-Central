@@ -33,3 +33,7 @@ panning. Omit either and mobile users can't scroll the list past a card.
 `<div>{cardInner}</div>`) — only render the motion/swipe wrapper when the user is an
 order admin. Deletes are server-side soft-archives, so an accidental swipe is
 recoverable.
+
+**Fluent v9 Card stroke gotcha:** `<Card>` defaults to `appearance="filled"`, which
+has NO visible border — just a faint fill. If the swipe rows look like they lost their
+"container" outline, set `appearance="outline"` on the Card to restore the stroke.
