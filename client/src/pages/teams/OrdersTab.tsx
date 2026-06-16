@@ -100,6 +100,10 @@ const useStyles = makeStyles({
     display: "flex",
     justifyContent: "flex-end",
   },
+  // Keep the confirm dialog comfortably inset from the screen edges on mobile.
+  dialogSurface: {
+    maxWidth: "min(420px, calc(100vw - 48px))",
+  },
   clearBtn: {
     color: tokens.colorNeutralForeground3,
   },
@@ -363,7 +367,7 @@ export default function OrdersTab() {
                   Clear list
                 </Button>
               </DialogTrigger>
-              <DialogSurface>
+              <DialogSurface className={styles.dialogSurface}>
                 <DialogBody>
                   <DialogTitle>Clear the whole order list?</DialogTitle>
                   <DialogContent>
@@ -374,11 +378,14 @@ export default function OrdersTab() {
                     <DialogTrigger disableButtonEnhancement>
                       <Button appearance="secondary">Cancel</Button>
                     </DialogTrigger>
-                    <DialogTrigger disableButtonEnhancement>
-                      <Button appearance="primary" onClick={() => clearMutation.mutate()}>
-                        Clear list
-                      </Button>
-                    </DialogTrigger>
+                    {/* Confirm action on the shared Submit/blue brand, not berry. */}
+                    <FluentProvider theme={baseTheme} style={{ display: "contents" }}>
+                      <DialogTrigger disableButtonEnhancement>
+                        <Button appearance="primary" onClick={() => clearMutation.mutate()}>
+                          Clear list
+                        </Button>
+                      </DialogTrigger>
+                    </FluentProvider>
                   </DialogActions>
                 </DialogBody>
               </DialogSurface>
