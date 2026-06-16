@@ -75,6 +75,8 @@ app.use(helmet({
         ? ["'self'", "https:", "https://login.microsoftonline.com", "https://graph.microsoft.com"]
         : ["'self'", "wss:", "https:", "https://login.microsoftonline.com", "https://graph.microsoft.com"], // Allow WebSocket for Vite HMR in dev and Microsoft APIs
       fontSrc: ["'self'", "https:"],
+      // Allow MSAL ssoSilent() to open a hidden iframe to Microsoft login
+      frameSrc: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com"],
       // Allow forms to be submitted to Microsoft auth endpoints
       formAction: ["'self'", "https://login.microsoftonline.com", "https://*.microsoftonline.com"],
     },
