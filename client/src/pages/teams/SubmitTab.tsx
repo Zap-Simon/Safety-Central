@@ -201,16 +201,6 @@ const useStyles = makeStyles({
   group: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL },
   groupTight: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
   textareaWrap: { position: "relative", display: "flex", flexDirection: "column" },
-  prefetch: {
-    position: "absolute",
-    bottom: tokens.spacingVerticalS,
-    right: tokens.spacingHorizontalM,
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalXS,
-    fontSize: tokens.fontSizeBase200,
-    color: tokens.colorBrandForeground1,
-  },
   fullWidth: { width: "100%" },
   field: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalXS },
   banner: {
@@ -375,8 +365,11 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
     if (classifyTimer.current) clearTimeout(classifyTimer.current);
     const key = value.trim();
     if (key.length >= 20 && teamsToken && !classifyCache.current.has(key)) {
-      setPrefetching(true);
+      // Only flag "reading" once the request is actually in flight (after the
+      // pause), not during typing — otherwise the UI implies the AI is working
+      // while the user is still writing.
       classifyTimer.current = setTimeout(() => {
+        setPrefetching(true);
         runClassify(value)
           .catch(() => {})
           .finally(() => setPrefetching(false));
@@ -542,12 +535,6 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
           resize="none"
           size="large"
         />
-        {prefetching && (
-          <div className={`${styles.prefetch} animate-fade-in`}>
-            <Sparkle16Regular className="animate-pulse" />
-            reading…
-          </div>
-        )}
       </div>
 
       <div className={styles.helper}>
@@ -566,27 +553,25 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
       )}
 
       {(() => {
-        const n = inputText.trim().length;
+        const tooShort = inputText.trim().length < 10;
         const isReady = classifyCache.current.has(inputText.trim());
-        const label = isReady
-          ? "Ready — Continue"
-          : n < 10
-          ? "Continue"
-          : n < 30
-          ? "Add a bit more…"
-          : "Continue";
-        const appearance: "primary" | "outline" =
-          n >= 30 || isReady ? "primary" : n >= 10 ? "outline" : "primary";
+        const icon = prefetching ? (
+          <Spinner size="tiny" />
+        ) : isReady ? (
+          <Sparkle16Regular />
+        ) : (
+          <ChevronRight20Regular />
+        );
         return (
           <Button
-            appearance={appearance}
+            appearance="primary"
             size="large"
             className={styles.fullWidth}
-            disabled={n < 10}
-            icon={isReady ? <Sparkle16Regular /> : <ChevronRight20Regular />}
+            disabled={tooShort || prefetching}
+            icon={icon}
             onClick={handleContinue}
           >
-            {label}
+            {prefetching ? "Reading your note…" : "Continue"}
           </Button>
         );
       })()}
