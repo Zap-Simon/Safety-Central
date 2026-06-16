@@ -30,7 +30,6 @@ import {
   Clock16Regular,
   Person16Regular,
   Delete16Regular,
-  Delete20Regular,
 } from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
 import { TeamsPage, TeamsPinned, TeamsScroll, TeamsCenter, TeamsFullScreen } from "./TeamsPageShell";
@@ -65,6 +64,14 @@ export const berryThemes: Record<string, Theme> = {
   contrast: makeBerryTheme(teamsHighContrastTheme),
 };
 
+// Base (Submit/blue) themes — used to keep primary action buttons on the shared
+// brand colour even inside the berry-tinted Orders tab.
+const baseThemes: Record<string, Theme> = {
+  default: teamsLightTheme,
+  dark: teamsDarkTheme,
+  contrast: teamsHighContrastTheme,
+};
+
 function timeAgo(dateStr: string | Date): string {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -75,14 +82,6 @@ function timeAgo(dateStr: string | Date): string {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
 }
-
-// Griffel blocks `border*` 4-side shorthands; set each side longhand.
-const allBorderColor = (c: string) => ({
-  borderTopColor: c,
-  borderRightColor: c,
-  borderBottomColor: c,
-  borderLeftColor: c,
-});
 
 const useStyles = makeStyles({
   addBar: {
@@ -97,22 +96,12 @@ const useStyles = makeStyles({
     borderBottomColor: tokens.colorNeutralStroke2,
   },
   input: { flexGrow: 1 },
-  adminStrip: {
+  clearRow: {
     display: "flex",
-    alignItems: "center",
     justifyContent: "flex-end",
-    paddingLeft: tokens.spacingHorizontalL,
-    paddingRight: tokens.spacingHorizontalL,
-    paddingTop: tokens.spacingVerticalXS,
-    paddingBottom: tokens.spacingVerticalXS,
-    backgroundColor: tokens.colorPaletteRedBackground1,
-    borderBottomWidth: tokens.strokeWidthThin,
-    borderBottomStyle: "solid",
-    borderBottomColor: tokens.colorPaletteRedBorder1,
   },
   clearBtn: {
-    color: tokens.colorPaletteRedForeground1,
-    ...allBorderColor(tokens.colorPaletteRedBorder1),
+    color: tokens.colorNeutralForeground3,
   },
   list: {
     paddingLeft: tokens.spacingHorizontalL,
@@ -156,6 +145,7 @@ export default function OrdersTab() {
   const styles = useStyles();
   const { theme } = useTeamsTheme();
   const berryTheme = berryThemes[theme] ?? berryThemes.default;
+  const baseTheme = baseThemes[theme] ?? baseThemes.default;
   const qc = useQueryClient();
   // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
   // never re-triggers the "Signing you in…" loader.
@@ -330,16 +320,44 @@ export default function OrdersTab() {
     <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
     <TeamsPage>
       <TeamsPinned>
-        {/* ── Admin clear strip — very top, red tint, only when admin + items exist ── */}
+        {/* ── Quick-add bar (keyboard-safe — never scrolls away) ── */}
+        <div className={styles.addBar}>
+          <Input
+            className={styles.input}
+            input={{ ref: inputRef }}
+            placeholder="Add item to order…"
+            value={itemText}
+            onChange={(_, d) => setItemText(d.value)}
+            onKeyDown={handleKeyDown}
+            size="large"
+          />
+          {/* Primary action stays on the shared Submit/blue brand, not berry. */}
+          <FluentProvider theme={baseTheme} style={{ display: "contents" }}>
+            <Button
+              appearance="primary"
+              size="large"
+              onClick={handleAdd}
+              disabled={!itemText.trim() || addMutation.isPending}
+              icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
+            >
+              Add
+            </Button>
+          </FluentProvider>
+        </div>
+      </TeamsPinned>
+
+      {/* ── The single scroll region: the shared item list ── */}
+      <TeamsScroll className={styles.list}>
+        {/* ── Admin clear — minimal, under the input, before the first item ── */}
         {userIsAdmin && items.length > 0 && (
-          <div className={styles.adminStrip}>
+          <div className={styles.clearRow}>
             <Dialog>
               <DialogTrigger disableButtonEnhancement>
                 <Button
                   size="small"
-                  appearance="outline"
+                  appearance="subtle"
                   className={styles.clearBtn}
-                  icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete20Regular />}
+                  icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete16Regular />}
                   disabled={clearMutation.isPending}
                 >
                   Clear list
@@ -368,31 +386,6 @@ export default function OrdersTab() {
           </div>
         )}
 
-        {/* ── Quick-add bar (keyboard-safe — never scrolls away) ── */}
-        <div className={styles.addBar}>
-          <Input
-            className={styles.input}
-            input={{ ref: inputRef }}
-            placeholder="Add item to order…"
-            value={itemText}
-            onChange={(_, d) => setItemText(d.value)}
-            onKeyDown={handleKeyDown}
-            size="large"
-          />
-          <Button
-            appearance="primary"
-            size="large"
-            onClick={handleAdd}
-            disabled={!itemText.trim() || addMutation.isPending}
-            icon={addMutation.isPending ? <Spinner size="tiny" /> : <Add20Regular />}
-          >
-            Add
-          </Button>
-        </div>
-      </TeamsPinned>
-
-      {/* ── The single scroll region: the shared item list ── */}
-      <TeamsScroll className={styles.list}>
         {isLoading && (
           <div className={styles.loadingRow}>
             <Spinner size="small" label="Loading…" />
