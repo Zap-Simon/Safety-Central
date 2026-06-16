@@ -30,41 +30,41 @@ function TeamsTabSwitcher() {
   const isOrders = location === "/teams-tab/orders";
 
   const base =
-    "flex-1 flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/60";
-  const inactive = isDark ? "text-gray-400" : "text-gray-500";
+    "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/50";
+  const inactive = isDark
+    ? "border border-gray-700 text-gray-400"
+    : "border border-gray-200 text-gray-600";
 
   return (
-    <div className="shrink-0 px-4 pt-5 pb-2">
-      <div className={`mx-auto flex max-w-[260px] rounded-full p-1 ${isDark ? "bg-gray-800 ring-1 ring-white/5" : "bg-gray-100 ring-1 ring-gray-200"}`}>
-        <Link
-          href="/teams-tab"
-          aria-current={!isOrders ? "page" : undefined}
-          className={`${base} ${
-            !isOrders
-              ? isDark
-                ? "bg-gray-900 text-blue-400 shadow-sm"
-                : "bg-white text-blue-600 shadow-sm"
-              : inactive
-          }`}
-        >
-          <Send className="h-4 w-4" />
-          Submit
-        </Link>
-        <Link
-          href="/teams-tab/orders"
-          aria-current={isOrders ? "page" : undefined}
-          className={`${base} ${
-            isOrders
-              ? isDark
-                ? "bg-gray-900 text-purple-400 shadow-sm"
-                : "bg-white text-purple-600 shadow-sm"
-              : inactive
-          }`}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          Orders
-        </Link>
-      </div>
+    <div className="shrink-0 flex gap-2 px-4 pt-2 pb-3">
+      <Link
+        href="/teams-tab"
+        aria-current={!isOrders ? "page" : undefined}
+        className={`${base} ${
+          !isOrders
+            ? isDark
+              ? "bg-blue-500/15 text-blue-300"
+              : "bg-blue-50 text-blue-700"
+            : inactive
+        }`}
+      >
+        <Send className="h-4 w-4" />
+        Submit
+      </Link>
+      <Link
+        href="/teams-tab/orders"
+        aria-current={isOrders ? "page" : undefined}
+        className={`${base} ${
+          isOrders
+            ? isDark
+              ? "bg-purple-500/15 text-purple-300"
+              : "bg-purple-50 text-purple-700"
+            : inactive
+        }`}
+      >
+        <ShoppingCart className="h-4 w-4" />
+        Orders
+      </Link>
     </div>
   );
 }
@@ -76,7 +76,7 @@ function TeamsRouterContent() {
 
   return (
     <div
-      className={`flex flex-col h-screen overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-gray-50"}`}
+      className={`flex flex-col h-screen overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-white"}`}
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",

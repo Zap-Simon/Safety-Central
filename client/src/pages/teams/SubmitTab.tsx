@@ -406,7 +406,7 @@ export default function SubmitTab() {
   const categoryRing = meta ? (isDark ? meta.darkRing : meta.ring) : "";
 
   return (
-    <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-white"}`}>
       {userName && (
         <div className="shrink-0 px-5 pt-1 pb-3">
           <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>

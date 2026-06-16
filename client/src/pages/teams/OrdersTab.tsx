@@ -236,7 +236,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
-    <div className={`flex flex-col min-h-0 h-full ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <div className={`flex flex-col min-h-0 h-full ${isDark ? "bg-gray-900" : "bg-white"}`}>
       {/* ── Quick add bar ── */}
       <div className={`shrink-0 border-b px-4 py-3 flex gap-2 ${
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"

@@ -9,7 +9,8 @@ The two Teams personal tabs (Submit, Orders) share one layout contract. Keep the
 
 ## Chrome belongs to Teams, not us
 - **No in-app header bar on either tab.** Teams already shows the app name in its own chrome, so a second app header reads as duplicate. (User explicitly asked to remove them.)
-- **Navigation is a quiet top segmented toggle** (`TeamsTabSwitcher` in App.tsx), NOT a bottom nav bar. A bottom app-nav stacks right above Teams' own bottom navigation and looks like a competing second nav. The toggle is a rounded-full pill group, max-w-[240px], active segment = white/gray-900 thumb + blue(Submit)/purple(Orders) text + shadow-sm; it lives in the shell above the content and outside the scroll region so it stays visible while content scrolls.
+- **Navigation is native-style left-aligned pills** (`TeamsTabSwitcher` in App.tsx), NOT a bottom nav bar and NOT a centered segmented-control track. Mirrors Teams' own in-app tabs (e.g. Engage "Feed / Communities"): two `rounded-full` pills, left-aligned with `gap-2`, sitting close under the Teams header (`pt-2`). Active pill = tinted fill (`bg-blue-50/text-blue-700` Submit, `bg-purple-50/text-purple-700` Orders; dark = `bg-{color}-500/15`); inactive = subtle outline (`border-gray-200 text-gray-600`). Lives in the shell above content + outside the scroll region so it stays visible while content scrolls. (User compared against real Teams tabs and wanted them smaller and more native, not a big centered control.)
+- **Backgrounds are white** (`bg-white` light / `bg-gray-900` dark) on the shell and both tab roots — NOT gray. Native Teams apps use white/near-white pages; gray read as foreign. Cards/list items keep subtle gray borders for definition on white.
 
 ## Height / scroll contract (keyboard-safe)
 - Router shell (App.tsx `TeamsRouterContent`) is a **fixed-height** column: `h-screen overflow-hidden`, padding only for `env(safe-area-inset-*)` (NO bottom-nav height reservation — there is no bottom nav). Renders `<TeamsTabSwitcher />` then the active tab wrapped in `flex flex-col flex-1 min-h-0 overflow-hidden`.
@@ -21,7 +22,7 @@ The two Teams personal tabs (Submit, Orders) share one layout contract. Keep the
 ## Per-tab specifics
 - **Submit**: greeting is a **prominent, purposeful heading** (`text-2xl font-bold`, gray-900 light / white dark), reads `Hi {first} 👋`, pinned `shrink-0` at top. (It was briefly a faint ambient watermark — user reversed that and asked for it to be clearly visible with the wave emoji.) Card sits top-aligned in the scroll region below.
 - **Orders**: NO greeting. Starts directly with the quick-add bar (pinned `shrink-0`). It is a **shared list visible to all signed-in staff** (GET /api/orders is public) — keep the "shared with your team" messaging in the empty state and the count footer.
-- **Toggle** (`TeamsTabSwitcher`): give it real top breathing room (`pt-5`); rounded-full track with a subtle `ring-1`, `font-semibold` segments. It should feel modern and in-content, never like a second nav bar.
+- **Toggle** (`TeamsTabSwitcher`): native-style left-aligned `rounded-full` pills tucked close under the header (`pt-2`), small (`px-4 py-1.5 text-sm font-medium`). Active = tinted fill, inactive = subtle outline. Should look like a real Teams in-app tab row, never a big centered segmented control or a second nav bar.
 
 **Why:** `min-h-screen` inside a tab makes it taller than its viewport slot → phantom page scroll and inputs pinned awkwardly high; the user disliked both. A bottom app-nav duplicated Teams' own nav; a second app header duplicated Teams' app-name chrome.
 
