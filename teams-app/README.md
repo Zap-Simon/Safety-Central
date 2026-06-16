@@ -15,13 +15,47 @@ The personal tab has two screens, switched via a small **segmented toggle at the
 
 The Teams manifest registers a single static tab pointing to the Submit screen. The Orders screen is reached via the in-app toggle inside the same iframe — no second manifest entry is needed.
 
-## Folder contents
+## Folder contents (this `teams-app/` package)
 
 - `manifest.json` — Teams app manifest (schema v1.16)
 - `bump-version.js` — helper to increment the manifest version before re-packaging
 - `color.png` — 192×192 full-colour icon (required by Teams)
 - `outline.png` — 32×32 transparent outline icon (required by Teams)
 - `README.md` — this file
+
+## All system files (the complete Teams personal-tab)
+
+The packaging folder above is only the manifest + icons. The running app is built
+from source files spread across the repo. Everything the personal tab needs is
+listed below — if you copy the Teams tab into another project, take these files (plus
+the `teams-app/` package above).
+
+### Frontend — Teams tab UI (`client/`)
+
+| File | Role |
+|------|------|
+| `client/src/App.tsx` | Teams routing + chrome. Defines the Teams routes (`TEAMS_PATHS`: `/teams-submit-cg7k2x9m`, `/teams-tab`, `/teams-tab/orders`), the `TeamsRouter`/`TeamsRouterContent` wrapper, the top **Submit / Orders** segmented toggle (`TeamsTabSwitcher` using Fluent `TabList`), the "Hi {name} 👋" greeting, and per-route theming (default blue on Submit, **berry/purple shell** on Orders). |
+| `client/src/pages/teams/SubmitTab.tsx` | **Submit** screen. AI-classify state machine (`input → classifying → followup → confirm → submitting → done`); debounced background pre-classify; the keyboard-safe textarea; the "Continue / Reading your note…" button; posts the final item to SharePoint. |
+| `client/src/pages/teams/OrdersTab.tsx` | **Orders** screen. Shared team order list (add / mark ordered / remove / clear); admin detection; also **exports `berryThemes`** (the purple theme variants reused by `App.tsx`). |
+| `client/src/pages/teams/TeamsPageShell.tsx` | Reusable layout shell shared by both tabs: `TeamsPage`, `TeamsPinned` (keyboard-safe, never scrolls), `TeamsScroll` (the single scroll region), `TeamsCenter`, `TeamsFullScreen` (sign-in / error template), and the `useKeyboardSafeFocus` hook. |
+| `client/src/hooks/useTeamsTheme.tsx` | Reads the Teams theme mode (`default` / `dark` / `contrast`) from `@microsoft/teams-js` and provides it via `TeamsThemeProvider` + `useTeamsTheme()`, so the tab follows the user's Teams light/dark/high-contrast setting. |
+
+### Backend — shared API (`server/`)
+
+These endpoints are shared with the main website; they detect the incoming token's
+audience and apply OBO only for Teams SSO tokens (see *Authentication* below).
+
+| File | Role |
+|------|------|
+| `server/teams-obo-auth.ts` | The OBO exchange. `getDownstreamToken(req, 'graph' \| 'sharepoint')` swaps the Teams SSO token for the downstream Graph/SharePoint token, with server-side caching. The portable, copy-me-into-a-fork auth module. |
+| `server/routes.ts` | The API endpoints the tabs call: **Submit** → `POST /api/ai-classify`, `POST /api/sharepoint/create-item`; **Orders** → `GET /api/orders`, `POST /api/orders`, `GET /api/orders/is-admin`, `PATCH /api/orders/:id`, `DELETE /api/orders/:id`, `POST /api/orders/clear`. Also holds the `ORDER_ADMINS` allowlist. |
+| `server/storage.ts` | Persistence for the Orders list (`orderItems` CRUD) via the storage interface. |
+
+### Shared types (`shared/`)
+
+| File | Role |
+|------|------|
+| `shared/schema.ts` | The `orderItems` table (`order_items`), `insertOrderItemSchema`, and the `OrderItem` / `InsertOrderItem` types used by both the Orders tab and the server. |
 
 ## How to package and upload
 
