@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import * as microsoftTeams from "@microsoft/teams-js";
 import {
   Button,
   Textarea,
@@ -37,6 +36,7 @@ import {
   TeamsFullScreen,
   useKeyboardSafeFocus,
 } from "./TeamsPageShell";
+import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 
 type Category =
   | "Near Miss"
@@ -124,16 +124,6 @@ const EXAMPLES = [
   "We're nearly out of safety gloves in the workshop.",
   "Idea: add a second squeegee station to speed up cleaning.",
 ];
-
-function decodeJwtPayload(token: string): Record<string, any> {
-  try {
-    const payload = token.split(".")[1];
-    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(decoded);
-  } catch {
-    return {};
-  }
-}
 
 // Griffel blocks `border*` 4-side shorthands; set each side longhand.
 const thinBorderSides = {
@@ -264,13 +254,12 @@ const useStyles = makeStyles({
   },
 });
 
-export default function SubmitTab({ onUser }: { onUser?: (name: string) => void } = {}) {
+export default function SubmitTab() {
   const styles = useStyles();
 
-  const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
-  const [authError, setAuthError] = useState<string>("");
-  const [teamsToken, setTeamsToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string>("");
+  // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
+  // never re-triggers the "Signing you in…" loader.
+  const { authState, teamsToken, userName, authError, retry } = useTeamsAuth();
 
   const [step, setStep] = useState<
     "input" | "classifying" | "followup" | "confirm" | "submitting" | "done"
@@ -289,10 +278,6 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
   const classifyInFlight = useRef<Map<string, Promise<ClassifyResult>>>(new Map());
   const mainInputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    initAuth();
-  }, []);
-
   // Keyboard-safe auto-focus (see TeamsPageShell): focus without the page jumping.
   useKeyboardSafeFocus(mainInputRef, authState === "authenticated" && step === "input");
 
@@ -301,31 +286,6 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
     const id = setInterval(() => setExampleIdx((i) => (i + 1) % EXAMPLES.length), 3500);
     return () => clearInterval(id);
   }, [step, inputText]);
-
-  // ─── Auth — Teams SSO only ────────────────────────────────────────────────
-  // We acquire a single SSO token via getAuthToken(). The backend exchanges it
-  // (on behalf of the user) for Graph / SharePoint access, so the browser never
-  // touches MSAL, popups, or redirects — eliminating the iframe SSO races.
-  async function initAuth() {
-    setAuthState("loading");
-    setAuthError("");
-    try {
-      await microsoftTeams.app.initialize();
-      const ssoToken = await microsoftTeams.authentication.getAuthToken();
-      const payload = decodeJwtPayload(ssoToken);
-      const name = payload.name || payload.preferred_username || payload.upn || "";
-      setUserName(name);
-      onUser?.(name);
-      setTeamsToken(ssoToken);
-      setAuthState("authenticated");
-    } catch (err: any) {
-      const msg = `Teams sign-in failed: ${err?.message || String(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      setAuthState("unauthenticated");
-      onUser?.("");
-    }
-  }
 
   // ─── Classification ───────────────────────────────────────────────────────
   function runClassify(text: string): Promise<ClassifyResult> {
@@ -473,7 +433,7 @@ export default function SubmitTab({ onUser }: { onUser?: (name: string) => void 
         title="Sign in required"
         description="Sign in with your Cranfield Glass Microsoft account to submit ideas and reports."
         actionLabel="Try again"
-        onAction={() => initAuth()}
+        onAction={retry}
         error={authError || undefined}
       />
     );

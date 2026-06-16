@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from "react";
-import * as microsoftTeams from "@microsoft/teams-js";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -23,6 +22,7 @@ import {
 } from "@fluentui/react-components";
 import type { Theme } from "@fluentui/react-components";
 import { useTeamsTheme } from "@/hooks/useTeamsTheme";
+import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 import {
   Cart20Regular,
   Cart16Regular,
@@ -74,19 +74,6 @@ function timeAgo(dateStr: string | Date): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
-}
-
-function decodeJwtPayload(token: string): Record<string, any> {
-  try {
-    const payload = token.split(".")[1];
-    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-  } catch {
-    return {};
-  }
-}
-
-interface OrdersTabProps {
-  userName?: string;
 }
 
 // Griffel blocks `border*` 4-side shorthands; set each side longhand.
@@ -165,43 +152,16 @@ const useStyles = makeStyles({
   removeBtn: { color: tokens.colorPaletteRedForeground1, flexShrink: 0 },
 });
 
-export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProps) {
+export default function OrdersTab() {
   const styles = useStyles();
   const { theme } = useTeamsTheme();
   const berryTheme = berryThemes[theme] ?? berryThemes.default;
   const qc = useQueryClient();
-  const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
-  const [authError, setAuthError] = useState<string>("");
-  const [teamsToken, setTeamsToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState(propUserName);
+  // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
+  // never re-triggers the "Signing you in…" loader.
+  const { authState, teamsToken, userName, authError, retry } = useTeamsAuth();
   const [itemText, setItemText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    initAuth();
-  }, []);
-
-  // ─── Auth — Teams SSO only ────────────────────────────────────────────────
-  // A single SSO token from getAuthToken() is sent to the backend, which
-  // exchanges it (on behalf of the user) for the Graph access it needs. No MSAL,
-  // popups, or redirects in the browser — so no iframe SSO races.
-  async function initAuth() {
-    setAuthState("loading");
-    setAuthError("");
-    try {
-      await microsoftTeams.app.initialize();
-      const ssoToken = await microsoftTeams.authentication.getAuthToken();
-      const payload = decodeJwtPayload(ssoToken);
-      setUserName(payload.name || payload.preferred_username || payload.upn || propUserName);
-      setTeamsToken(ssoToken);
-      setAuthState("authenticated");
-    } catch (err: any) {
-      const msg = `Teams sign-in failed: ${err?.message || String(err)}`;
-      console.error(msg, err);
-      setAuthError(msg);
-      setAuthState("unauthenticated");
-    }
-  }
 
   // ─── Admin check ──────────────────────────────────────────────────────────
   const { data: adminData } = useQuery<{ success: boolean; isAdmin: boolean }>({
@@ -354,7 +314,7 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
           title="Sign in required"
           description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
           actionLabel="Try again"
-          onAction={() => initAuth()}
+          onAction={retry}
           error={authError || undefined}
           accent={{
             bg: tokens.colorPaletteBerryBackground1,

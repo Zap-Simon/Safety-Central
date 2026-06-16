@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -18,6 +17,7 @@ import SubmitTab from "@/pages/teams/SubmitTab";
 import OrdersTab, { berryThemes } from "@/pages/teams/OrdersTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
+import { TeamsAuthProvider, useTeamsAuth } from "@/hooks/useTeamsAuth";
 import {
   FluentProvider,
   teamsLightTheme,
@@ -120,7 +120,7 @@ function TeamsRouterContent() {
   const [location] = useLocation();
   const { theme } = useTeamsTheme();
   const styles = useShellStyles();
-  const [teamsUser, setTeamsUser] = useState("");
+  const { userName } = useTeamsAuth();
   const isOrders = location === "/teams-tab/orders";
 
   const baseTheme =
@@ -143,9 +143,9 @@ function TeamsRouterContent() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <TeamsTabSwitcher userName={teamsUser} showGreeting={!isOrders} />
+      <TeamsTabSwitcher userName={userName} showGreeting={!isOrders} />
       <div className={styles.content}>
-        {isOrders ? <OrdersTab /> : <SubmitTab onUser={setTeamsUser} />}
+        {isOrders ? <OrdersTab /> : <SubmitTab />}
       </div>
     </FluentProvider>
   );
@@ -154,7 +154,9 @@ function TeamsRouterContent() {
 function TeamsRouter() {
   return (
     <TeamsThemeProvider>
-      <TeamsRouterContent />
+      <TeamsAuthProvider>
+        <TeamsRouterContent />
+      </TeamsAuthProvider>
     </TeamsThemeProvider>
   );
 }
