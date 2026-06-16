@@ -128,6 +128,11 @@ const useStyles = makeStyles({
     position: "relative",
     touchAction: "pan-y",
     cursor: "grab",
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderTopLeftRadius: tokens.borderRadiusMedium,
+    borderTopRightRadius: tokens.borderRadiusMedium,
+    borderBottomLeftRadius: tokens.borderRadiusMedium,
+    borderBottomRightRadius: tokens.borderRadiusMedium,
   },
 });
 
@@ -342,7 +347,7 @@ export default function OrdersTab() {
                   Clear list
                 </Button>
               </DialogTrigger>
-              <DialogSurface className={styles.dialogSurface}>
+              <DialogSurface style={{ maxWidth: "min(400px, calc(100vw - 48px))", margin: "0 24px" }}>
                 <DialogBody>
                   <DialogTitle>Clear the whole order list?</DialogTitle>
                   <DialogContent>
