@@ -237,25 +237,6 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
     <div className={`flex flex-col min-h-0 h-full ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      {/* ── Header — consistent with the Submit tab ── */}
-      <header className={`shrink-0 px-5 py-3.5 flex items-center gap-3 border-b ${
-        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
-      }`}>
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-          isDark ? "bg-purple-900/40" : "bg-purple-50"
-        }`}>
-          <ShoppingCart className={`h-[18px] w-[18px] ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-        </div>
-        <div className="min-w-0">
-          <p className={`text-sm font-semibold leading-tight truncate ${isDark ? "text-white" : "text-gray-900"}`}>
-            {userName ? `Hi ${userName.split(" ")[0]}` : "Orders"}
-          </p>
-          <p className={`text-xs leading-tight mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Shared workshop order list
-          </p>
-        </div>
-      </header>
-
       {/* ── Quick add bar ── */}
       <div className={`shrink-0 border-b px-4 py-3 flex gap-2 ${
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"

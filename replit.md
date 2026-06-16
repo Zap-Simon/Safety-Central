@@ -25,7 +25,7 @@ Code Reusability: Prefers well-documented, portable authentication components th
 - **Development**: tsx for TypeScript execution.
 - **Production Build**: esbuild for optimized server-side bundling.
 - **API Design**: RESTful endpoints with centralized error handling.
-- **Authentication**: Express sessions with PostgreSQL backing store, Azure AD integration via Microsoft Graph API and MSAL-node.
+- **Authentication**: Express sessions with PostgreSQL backing store, Azure AD integration via Microsoft Graph API and MSAL-node. The Microsoft Teams tabs use the OAuth 2.0 On-Behalf-Of (OBO) flow: the browser only holds a Teams SSO token and the server exchanges it for downstream Graph/SharePoint tokens (`server/teams-obo-auth.ts`). The main website still sends ready-made tokens, which pass through unchanged. See `teams-app/README.md` for the full Azure AD setup.
 - **Permissions**: Sites.ReadWrite.All, User.Read.All for SharePoint access.
 
 ### Data Storage

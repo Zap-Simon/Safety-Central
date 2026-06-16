@@ -315,29 +315,6 @@ export default function SubmitTab() {
     setPrefetching(false);
   }
 
-  // ─── Header — slim, consistent with the Orders tab ────────────────────────
-  function Header() {
-    return (
-      <header className={`shrink-0 px-5 py-3.5 flex items-center gap-3 border-b ${
-        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"
-      }`}>
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-          isDark ? "bg-blue-900/40" : "bg-blue-50"
-        }`}>
-          <Shield className={`h-[18px] w-[18px] ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-        </div>
-        <div className="min-w-0">
-          <p className={`text-sm font-semibold leading-tight truncate ${isDark ? "text-white" : "text-gray-900"}`}>
-            {userName ? `Hi ${userName.split(" ")[0]}` : "Safety & Ideas"}
-          </p>
-          <p className={`text-xs leading-tight mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            Report a hazard, near miss or idea
-          </p>
-        </div>
-      </header>
-    );
-  }
-
   // ─── Full-screen states ───────────────────────────────────────────────────
   if (authState === "loading") {
     return (
@@ -430,10 +407,16 @@ export default function SubmitTab() {
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      <Header />
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="min-h-full flex flex-col justify-center px-4 py-5">
-          <Card className={`w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
+        <div className="min-h-full flex flex-col px-4 py-5">
+          {userName && (
+            <p className={`shrink-0 px-1 text-3xl font-extrabold tracking-tight leading-tight ${
+              isDark ? "text-gray-700" : "text-gray-300"
+            }`}>
+              Hi {userName.split(" ")[0]}
+            </p>
+          )}
+          <Card className={`my-auto w-full max-w-lg mx-auto p-5 shadow-sm animate-fade-in-up ${
             isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
           }`}>
           {step === "input" && (

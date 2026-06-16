@@ -1,5 +1,5 @@
 - [Mobile-friendly tab navigation pattern](mobile-tabs-pattern.md) — shadcn TabsTrigger whitespace-nowrap + fixed grid-cols overlaps labels on phones; use responsive grid + whitespace-normal + flex-col.
-- [Teams personal-tab layout shell](teams-tab-layout-shell.md) — fixed h-screen shell + flex-1 min-h-0 internal scroll; never min-h-screen inside a tab; Submit/Orders share slim headers; Orders is shared-with-team.
+- [Teams personal-tab layout shell](teams-tab-layout-shell.md) — fixed h-screen shell + flex-1 min-h-0 internal scroll; no in-app headers/bottom-nav (Teams owns chrome); top segmented toggle; Submit ambient greeting; Orders shared-with-team.
 - [Global mobile CSS quirks](global-mobile-css-quirks.md) — index.css forces `button{min-height:44px}` on mobile (ovals small round buttons); plus iOS safe-area inset setup.
 - [Teams tab routing & manifest coupling](teams-tab-routing.md) — Teams tab lives at an unlisted route; App.tsx route + teams-app/manifest.json + published domain must stay in lockstep, else silent 404 in Teams.
 - [PDF/HTML export page footers](pdf-export-page-footers.md) — browser print ignores @page counter margin boxes; inline Paged.js (base64-bundled) into the standalone export for reliable offline "Page X of Y".

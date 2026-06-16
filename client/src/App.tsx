@@ -21,45 +21,51 @@ import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 
 const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
 
-function TeamsBottomNav() {
+// A quiet in-content segmented toggle — deliberately not a bottom app-nav bar,
+// so it reads as part of our content and stays visually separate from the
+// Teams navigation chrome that already lives along the bottom of the window.
+function TeamsTabSwitcher() {
   const [location] = useLocation();
   const { isDark } = useTeamsTheme();
   const isOrders = location === "/teams-tab/orders";
 
+  const base =
+    "flex-1 flex items-center justify-center gap-1.5 rounded-full py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-blue-500/60";
+  const inactive = isDark ? "text-gray-400" : "text-gray-500";
+
   return (
-    <nav
-      className={`fixed bottom-0 left-0 right-0 border-t flex z-50 ${
-        isDark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
-      }`}
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <Link
-        href="/teams-tab"
-        className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-          !isOrders
-            ? "text-blue-500"
-            : isDark
-            ? "text-gray-500 hover:text-gray-300"
-            : "text-gray-400 hover:text-gray-600"
-        }`}
-      >
-        <Send className="h-5 w-5" />
-        <span>Submit</span>
-      </Link>
-      <Link
-        href="/teams-tab/orders"
-        className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-          isOrders
-            ? "text-purple-500"
-            : isDark
-            ? "text-gray-500 hover:text-gray-300"
-            : "text-gray-400 hover:text-gray-600"
-        }`}
-      >
-        <ShoppingCart className="h-5 w-5" />
-        <span>Orders</span>
-      </Link>
-    </nav>
+    <div className="shrink-0 px-4 pt-3 pb-1">
+      <div className={`mx-auto flex max-w-[240px] rounded-full p-1 ${isDark ? "bg-gray-800" : "bg-gray-200/70"}`}>
+        <Link
+          href="/teams-tab"
+          aria-current={!isOrders ? "page" : undefined}
+          className={`${base} ${
+            !isOrders
+              ? isDark
+                ? "bg-gray-900 text-blue-400 shadow-sm"
+                : "bg-white text-blue-600 shadow-sm"
+              : inactive
+          }`}
+        >
+          <Send className="h-4 w-4" />
+          Submit
+        </Link>
+        <Link
+          href="/teams-tab/orders"
+          aria-current={isOrders ? "page" : undefined}
+          className={`${base} ${
+            isOrders
+              ? isDark
+                ? "bg-gray-900 text-purple-400 shadow-sm"
+                : "bg-white text-purple-600 shadow-sm"
+              : inactive
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          Orders
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -73,13 +79,13 @@ function TeamsRouterContent() {
       className={`flex flex-col h-screen overflow-hidden ${isDark ? "dark bg-gray-900" : "bg-gray-50"}`}
       style={{
         paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "calc(3.5rem + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
+      <TeamsTabSwitcher />
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {isOrders ? <OrdersTab /> : <SubmitTab />}
       </div>
-      <TeamsBottomNav />
     </div>
   );
 }
