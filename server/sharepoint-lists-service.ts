@@ -872,6 +872,138 @@ export class SharePointListsService {
   }
 
   /**
+   * Move an item from one list to another (e.g. a Safety idea that should be
+   * a Business idea). This copies the item's content into the destination list
+   * preserving the title, description, status, dates and meeting notes, then
+   * deletes the original. The original is only deleted after the copy succeeds,
+   * so a failure never loses data.
+   */
+  async moveItem(itemId: string, fromList: string, toList: string): Promise<string> {
+    const movableLists = ['Business Ideas', 'Safety Ideas', 'Near Miss'];
+    if (!movableLists.includes(fromList) || !movableLists.includes(toList)) {
+      throw new Error('Items can only be moved between Business Ideas, Safety Ideas and Near Miss lists');
+    }
+    if (fromList === toList) {
+      throw new Error('The item is already on that list');
+    }
+
+    const fromConfig = SharePointListsService.LIST_CONFIGS[fromList];
+    const toConfig = SharePointListsService.LIST_CONFIGS[toList];
+    if (!fromConfig || !toConfig) {
+      throw new Error('List configuration not found');
+    }
+
+    const fromBaseUrl = fromConfig.siteUrl
+      ? `${fromConfig.siteUrl}/_api/web/lists/getbytitle`
+      : this.baseUrl;
+    const numericId = itemId.replace(`${fromList.toLowerCase().replace(' ', '-')}-`, '');
+    const sourceUrl = `${fromBaseUrl}('${fromConfig.listTitle}')/items(${numericId})`;
+
+    try {
+      // 1. Read the raw source item (and its etag for the later delete)
+      const getResponse = await fetch(sourceUrl, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose'
+        }
+      });
+      if (!getResponse.ok) {
+        throw new Error(`Failed to read source item: ${getResponse.status}`);
+      }
+      const sourceData = (await getResponse.json()).d;
+      const etag = sourceData.__metadata.etag;
+
+      // Standardise the fields we want to carry across
+      const title = sourceData.Title || '';
+      const description = sourceData[fromConfig.contentField] || '';
+      const status = sourceData.Status || 'Submitted';
+      const meetingNotes = sourceData[fromConfig.meetingNotesField] || '';
+      const meetingDate = sourceData.MeetingDate || null;
+      const submissionDate = sourceData[fromConfig.submissionDateField] || sourceData.Created;
+      const secondaryDescription = sourceData['Howdidthishappen_x003f_'] || '';
+
+      // 2. Create the item in the destination list
+      const toBaseUrl = toConfig.siteUrl
+        ? `${toConfig.siteUrl}/_api/web/lists/getbytitle`
+        : this.baseUrl;
+      const createUrl = `${toBaseUrl}('${toConfig.listTitle}')/items`;
+
+      const listMetaResponse = await fetch(`${toBaseUrl}('${toConfig.listTitle}')?$select=ListItemEntityTypeFullName`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose'
+        }
+      });
+      const listMeta = await listMetaResponse.json();
+      const entityType = listMeta.d?.ListItemEntityTypeFullName
+        || `SP.Data.${toConfig.listTitle.replace(/\s/g, '_x0020_').replace(/[^a-zA-Z0-9_]/g, '_x005f_')}ListItem`;
+
+      const isoOrNow = (value: any) => value ? new Date(value).toISOString() : new Date().toISOString();
+
+      let payload: any = {
+        '__metadata': { 'type': entityType },
+        'Title': title,
+        'Status': status
+      };
+      if (meetingDate) payload['MeetingDate'] = new Date(meetingDate).toISOString();
+
+      if (toList === 'Business Ideas') {
+        payload['BusinessIdea1'] = description;
+        payload['Idea_x0020_Type'] = 'Process Improvement';
+        payload['Idea_x0020_Date'] = isoOrNow(submissionDate);
+        payload['MeetingNotes'] = meetingNotes;
+      } else if (toList === 'Safety Ideas') {
+        payload['SafetyIdea1'] = description;
+        payload['Idea_x0020_Type'] = 'Safety Improvement';
+        payload['Idea_x0020_Date'] = isoOrNow(submissionDate);
+        payload['Meeting_x0020_Notes1'] = meetingNotes;
+      } else if (toList === 'Near Miss') {
+        payload['Canyoubrieflyexplainwhathappened'] = description;
+        payload['Howdidthishappen_x003f_'] = secondaryDescription;
+        payload['EventType'] = 'Near Miss';
+        payload['Date'] = isoOrNow(submissionDate);
+        payload['MeetingNotes'] = meetingNotes;
+      }
+
+      const createResponse = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        // Nothing was deleted yet, so the original item is safe.
+        throw new Error(`Failed to copy item to ${toList}: ${createResponse.status} - ${errorText}`);
+      }
+      const newItemId = (await createResponse.json()).d.ID;
+
+      // 3. Delete the original item now that the copy succeeded
+      const deleteResponse = await fetch(sourceUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose',
+          'If-Match': etag,
+          'X-HTTP-Method': 'DELETE'
+        }
+      });
+      if (!deleteResponse.ok) {
+        const errorText = await deleteResponse.text();
+        throw new Error(`Item was copied to ${toList} but the original could not be removed from ${fromList}. Please delete it in SharePoint. (${deleteResponse.status} - ${errorText})`);
+      }
+
+      return `${toList.toLowerCase().replace(' ', '-')}-${newItemId}`;
+    } catch (error) {
+      logger.error({ err: error, fromList, toList, itemId }, 'Failed to move SharePoint item');
+      throw error;
+    }
+  }
+
+  /**
    * Get SharePoint Choice field options for status dropdowns
    */
   async getChoiceFieldOptions(listType: string, fieldName: string): Promise<string[]> {

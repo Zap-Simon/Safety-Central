@@ -145,6 +145,10 @@ export default function MeetingHistory() {
   // Status update states
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string>(''); // item ID being updated
 
+  // Move-between-lists states
+  const [isMovingItem, setIsMovingItem] = useState<string>(''); // item ID being moved
+  const [moveConfirm, setMoveConfirm] = useState<{ item: MeetingItem; toList: string } | null>(null);
+
   // Status options from SharePoint (including 'Closed' for Business Ideas and Safety Ideas)
   const [statusOptions, setStatusOptions] = useState<string[]>(['Submitted', 'In Discussion', 'Actioned', 'Closed']);
   const [isCreatingItem, setIsCreatingItem] = useState(false);
@@ -260,6 +264,34 @@ export default function MeetingHistory() {
       showError('Update Failed', 'Failed to update status');
     } finally {
       setIsUpdatingStatus('');
+    }
+  };
+
+  const moveItemToList = async (item: MeetingItem, toList: string) => {
+    setIsMovingItem(item.id);
+    try {
+      const response = await authenticatedFetch('/api/sharepoint/move-item', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item.id,
+          fromList: item.type,
+          toList
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        showSuccess('Item Moved', `The item has been moved to ${toList}.`);
+        await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+      } else {
+        showError('Move Failed', result.error || 'Failed to move item');
+      }
+    } catch (error) {
+      console.error('Error moving item:', error);
+      showError('Move Failed', 'Failed to move item');
+    } finally {
+      setIsMovingItem('');
+      setMoveConfirm(null);
     }
   };
 
@@ -2750,6 +2782,29 @@ export default function MeetingHistory() {
                                                       <option key={option} value={option}>{option}</option>
                                                     ))}
                                                 </select>
+                                                {/* Move to another list - only for idea/near-miss lists that were filed incorrectly */}
+                                                {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && (() => {
+                                                  const moveTargets = ['Business Ideas', 'Safety Ideas', 'Near Miss'].filter(t => t !== item.type);
+                                                  return (
+                                                    <select
+                                                      value=""
+                                                      onChange={(e) => {
+                                                        if (e.target.value) {
+                                                          setMoveConfirm({ item, toList: e.target.value });
+                                                        }
+                                                      }}
+                                                      disabled={isMovingItem === item.id}
+                                                      className="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white hover:bg-gray-50 transition-colors min-w-0"
+                                                      title="Move this item to a different list"
+                                                      data-testid={`select-move-${item.id}`}
+                                                    >
+                                                      <option value="">{isMovingItem === item.id ? 'Moving…' : 'Move to…'}</option>
+                                                      {moveTargets.map(target => (
+                                                        <option key={target} value={target}>{target}</option>
+                                                      ))}
+                                                    </select>
+                                                  );
+                                                })()}
                                                 {/* Flip to Actions button - only show for Actioned status OR Closed with action data */}
                                                 {(() => {
                                                   const hasActionData = !!(item.actionPriority || item.actionStatus || item.actionAssignedTo || item.actionStartDate || item.actionDueDate || item.actionNotes);
@@ -3790,6 +3845,47 @@ export default function MeetingHistory() {
               >
                 Done
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Move Item Confirmation Modal */}
+        <Dialog open={!!moveConfirm} onOpenChange={(open) => { if (!open) setMoveConfirm(null); }}>
+          <DialogContent className="mx-4 max-w-sm rounded-2xl border-0 shadow-2xl" aria-describedby="move-description">
+            <DialogHeader>
+              <div className="flex flex-col items-center text-center gap-3 pt-2">
+                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                  <ArrowRight className="h-6 w-6 text-blue-600" />
+                </div>
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  Move item?
+                </DialogTitle>
+                <div id="move-description" className="sr-only">Move item confirmation dialog</div>
+              </div>
+            </DialogHeader>
+            <div className="space-y-4 pb-2">
+              <p className="text-sm text-gray-600 text-center">
+                {moveConfirm && (
+                  <>This will move the item from <span className="font-medium">{moveConfirm.item.type}</span> to <span className="font-medium">{moveConfirm.toList}</span>. The original will be removed from {moveConfirm.item.type}.</>
+                )}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setMoveConfirm(null)}
+                  disabled={!!isMovingItem}
+                  className="flex-1 rounded-xl h-11"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => { if (moveConfirm) moveItemToList(moveConfirm.item, moveConfirm.toList); }}
+                  disabled={!!isMovingItem}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11"
+                >
+                  {isMovingItem ? 'Moving…' : 'Move'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

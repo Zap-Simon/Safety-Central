@@ -1963,6 +1963,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Move a SharePoint list item to a different list
+  app.post('/api/sharepoint/move-item', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+          success: false,
+          error: 'Authentication required'
+        });
+      }
+
+      const accessToken = authHeader.substring(7);
+      const { itemId, fromList, toList } = req.body;
+
+      if (!itemId || !fromList || !toList) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: itemId, fromList, and toList'
+        });
+      }
+
+      // itemId is a formatted id like "safety-ideas-42"; ensure it ends with a numeric id
+      if (typeof itemId !== 'string' || !/-\d+$/.test(itemId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid itemId format'
+        });
+      }
+
+      const listsService = new SharePointListsService(accessToken);
+      const newItemId = await listsService.moveItem(itemId, fromList, toList);
+
+      res.json({
+        success: true,
+        newItemId,
+        message: `Successfully moved item from ${fromList} to ${toList}`
+      });
+
+    } catch (error) {
+      console.error('Error moving SharePoint item:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to move item'
+      });
+    }
+  });
+
   // Get SharePoint Choice field options
   app.get('/api/sharepoint/choice-options/:listType/:fieldName', async (req, res) => {
     try {
