@@ -20,6 +20,14 @@ import {
 } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { getExcelData, listExcelFiles } from "./sharepoint-excel-service.js";
+import { PAGEDJS_BASE64 } from "./assets/pagedjs";
+
+// Decode the bundled Paged.js polyfill once. Inlined into the meeting-minutes
+// export so page-number footers render reliably and offline in any browser.
+// Escape any literal "</script>" so it can't prematurely close the inline tag.
+const PAGEDJS_SCRIPT = Buffer.from(PAGEDJS_BASE64, "base64")
+  .toString("utf8")
+  .replace(/<\/script>/gi, "<\\/script>");
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -4667,68 +4675,44 @@ function generateAnalyticsChartsHTML(analytics: any): string {
 
   return `
     <div class="analytics-dashboard">
-      <div class="dashboard-header">
-        <div class="logo-section">
-          <div class="company-branding" style="display: flex; align-items: center; gap: 15px;">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACp4AAAL0CAYAAAAf2tbqAAAACXBIWXMAAC4jAAAuIwF4pT92AAAgAElEQVR4nOzdeXhcZ33o8ffI/av3PkiFOAtL7LAlIYsUApTSkEzohRZKiaGlLYNKFPayxRRKCQHipGQrBBwKFGjBNhVTlhYUSkuBQsYUwg5W4uybTPY4AStP7v3X9zlnzoSJLMsjac6Zs3w+ft7HCQnx6MwinTPf+b3R3r17AwAAAAAAAAAAAAAcyIgjBAAAAAAAAAAAAEA/hKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAAAAAAAAAAAAA9EV4CgAAAAAAAAAAAEBfhKcAJXDQGZ/fcNAZnx9zXwEAAAAAAAAAAMMkPAUouIPO+PxUCOHLIYS2+BQAAAAAAAAAABimaO/eve4AgII66IwvxNHplp5bNxtCaNy35U/3uM8AAAAAAAAAAIC8CU8BCmrtK/eJTruS+HT3p8WnAAAAAAAAAABAvmy1D1BAS0SnsfF42/21r/yCbfcBAAAAAAAAAIBcmXgKUDAHv+qLS0WnvZLJp/d+6qUmnwIAAAAAAAAAALkw8RSgQJYRnYbu5NODX/VFk08BAAAAAAAAAIBcmHgKUBCHvnpZ0WmvZPLp3f9k8ikAAAAAAAAAAJAtE08BCmAV0WnoTj499NUmnwIAAAAAAAAAANky8RRgyA57zaqi017J5NO7/tHkUwAAAAAAAAAAIBvCU4AhOuw1/zqo6LQrjU//RHwKAAAAAAAAAAAMnPAUYEgOfd3Ao9OuJD69+xPiUwAAAAAAAAAAYLCEpwBDcMjr/i2r6LQriU/v+cQfi08BAAAAAAAAAICBEJ4C5OyQ12cenXZ14tOPi08BAAAAAAAAAIDBEJ4C5Ojg/KLTriQ+vVd8CgAAAAAAAAAADIDwFCAHB//ll/KOTrs68ek/vER8CgAAAAAAAAAArIrwFCAHhwwvOu3qbLsvPgUAAAAAAAAAAFZBeAqQsYPfMPTotKsz+fRj" style="height: 60px; width: auto;">
-            <div>
-              <h1 style="margin: 0; color: #374151; font-size: 28px;">Cranfield Glass</h1>
-              <h2 style="margin: 5px 0; color: #6b7280; font-size: 18px;">Meeting Analytics Summary</h2>
-            </div>
+      <div class="analytics-bar">
+        <div class="analytics-heading">
+          <span class="analytics-h1">Meeting Analytics</span>
+          <span class="analytics-sub">${version} &middot; Generated ${currentDate}</span>
+        </div>
+        <div class="analytics-metrics">
+          <div class="metric-chip">
+            <span class="metric-chip-num">${analytics.totalItems}</span>
+            <span class="metric-chip-label">Total Items</span>
           </div>
-          <div class="version-info">
-            <span class="version" style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 11px; color: #6b7280;">${version}</span>
-            <span class="export-date" style="font-size: 11px; color: #6b7280;">Generated: ${currentDate}</span>
+          <div class="metric-chip">
+            <span class="metric-chip-num">${analytics.outstandingActions}</span>
+            <span class="metric-chip-label">Outstanding</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip-num metric-chip-accent">${analytics.completionRate}%</span>
+            <span class="metric-chip-label">Complete</span>
           </div>
         </div>
       </div>
-
-      <div class="simple-analytics">
-        <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-          <div class="metric-box" style="text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <div class="metric-number" style="font-size: 32px; font-weight: bold; color: #1f2937;">${analytics.totalItems}</div>
-            <div class="metric-label" style="font-size: 12px; color: #6b7280; margin-top: 5px;">Total Items</div>
-          </div>
-          <div class="metric-box" style="text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <div class="metric-number" style="font-size: 32px; font-weight: bold; color: #1f2937;">${analytics.outstandingActions}</div>
-            <div class="metric-label" style="font-size: 12px; color: #6b7280; margin-top: 5px;">Outstanding</div>
-          </div>
-          <div class="metric-box" style="text-align: center; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <div class="metric-number" style="font-size: 32px; font-weight: bold; color: #1f2937;">${analytics.completionRate}%</div>
-            <div class="metric-label" style="font-size: 12px; color: #6b7280; margin-top: 5px;">Complete</div>
-          </div>
+      <div class="analytics-breakdowns">
+        <div class="breakdown-col">
+          <div class="breakdown-title">Status</div>
+          ${Object.entries(analytics.statusBreakdown).map(([status, count]) =>
+            `<div class="bd-row"><span class="bd-label">${status}</span><span class="bd-count">${count}</span></div>`
+          ).join('')}
         </div>
-        
-        <div class="breakdown-section" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
-          <div class="breakdown-group">
-            <h4 style="margin: 0 0 15px 0; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Status</h4>
-            ${Object.entries(analytics.statusBreakdown).map(([status, count]) => 
-              `<div class="breakdown-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                <span class="breakdown-label" style="color: #4b5563;">${status}</span>
-                <span class="breakdown-count" style="font-weight: bold; color: #1f2937;">${count}</span>
-              </div>`
-            ).join('')}
-          </div>
-          
-          <div class="breakdown-group">
-            <h4 style="margin: 0 0 15px 0; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Type</h4>
-            ${Object.entries(analytics.typeBreakdown).map(([type, count]) => 
-              `<div class="breakdown-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                <span class="breakdown-label" style="color: #4b5563;">${type}</span>
-                <span class="breakdown-count" style="font-weight: bold; color: #1f2937;">${count}</span>
-              </div>`
-            ).join('')}
-          </div>
-          
-          <div class="breakdown-group">
-            <h4 style="margin: 0 0 15px 0; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Top Contributors</h4>
-            ${analytics.topContributors.slice(0, 3).map((contributor: any, index: number) => 
-              `<div class="breakdown-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                <span class="breakdown-label" style="color: #4b5563;">${contributor.name}</span>
-                <span class="breakdown-count" style="font-weight: bold; color: #1f2937;">${contributor.count}</span>
-              </div>`
-            ).join('')}
-          </div>
+        <div class="breakdown-col">
+          <div class="breakdown-title">Type</div>
+          ${Object.entries(analytics.typeBreakdown).map(([type, count]) =>
+            `<div class="bd-row"><span class="bd-label">${type}</span><span class="bd-count">${count}</span></div>`
+          ).join('')}
+        </div>
+        <div class="breakdown-col">
+          <div class="breakdown-title">Top Contributors</div>
+          ${analytics.topContributors.slice(0, 3).map((contributor: any) =>
+            `<div class="bd-row"><span class="bd-label">${contributor.name}</span><span class="bd-count">${contributor.count}</span></div>`
+          ).join('')}
         </div>
       </div>
     </div>`;
@@ -4757,7 +4741,19 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <style>
         @page {
             size: A4;
-            margin: 2cm;
+            margin: 1.5cm 1.2cm 1.6cm 1.2cm;
+            @bottom-center {
+                content: "Cranfield Glass Christchurch  |  Health & Safety Meeting Minutes";
+                font-family: Arial, sans-serif;
+                font-size: 8pt;
+                color: #9ca3af;
+            }
+            @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: Arial, sans-serif;
+                font-size: 8pt;
+                color: #9ca3af;
+            }
         }
         
         body {
@@ -4792,11 +4788,6 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
                 margin: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
-            }
-            
-            @page {
-                margin: 1cm !important;
-                size: A4 !important;
             }
             
             .print-button {
@@ -4970,169 +4961,135 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         
         /* Analytics Dashboard Styles */
         .analytics-dashboard {
-            margin-bottom: 40px;
-            padding: 20px;
+            margin-bottom: 22px;
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             page-break-inside: avoid;
+            break-inside: avoid;
         }
-        
-        .analytics-header h2 {
-            background: linear-gradient(135deg, #14b8a6, #06b6d4, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 18pt;
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 10px;
-        }
-        
-        .analytics-summary {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            gap: 20px;
-        }
-        
-        .metric-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
-            flex: 1;
-        }
-        
-        .metric-value {
-            font-size: 32pt;
-            font-weight: bold;
-            color: #ea580c;
-            margin-bottom: 8px;
-        }
-        
-        .metric-label {
-            font-size: 12pt;
-            color: #6b7280;
-            font-weight: 600;
-        }
-        
-        .charts-section {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-container {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
-        }
-        
-        .chart-container h3 {
-            color: #374151;
-            font-size: 14pt;
-            margin-bottom: 15px;
-            text-align: center;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 8px;
-        }
-        
-        .chart {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        
-        .chart-legend {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .legend-item {
+
+        .analytics-bar {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 10pt;
-        }
-        
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .stats-section {
-            display: flex;
-            gap: 30px;
-        }
-        
-        .stat-block {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
-        }
-        
-        .stat-block h3 {
-            color: #374151;
-            font-size: 14pt;
-            margin-bottom: 15px;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 16px;
+            background: #f8fafc;
             border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 8px;
         }
-        
-        .contributor-item, .assignment-item {
+
+        .analytics-heading {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .analytics-h1 {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+
+        .analytics-sub {
+            font-size: 7.5pt;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .analytics-metrics {
+            display: flex;
+            gap: 10px;
+        }
+
+        .metric-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 64px;
+            padding: 4px 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .metric-chip-num {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1f2937;
+            line-height: 1.1;
+        }
+
+        .metric-chip-num.metric-chip-accent {
+            color: #2563eb;
+        }
+
+        .metric-chip-label {
+            font-size: 7pt;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 1px;
+        }
+
+        .analytics-breakdowns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+        }
+
+        .breakdown-col {
+            padding: 10px 16px;
+            border-right: 1px solid #f1f5f9;
+        }
+
+        .breakdown-col:last-child {
+            border-right: none;
+        }
+
+        .breakdown-title {
+            font-size: 8pt;
+            font-weight: bold;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .bd-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 10pt;
-        }
-        
-        .contributor-item:last-child, .assignment-item:last-child {
-            border-bottom: none;
-        }
-        
-        .rank {
-            font-weight: bold;
-            color: #3b82f6;
-            width: 30px;
-        }
-        
-        .name, .assignee {
-            font-weight: 600;
-            color: #374151;
-            flex: 1;
-        }
-        
-        .count {
-            color: #6b7280;
+            align-items: center;
+            gap: 8px;
+            padding: 2px 0;
             font-size: 9pt;
+        }
+
+        .bd-label {
+            color: #4b5563;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bd-count {
+            font-weight: bold;
+            color: #1f2937;
+            font-variant-numeric: tabular-nums;
         }
 
         @media print {
             body { font-size: 10pt; }
             .items-table th, .items-table td { font-size: 9pt; }
             .analytics-dashboard { break-inside: avoid; }
-            .charts-section { flex-direction: column; }
-            .stats-section { flex-direction: column; }
+            .analytics-breakdowns { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
 <body>
-    <button class="print-button" onclick="window.print()">🖨️ Print Meeting Minutes</button>
     <div class="container">
     <div class="header">
         <div class="company-name">Cranfield Glass Christchurch</div>
@@ -5262,6 +5219,23 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     </div>
     </div>
 
+    <script>
+      // Add the floating Print button once (used by Paged.js and the fallback).
+      function addPrintButton() {
+        if (document.querySelector('.print-button')) return;
+        var btn = document.createElement('button');
+        btn.className = 'print-button';
+        btn.textContent = '\u{1F5A8}\uFE0F Print Meeting Minutes';
+        btn.addEventListener('click', function () { window.print(); });
+        document.body.appendChild(btn);
+      }
+      // Configure Paged.js: re-add the Print button once pagination completes.
+      window.PagedConfig = { auto: true, after: addPrintButton };
+      // Resilience fallback: if Paged.js never finishes (rare), still give the
+      // user a Print button so the document remains usable.
+      setTimeout(addPrintButton, 8000);
+    </script>
+    <script>${PAGEDJS_SCRIPT}</script>
 </body>
 </html>
   `;
