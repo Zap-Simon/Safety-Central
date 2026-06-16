@@ -2278,10 +2278,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Normalize any date string to YYYY-MM-DD for consistent lock key storage
+  const normaliseLockDate = (raw: string): string => {
+    try {
+      return new Date(raw).toISOString().split('T')[0];
+    } catch {
+      return raw;
+    }
+  };
+
   // Meeting lock endpoints
+  // GET all locks as { [YYYY-MM-DD]: boolean }
+  app.get('/api/meeting-locks', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { meetingLocks } = await import('../shared/schema');
+      const rows = await db.select().from(meetingLocks);
+      const locks: Record<string, boolean> = {};
+      for (const row of rows) {
+        locks[row.meetingDate] = row.isLocked;
+      }
+      res.json({ success: true, locks });
+    } catch (error) {
+      console.error('Error fetching all meeting locks:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch meeting locks' });
+    }
+  });
+
   app.get('/api/meeting-locks/:meetingDate', async (req, res) => {
     try {
-      const { meetingDate } = req.params;
+      const meetingDate = normaliseLockDate(decodeURIComponent(req.params.meetingDate));
       const meetingLock = await storage.getMeetingLock(meetingDate);
       
       res.json({
@@ -2308,7 +2334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const meetingLock = await storage.updateMeetingLock(meetingDate, isLocked, lockedBy);
+      const meetingLock = await storage.updateMeetingLock(normaliseLockDate(meetingDate), isLocked, lockedBy);
       
       res.json({
         success: true,

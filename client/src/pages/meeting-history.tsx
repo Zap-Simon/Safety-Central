@@ -700,46 +700,35 @@ export default function MeetingHistory() {
     }
   }, [attendanceResponse]);
 
-  // Load meeting locks for all meetings when data is available
+  // Normalise any date to YYYY-MM-DD for consistent lock key matching
+  const normaliseLockDate = (raw: string): string => {
+    try { return new Date(raw).toISOString().split('T')[0]; } catch { return raw; }
+  };
+
+  // Single query for ALL meeting locks — avoids N per-meeting fetch calls and race conditions
+  const { data: locksResponse } = useQuery({
+    queryKey: ['/api/meeting-locks'],
+    queryFn: () => fetch('/api/meeting-locks').then(res => res.json()),
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  });
+
+  // Sync locks from query into state — keyed by normalised YYYY-MM-DD
   useEffect(() => {
-    const loadMeetingLocks = async () => {
-      if (!apiResponse?.data) return;
-      
-      const uniqueMeetingDates = Array.from(new Set(
-        apiResponse.data.map((item: MeetingItem) => item.meetingDate)
-      ));
-
-      const lockPromises = uniqueMeetingDates.map(async (meetingDate) => {
-        try {
-          const response = await fetch(`/api/meeting-locks/${encodeURIComponent(meetingDate as string)}`);
-          const data = await response.json();
-          return { meetingDate, isLocked: data.success ? data.meetingLock.isLocked : false };
-        } catch (error) {
-          console.error(`Failed to fetch lock status for ${meetingDate}:`, error);
-          return { meetingDate, isLocked: false };
-        }
-      });
-
-      const lockResults = await Promise.all(lockPromises);
-      const lockState = lockResults.reduce((acc, { meetingDate, isLocked }) => {
-        acc[meetingDate as string] = isLocked;
-        return acc;
-      }, {} as Record<string, boolean>);
-
-      setLockedAttendance(lockState);
-    };
-
-    loadMeetingLocks();
-  }, [apiResponse?.data]);
+    if (locksResponse?.success && locksResponse.locks) {
+      setLockedAttendance(locksResponse.locks);
+    }
+  }, [locksResponse]);
 
   // Mutations for updating meeting locks and attendance
   const updateMeetingLockMutation = useMutation({
     mutationFn: async ({ meetingDate, isLocked }: { meetingDate: string, isLocked: boolean }) => {
+      const normDate = normaliseLockDate(meetingDate);
       const response = await fetch('/api/meeting-locks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          meetingDate,
+          meetingDate: normDate,
           isLocked,
           lockedBy: 'current-user'
         })
@@ -748,11 +737,8 @@ export default function MeetingHistory() {
     },
     onSuccess: (data, variables) => {
       if (data.success) {
-        setLockedAttendance(prev => ({
-          ...prev,
-          [variables.meetingDate]: variables.isLocked
-        }));
-        // Invalidate queries to refresh data
+        const normDate = normaliseLockDate(variables.meetingDate);
+        setLockedAttendance(prev => ({ ...prev, [normDate]: variables.isLocked }));
         queryClient.invalidateQueries({ queryKey: ['/api/meeting-locks'] });
       }
     },
@@ -1539,7 +1525,7 @@ export default function MeetingHistory() {
 
   const toggleAttendee = (meetingDate: string, attendeeName: string) => {
     // Don't allow changes if attendance is locked
-    if (lockedAttendance[meetingDate]) {
+    if (lockedAttendance[normaliseLockDate(meetingDate)]) {
       return;
     }
     
@@ -1588,7 +1574,7 @@ export default function MeetingHistory() {
   });
 
   const toggleAttendanceLock = (meetingDate: string) => {
-    const isCurrentlyLocked = lockedAttendance[meetingDate] || false;
+    const isCurrentlyLocked = lockedAttendance[normaliseLockDate(meetingDate)] || false;
     
     // Update database using mutation
     updateMeetingLockMutation.mutate({
@@ -2517,7 +2503,7 @@ export default function MeetingHistory() {
                         {(() => {
                           const sigs = meetingSignatures[meetingDate] ?? {};
                           const sigCount = Object.keys(sigs).length;
-                          const isLocked = !!lockedAttendance[meetingDate];
+                          const isLocked = !!lockedAttendance[normaliseLockDate(meetingDate)];
                           return (
                             <Button
                               variant="outline"
@@ -2539,7 +2525,7 @@ export default function MeetingHistory() {
 
                     {/* Attendance Selector - Within collapsed content */}
                     {showAttendanceSelector === meetingDate && (() => {
-                      const isLocked = lockedAttendance[meetingDate];
+                      const isLocked = lockedAttendance[normaliseLockDate(meetingDate)];
                       
                       return (
                         <div className="bg-gradient-to-br from-white to-blue-50 border-b border-blue-200 p-4 sm:p-6">

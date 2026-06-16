@@ -42,6 +42,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Cache buster — HTML page must never be cached so browsers always get the latest bundle
+app.use((req, res, next) => {
+  const isHtmlRequest = req.headers.accept?.includes('text/html') && !req.path.startsWith('/api') && !req.path.startsWith('/assets');
+  if (isHtmlRequest) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // Security headers with environment-specific CSP
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(helmet({
