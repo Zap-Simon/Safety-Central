@@ -78,12 +78,6 @@ const useSwitcherStyles = makeStyles({
     paddingLeft: tokens.spacingHorizontalXS,
   },
   tabs: { flexShrink: 0 },
-  // The selected-tab indicator is a `::after` bar coloured by Fluent's brand
-  // token. We recolour it per tab so the blue=Submit / purple=Orders wayfinding
-  // survives the move to native Fluent tabs. Only applied to the selected tab,
-  // so the bar shape still comes from Fluent's own selected styles.
-  submitInd: { "::after": { backgroundColor: tokens.colorBrandStroke1 } },
-  ordersInd: { "::after": { backgroundColor: tokens.colorPaletteBerryForeground1 } },
 });
 
 // A quiet in-content segmented toggle — deliberately not a bottom app-nav bar,
@@ -115,15 +109,14 @@ function TeamsTabSwitcher({
         <span style={{ marginLeft: "4px", fontSize: "1.2em", lineHeight: 1 }}>👋</span>
       </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
-        <Tab
-          value="/teams-tab"
-          className={selected === "/teams-tab" ? s.submitInd : undefined}
-        >
-          Submit
-        </Tab>
+        <Tab value="/teams-tab">Submit</Tab>
+        {/* Override brand CSS vars so the indicator + flash are purple, not blue */}
         <Tab
           value="/teams-tab/orders"
-          className={selected === "/teams-tab/orders" ? s.ordersInd : undefined}
+          style={{
+            "--colorBrandForeground1": teamsLightTheme.colorPaletteBerryForeground1,
+            "--colorBrandForeground2": teamsLightTheme.colorPaletteBerryForeground2,
+          } as React.CSSProperties}
         >
           Orders
         </Tab>

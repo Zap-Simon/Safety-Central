@@ -14,6 +14,8 @@ import {
   DialogBody,
   DialogContent,
   DialogActions,
+  FluentProvider,
+  teamsLightTheme,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -27,13 +29,27 @@ import {
   Delete20Regular,
 } from "@fluentui/react-icons";
 import type { OrderItem } from "@shared/schema";
-import {
-  TeamsPage,
-  TeamsPinned,
-  TeamsScroll,
-  TeamsCenter,
-  TeamsFullScreen,
-} from "./TeamsPageShell";
+import { TeamsPage, TeamsPinned, TeamsScroll, TeamsCenter, TeamsFullScreen } from "./TeamsPageShell";
+
+// Berry-purple theme for the Orders tab — overrides brand tokens so all
+// Fluent primitives (primary buttons, input focus ring, icons, spinner) are
+// purple rather than the default Teams blue.
+const berryTheme = {
+  ...teamsLightTheme,
+  colorBrandBackground: teamsLightTheme.colorPaletteBerryForeground2,
+  colorBrandBackgroundHover: teamsLightTheme.colorPaletteBerryForeground1,
+  colorBrandBackgroundPressed: teamsLightTheme.colorPaletteBerryForeground3,
+  colorBrandBackgroundSelected: teamsLightTheme.colorPaletteBerryForeground2,
+  colorBrandForeground1: teamsLightTheme.colorPaletteBerryForeground1,
+  colorBrandForeground2: teamsLightTheme.colorPaletteBerryForeground2,
+  colorBrandForegroundLink: teamsLightTheme.colorPaletteBerryForeground1,
+  colorBrandForegroundLinkHover: teamsLightTheme.colorPaletteBerryForeground2,
+  colorBrandStroke1: teamsLightTheme.colorPaletteBerryBorderActive,
+  colorBrandStroke2: teamsLightTheme.colorPaletteBerryBorder1,
+  colorCompoundBrandBackground: teamsLightTheme.colorPaletteBerryForeground2,
+  colorCompoundBrandBackgroundHover: teamsLightTheme.colorPaletteBerryForeground1,
+  colorCompoundBrandBackgroundPressed: teamsLightTheme.colorPaletteBerryForeground3,
+};
 
 function timeAgo(dateStr: string | Date): string {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
@@ -305,32 +321,37 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
   // ─── Loading ──────────────────────────────────────────────────────────────
   if (authState === "loading") {
     return (
-      <TeamsCenter className="animate-fade-in">
-        <Spinner size="large" label="Signing you in automatically…" />
-      </TeamsCenter>
+      <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
+        <TeamsCenter className="animate-fade-in">
+          <Spinner size="large" label="Signing you in automatically…" />
+        </TeamsCenter>
+      </FluentProvider>
     );
   }
 
   // ─── Unauthenticated ──────────────────────────────────────────────────────
   if (authState === "unauthenticated") {
     return (
-      <TeamsFullScreen
-        icon={<Cart20Regular />}
-        title="Sign in required"
-        description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
-        actionLabel="Try again"
-        onAction={() => initAuth()}
-        error={authError || undefined}
-        accent={{
-          bg: tokens.colorPaletteBerryBackground1,
-          fg: tokens.colorPaletteBerryForeground1,
-        }}
-      />
+      <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
+        <TeamsFullScreen
+          icon={<Cart20Regular />}
+          title="Sign in required"
+          description="Sign in with your Cranfield Glass Microsoft account to add and manage orders."
+          actionLabel="Try again"
+          onAction={() => initAuth()}
+          error={authError || undefined}
+          accent={{
+            bg: tokens.colorPaletteBerryBackground1,
+            fg: tokens.colorPaletteBerryForeground1,
+          }}
+        />
+      </FluentProvider>
     );
   }
 
   // ─── Authenticated ────────────────────────────────────────────────────────
   return (
+    <FluentProvider theme={berryTheme} style={{ display: "contents" }}>
     <TeamsPage>
       <TeamsPinned>
         {/* ── Admin clear strip — very top, red tint, only when admin + items exist ── */}
@@ -449,5 +470,6 @@ export default function OrdersTab({ userName: propUserName = "" }: OrdersTabProp
         )}
       </TeamsScroll>
     </TeamsPage>
+    </FluentProvider>
   );
 }
