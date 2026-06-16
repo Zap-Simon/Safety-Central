@@ -140,7 +140,7 @@ export default function MeetingHistory() {
     meetingDate: ''
   });
   const [ideaTypeOptions, setIdeaTypeOptions] = useState<string[]>([]);
-  const [sharepointUsers, setSharepointUsers] = useState<Array<{id: number, title: string, email: string}>>([]);
+  const [sharepointUsers, setSharepointUsers] = useState<Array<{id: number, title: string, email: string, loginName?: string}>>([]);
 
   // Status update states
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string>(''); // item ID being updated
@@ -148,6 +148,9 @@ export default function MeetingHistory() {
   // Move-between-lists states
   const [isMovingItem, setIsMovingItem] = useState<string>(''); // item ID being moved
   const [moveConfirm, setMoveConfirm] = useState<{ item: MeetingItem; toList: string } | null>(null);
+
+  // Change-submitter states
+  const [isUpdatingSubmitter, setIsUpdatingSubmitter] = useState<string>(''); // item ID being updated
 
   // Status options from SharePoint (including 'Closed' for Business Ideas and Safety Ideas)
   const [statusOptions, setStatusOptions] = useState<string[]>(['Submitted', 'In Discussion', 'Actioned', 'Closed']);
@@ -292,6 +295,33 @@ export default function MeetingHistory() {
     } finally {
       setIsMovingItem('');
       setMoveConfirm(null);
+    }
+  };
+
+  const updateItemSubmitter = async (item: MeetingItem, userLoginName: string, userTitle: string) => {
+    setIsUpdatingSubmitter(item.id);
+    try {
+      const response = await authenticatedFetch('/api/sharepoint/update-submitter', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item.id,
+          listType: item.type,
+          userLoginName
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        showSuccess('Submitter Updated', `Submitted by changed to ${userTitle}.`);
+        await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+      } else {
+        showError('Update Failed', result.error || 'Failed to change submitter');
+      }
+    } catch (error) {
+      console.error('Error updating submitter:', error);
+      showError('Update Failed', 'Failed to change submitter');
+    } finally {
+      setIsUpdatingSubmitter('');
     }
   };
 
@@ -666,6 +696,29 @@ export default function MeetingHistory() {
     if (savedSearch) {
       setSearchQuery(savedSearch);
     }
+  }, []);
+
+  // Load the list of SharePoint people once on mount so the "change submitter"
+  // dropdowns are ready without first opening the add-idea form.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await authService.getSharePointToken();
+        const usersResponse = await fetch('/api/sharepoint/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          if (!cancelled && usersData.success) {
+            setSharepointUsers(usersData.users || []);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading SharePoint users:', error);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // Update URL when search changes
@@ -2805,6 +2858,27 @@ export default function MeetingHistory() {
                                                     </select>
                                                   );
                                                 })()}
+                                                {/* Change who the item was submitted by */}
+                                                {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && sharepointUsers.length > 0 && (
+                                                  <select
+                                                    value=""
+                                                    onChange={(e) => {
+                                                      const selected = sharepointUsers.find(u => (u.loginName || '') === e.target.value);
+                                                      if (selected && selected.loginName && selected.title !== item.submittedBy) {
+                                                        updateItemSubmitter(item, selected.loginName, selected.title);
+                                                      }
+                                                    }}
+                                                    disabled={isUpdatingSubmitter === item.id}
+                                                    className="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white hover:bg-gray-50 transition-colors min-w-0"
+                                                    title={`Currently submitted by ${item.submittedBy || 'Unknown'}. Choose a person to change it.`}
+                                                    data-testid={`select-submitter-${item.id}`}
+                                                  >
+                                                    <option value="">{isUpdatingSubmitter === item.id ? 'Updating…' : `By: ${item.submittedBy || 'Unknown'}`}</option>
+                                                    {sharepointUsers.filter(u => u.loginName).map(u => (
+                                                      <option key={u.id} value={u.loginName}>{u.title}</option>
+                                                    ))}
+                                                  </select>
+                                                )}
                                                 {/* Flip to Actions button - only show for Actioned status OR Closed with action data */}
                                                 {(() => {
                                                   const hasActionData = !!(item.actionPriority || item.actionStatus || item.actionAssignedTo || item.actionStartDate || item.actionDueDate || item.actionNotes);

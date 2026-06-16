@@ -872,6 +872,105 @@ export class SharePointListsService {
   }
 
   /**
+   * Change who an existing item was submitted by. The "submitted by" column is a
+   * SharePoint Person field, so the chosen person has to be resolved to a
+   * site-specific user id (via ensureuser) before the field can be set. This is
+   * done on the item's own site, which matters for Near Miss because it lives on
+   * a separate site collection with its own user ids.
+   */
+  async updateItemSubmitter(itemId: string, listType: string, userLoginName: string): Promise<void> {
+    const allowed = ['Business Ideas', 'Safety Ideas', 'Near Miss'];
+    if (!allowed.includes(listType)) {
+      throw new Error('Submitter can only be changed on Business Ideas, Safety Ideas and Near Miss items');
+    }
+
+    const config = SharePointListsService.LIST_CONFIGS[listType];
+    if (!config) {
+      throw new Error(`List configuration not found for: ${listType}`);
+    }
+    if (!userLoginName) {
+      throw new Error('A person must be selected to change the submitter');
+    }
+
+    const personFieldId = `${config.submittedByField}Id`; // e.g. "NameId"
+    const webBase = config.siteUrl
+      ? `${config.siteUrl}/_api/web`
+      : 'https://cranfieldglass.sharepoint.com/_api/web';
+    const baseUrl = config.siteUrl
+      ? `${config.siteUrl}/_api/web/lists/getbytitle`
+      : this.baseUrl;
+
+    // Resolve the person to a user id on the item's own site collection.
+    const ensureResponse = await fetch(`${webBase}/ensureuser`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'Accept': 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose'
+      },
+      body: JSON.stringify({ logonName: userLoginName })
+    });
+
+    if (!ensureResponse.ok) {
+      const errorText = await ensureResponse.text();
+      throw new Error(`Failed to resolve the selected person on SharePoint: ${ensureResponse.status} - ${errorText}`);
+    }
+
+    const ensureData = await ensureResponse.json();
+    const userId = ensureData.d?.Id;
+    if (!userId) {
+      throw new Error('Could not resolve the selected person to a SharePoint user');
+    }
+
+    // Extract numeric ID from formatted ID (e.g. "near-miss-42" -> "42")
+    const numericId = itemId.replace(`${listType.toLowerCase().replace(' ', '-')}-`, '');
+    const updateUrl = `${baseUrl}('${config.listTitle}')/items(${numericId})`;
+
+    try {
+      // Get item etag + entity type for the MERGE update
+      const getResponse = await fetch(updateUrl, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose'
+        }
+      });
+
+      if (!getResponse.ok) {
+        throw new Error(`Failed to get item for update: ${getResponse.status}`);
+      }
+
+      const itemData = await getResponse.json();
+      const etag = itemData.d.__metadata.etag;
+      const entityType = itemData.d.__metadata.type;
+
+      const payload: any = {
+        '__metadata': { 'type': entityType },
+        [personFieldId]: userId
+      };
+
+      const updateResponse = await fetch(updateUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'If-Match': etag,
+          'X-HTTP-Method': 'MERGE'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        throw new Error(`SharePoint submitter update failed: ${updateResponse.status} - ${errorText}`);
+      }
+    } catch (error) {
+      logger.error({ err: error, listType, itemId: numericId }, 'Failed to update SharePoint item submitter');
+      throw error;
+    }
+  }
+
+  /**
    * Move an item from one list to another (e.g. a Safety idea that should be
    * a Business idea). This copies the item's content into the destination list
    * preserving the title, description, status, dates and meeting notes, then

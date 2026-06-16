@@ -2010,6 +2010,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change who an existing item was submitted by
+  app.post('/api/sharepoint/update-submitter', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+          success: false,
+          error: 'Authentication required'
+        });
+      }
+
+      const accessToken = authHeader.substring(7);
+      const { itemId, listType, userLoginName } = req.body;
+
+      if (!itemId || !listType || !userLoginName) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: itemId, listType, and userLoginName'
+        });
+      }
+
+      if (typeof itemId !== 'string' || !/-\d+$/.test(itemId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid itemId format'
+        });
+      }
+
+      const listsService = new SharePointListsService(accessToken);
+      await listsService.updateItemSubmitter(itemId, listType, userLoginName);
+
+      res.json({
+        success: true,
+        message: `Successfully updated submitter for ${listType} item ${itemId}`
+      });
+
+    } catch (error) {
+      console.error('Error updating SharePoint item submitter:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update submitter'
+      });
+    }
+  });
+
   // Get SharePoint Choice field options
   app.get('/api/sharepoint/choice-options/:listType/:fieldName', async (req, res) => {
     try {
