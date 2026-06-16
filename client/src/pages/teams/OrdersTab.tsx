@@ -119,6 +119,10 @@ const useStyles = makeStyles({
     paddingRight: tokens.spacingHorizontalXL,
     backgroundColor: tokens.colorPaletteRedBackground3,
     color: tokens.colorNeutralForegroundOnBrand,
+    borderTopLeftRadius: tokens.borderRadiusMedium,
+    borderTopRightRadius: tokens.borderRadiusMedium,
+    borderBottomLeftRadius: tokens.borderRadiusMedium,
+    borderBottomRightRadius: tokens.borderRadiusMedium,
   },
   swipeFront: {
     position: "relative",
