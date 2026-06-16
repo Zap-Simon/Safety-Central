@@ -104,6 +104,10 @@ export function TeamsCenter({ children, className }: SlotProps) {
  * suppresses the scroll-into-view that mobile webviews do for a lower-positioned
  * input. Gate `active` on the state where focus should happen (e.g. authenticated
  * + correct step).
+ *
+ * CAUTION: tab components remount on every Teams tab switch, so don't gate this on
+ * a default step — it will re-fire and pop the mobile keyboard each switch. Only use
+ * it for focus driven by a deliberate in-tab transition, never plain mount.
  */
 export function useKeyboardSafeFocus(
   ref: RefObject<HTMLElement | null>,

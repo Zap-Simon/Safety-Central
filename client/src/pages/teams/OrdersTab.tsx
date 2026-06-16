@@ -372,7 +372,7 @@ export default function OrdersTab() {
         <div className={styles.addBar}>
           <Input
             className={styles.input}
-            input={{ ref: inputRef, autoFocus: true }}
+            input={{ ref: inputRef }}
             placeholder="Add item to order…"
             value={itemText}
             onChange={(_, d) => setItemText(d.value)}

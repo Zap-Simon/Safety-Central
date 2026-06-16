@@ -34,7 +34,6 @@ import {
   TeamsScroll,
   TeamsCenter,
   TeamsFullScreen,
-  useKeyboardSafeFocus,
 } from "./TeamsPageShell";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 
@@ -278,8 +277,9 @@ export default function SubmitTab() {
   const classifyInFlight = useRef<Map<string, Promise<ClassifyResult>>>(new Map());
   const mainInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Keyboard-safe auto-focus (see TeamsPageShell): focus without the page jumping.
-  useKeyboardSafeFocus(mainInputRef, authState === "authenticated" && step === "input");
+  // No auto-focus on mount: tabs remount on every switch, so focusing here would
+  // pop the mobile keyboard each time you toggle between Submit and Orders. The
+  // user taps the input when they're ready to type.
 
   useEffect(() => {
     if (step !== "input" || inputText) return;

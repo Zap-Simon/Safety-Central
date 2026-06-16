@@ -53,8 +53,14 @@ The class-name specifics below (`bg-blue-50`, `focus-visible:ring-0`, `shrink-0`
 
 **How to apply:** Never reintroduce `min-h-screen` inside a tab, a fixed bottom nav, a per-tab app header, or a `my-auto`/centered input region (breaks keyboard safety). The Submit greeting now lives on the tab row (Submit-only, name lifted via `onUser`), NOT in the page body; Orders stays greeting-free and shared-list-labelled.
 
-## Keyboard-focus page-shift (Teams mobile)
+## NO mount-time auto-focus on either tab (keyboard pops on tab switch)
+- **Symptom (user-reported):** toggling between Submit and Orders opens the mobile keyboard every switch. **Cause:** tabs REMOUNT on each route switch, so ANY focus-on-mount re-fires. Submit had `useKeyboardSafeFocus(mainInputRef, …step==='input')` ('input' is the default step) and Orders had `<Input input={{ ref, autoFocus: true }}>` on its add bar — both focus on mount → keyboard pops on every return to the tab.
+- **Fix (current):** removed BOTH. Submit no longer calls `useKeyboardSafeFocus` (import dropped; hook still exported by TeamsPageShell as API but unused). Orders dropped `autoFocus: true` (kept `input={{ ref: inputRef }}`). The user taps the input when ready.
+- **KEEP:** `inputRef.current?.focus()` inside Orders `handleAdd()` is fine — it's a deliberate user gesture (refocus after adding an item), not mount-time.
+- **Rule:** never auto-focus a Teams tab input on mount (no `autoFocus`, no mount-gated `useKeyboardSafeFocus`). Only focus in response to an explicit in-tab user action. `preventScroll:true` only stops the scroll-jump, NOT the keyboard opening.
+
+## Keyboard-focus page-shift (Teams mobile) — historical, superseded above for mount focus
 - **Symptom:** opening a tab auto-focuses an input and the whole page jumps up. It happens when the auto-focused input sits *low* in the layout (Submit's textarea is below the greeting); the webview scrolls it into view on focus. Orders never jumped only because its input is pinned at the very top.
-- **Fix:** never rely on the bare `autoFocus` attribute (or a plain `.focus()`) for an input that isn't at the very top. Use a ref + `el.focus({ preventScroll: true })` in an effect gated on the relevant state (e.g. authenticated + correct step). `preventScroll` suppresses the scroll-into-view that shifts the page.
+- **Fix (when focus IS wanted, e.g. user-driven):** never rely on the bare `autoFocus` attribute (or a plain `.focus()`) for an input that isn't at the very top. Use a ref + `el.focus({ preventScroll: true })`. `preventScroll` suppresses the scroll-into-view that shifts the page. NOTE: do NOT gate this on mount/default step — that's the keyboard-pop bug above.
 - **Viewport:** the shared Teams shell uses `h-[100dvh]` (dynamic viewport), NOT `h-screen`/`100vh` — `dvh` matches the actual visible area when the keyboard is up and avoids extra layout shift on mobile webviews. Don't revert to `100vh`.
 - **Why:** these two together make a lower-positioned auto-focused input behave like Orders' top-pinned one (no page jump). **How to apply:** any new auto-focused Teams input that isn't top-pinned must use the `focus({ preventScroll: true })` pattern.
