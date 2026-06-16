@@ -56,6 +56,54 @@ interface ClassifyResult {
   followUpQuestions: string[];
 }
 
+type SubmitStep =
+  | "input"
+  | "classifying"
+  | "followup"
+  | "confirm"
+  | "submitting"
+  | "done";
+
+// The Submit flow persists to localStorage so an in-progress report survives a
+// tab switch (Teams remounts the tab) or the app being closed and reopened.
+const DRAFT_KEY = "cranfield.submit.draft.v1";
+
+interface SubmitDraft {
+  step: SubmitStep;
+  inputText: string;
+  classifyResult: ClassifyResult | null;
+  followUpAnswers: string[];
+  submittedCategory: string;
+}
+
+const STABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm", "done"];
+
+function loadDraft(): SubmitDraft | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as SubmitDraft;
+    if (!d || typeof d !== "object" || typeof d.inputText !== "string") return null;
+    // Transient in-flight steps can't be resumed (the network call was lost),
+    // so drop back to the nearest stable step the user can act on.
+    if (d.step === "classifying") d.step = "input";
+    if (d.step === "submitting") d.step = d.classifyResult ? "confirm" : "input";
+    // Guard against a corrupted/unknown step landing on a non-rendered branch,
+    // and against confirm/followup steps with no classification to act on.
+    if (!STABLE_STEPS.includes(d.step)) return null;
+    if ((d.step === "confirm" || d.step === "followup") && !d.classifyResult) return null;
+    return {
+      step: d.step,
+      inputText: d.inputText,
+      classifyResult: d.classifyResult ?? null,
+      followUpAnswers: Array.isArray(d.followUpAnswers) ? d.followUpAnswers : [],
+      submittedCategory: typeof d.submittedCategory === "string" ? d.submittedCategory : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
 const CATEGORY_META: Record<
   Category,
   { icon: React.ReactNode; fg: string; bg: string; border: string; listLabel: string }
@@ -246,15 +294,22 @@ export default function SubmitTab() {
   // never re-triggers the "Signing you in…" loader.
   const { authState, teamsToken, userName, authError, retry } = useTeamsAuth();
 
-  const [step, setStep] = useState<
-    "input" | "classifying" | "followup" | "confirm" | "submitting" | "done"
-  >("input");
+  // Restore any in-progress draft once on mount (survives tab switch / app close).
+  const [draft] = useState(loadDraft);
 
-  const [inputText, setInputText] = useState("");
-  const [classifyResult, setClassifyResult] = useState<ClassifyResult | null>(null);
-  const [followUpAnswers, setFollowUpAnswers] = useState<string[]>([]);
+  const [step, setStep] = useState<SubmitStep>(draft?.step ?? "input");
+
+  const [inputText, setInputText] = useState(draft?.inputText ?? "");
+  const [classifyResult, setClassifyResult] = useState<ClassifyResult | null>(
+    draft?.classifyResult ?? null,
+  );
+  const [followUpAnswers, setFollowUpAnswers] = useState<string[]>(
+    draft?.followUpAnswers ?? [],
+  );
   const [submitError, setSubmitError] = useState<string>("");
-  const [submittedCategory, setSubmittedCategory] = useState<string>("");
+  const [submittedCategory, setSubmittedCategory] = useState<string>(
+    draft?.submittedCategory ?? "",
+  );
   const [exampleIdx, setExampleIdx] = useState(0);
   const [prefetching, setPrefetching] = useState(false);
 
@@ -262,6 +317,27 @@ export default function SubmitTab() {
   const classifyCache = useRef<Map<string, ClassifyResult>>(new Map());
   const classifyInFlight = useRef<Map<string, Promise<ClassifyResult>>>(new Map());
   const mainInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Persist the durable draft whenever it changes. Transient in-flight steps
+  // (classifying/submitting) are skipped so a lost network call never restores
+  // into a dead spinner — loadDraft() also normalises them on read.
+  useEffect(() => {
+    if (step === "classifying" || step === "submitting") return;
+    try {
+      const isEmpty =
+        step === "input" && !inputText.trim() && !classifyResult && !submittedCategory;
+      if (isEmpty) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ step, inputText, classifyResult, followUpAnswers, submittedCategory }),
+      );
+    } catch {
+      /* storage unavailable — fall back to in-memory only */
+    }
+  }, [step, inputText, classifyResult, followUpAnswers, submittedCategory]);
 
   // No auto-focus on mount: tabs remount on every switch, so focusing here would
   // pop the mobile keyboard each time you toggle between Submit and Orders. The
