@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ import {
   teamsHighContrastTheme,
   TabList,
   Tab,
+  Text,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -51,6 +53,9 @@ const useShellStyles = makeStyles({
 const useSwitcherStyles = makeStyles({
   bar: {
     flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXXL,
     paddingLeft: tokens.spacingHorizontalM,
     paddingRight: tokens.spacingHorizontalM,
     paddingTop: tokens.spacingVerticalXS,
@@ -58,6 +63,18 @@ const useSwitcherStyles = makeStyles({
     borderBottomStyle: "solid",
     borderBottomColor: tokens.colorNeutralStroke2,
   },
+  // Greeting lives on the left of the tab row; the tabs start to its right.
+  greeting: {
+    flexShrink: 1,
+    minWidth: 0,
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorNeutralForeground1,
+    paddingLeft: tokens.spacingHorizontalXS,
+  },
+  tabs: { flexShrink: 0 },
   // The selected-tab indicator is a `::after` bar coloured by Fluent's brand
   // token. We recolour it per tab so the blue=Submit / purple=Orders wayfinding
   // survives the move to native Fluent tabs. Only applied to the selected tab,
@@ -69,7 +86,13 @@ const useSwitcherStyles = makeStyles({
 // A quiet in-content segmented toggle — deliberately not a bottom app-nav bar,
 // so it reads as part of our content and stays visually separate from the
 // Teams navigation chrome that already lives along the bottom of the window.
-function TeamsTabSwitcher() {
+function TeamsTabSwitcher({
+  userName,
+  showGreeting,
+}: {
+  userName: string;
+  showGreeting: boolean;
+}) {
   const [location, navigate] = useLocation();
   const s = useSwitcherStyles();
   const selected = location === "/teams-tab/orders" ? "/teams-tab/orders" : "/teams-tab";
@@ -80,7 +103,12 @@ function TeamsTabSwitcher() {
 
   return (
     <div className={s.bar}>
-      <TabList selectedValue={selected} onTabSelect={onTabSelect} size="large">
+      {showGreeting && userName && (
+        <Text className={s.greeting}>
+          Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
+        </Text>
+      )}
+      <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab
           value="/teams-tab"
           className={selected === "/teams-tab" ? s.submitInd : undefined}
@@ -102,6 +130,7 @@ function TeamsRouterContent() {
   const [location] = useLocation();
   const { theme } = useTeamsTheme();
   const styles = useShellStyles();
+  const [teamsUser, setTeamsUser] = useState("");
   const isOrders = location === "/teams-tab/orders";
 
   const fluentTheme =
@@ -120,9 +149,9 @@ function TeamsRouterContent() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <TeamsTabSwitcher />
+      <TeamsTabSwitcher userName={teamsUser} showGreeting={!isOrders} />
       <div className={styles.content}>
-        {isOrders ? <OrdersTab /> : <SubmitTab />}
+        {isOrders ? <OrdersTab /> : <SubmitTab onUser={setTeamsUser} />}
       </div>
     </FluentProvider>
   );

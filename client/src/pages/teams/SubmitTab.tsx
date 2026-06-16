@@ -168,12 +168,19 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorPaletteGreenBackground1,
     color: tokens.colorPaletteGreenForeground1,
   },
-  stack: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
-  greeting: {
-    paddingTop: tokens.spacingVerticalXS,
+  inputStack: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalM,
     paddingBottom: tokens.spacingVerticalL,
-    paddingLeft: tokens.spacingHorizontalXXL,
-    paddingRight: tokens.spacingHorizontalXXL,
+  },
+  helper: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXXS,
   },
   bodyPad: {
     paddingTop: tokens.spacingVerticalXS,
@@ -267,7 +274,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function SubmitTab() {
+export default function SubmitTab({ onUser }: { onUser?: (name: string) => void } = {}) {
   const styles = useStyles();
 
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "authenticated">("loading");
@@ -316,7 +323,9 @@ export default function SubmitTab() {
       await microsoftTeams.app.initialize();
       const ssoToken = await microsoftTeams.authentication.getAuthToken();
       const payload = decodeJwtPayload(ssoToken);
-      setUserName(payload.name || payload.preferred_username || payload.upn || "");
+      const name = payload.name || payload.preferred_username || payload.upn || "";
+      setUserName(name);
+      onUser?.(name);
       setTeamsToken(ssoToken);
       setAuthState("authenticated");
     } catch (err: any) {
@@ -324,6 +333,7 @@ export default function SubmitTab() {
       console.error(msg, err);
       setAuthError(msg);
       setAuthState("unauthenticated");
+      onUser?.("");
     }
   }
 
@@ -519,61 +529,72 @@ export default function SubmitTab() {
   // ─── Main form ────────────────────────────────────────────────────────────
   const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
 
+  // Input step mirrors Orders: a pinned, keyboard-safe textarea (suggestions
+  // stay inside as the cycling placeholder) with the tagline + descriptor below.
+  const inputEl = (
+    <>
+      <div className={styles.textareaWrap}>
+        <Textarea
+          textarea={{ ref: mainInputRef, rows: 5 }}
+          placeholder={EXAMPLES[exampleIdx]}
+          value={inputText}
+          onChange={(_, data) => handleTextChange(data.value)}
+          resize="none"
+          size="large"
+        />
+        {prefetching && (
+          <div className={`${styles.prefetch} animate-fade-in`}>
+            <Sparkle16Regular className="animate-pulse" />
+            reading…
+          </div>
+        )}
+      </div>
+
+      <div className={styles.helper}>
+        <Text size={300} weight="semibold" block>
+          Small ideas. Continuous improvement.
+        </Text>
+        <Text size={200} block style={{ color: tokens.colorNeutralForeground3 }}>
+          Describe what you saw, a near miss, or an improvement idea.
+        </Text>
+      </div>
+
+      {inputText.trim().length >= 10 && inputText.trim().length < 20 && (
+        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+          Keep typing — a bit more detail helps…
+        </Text>
+      )}
+
+      {submitError && (
+        <MessageBar intent="error" className="animate-fade-in">
+          <MessageBarBody>{submitError}</MessageBarBody>
+        </MessageBar>
+      )}
+
+      <Button
+        appearance="primary"
+        size="large"
+        className={styles.fullWidth}
+        disabled={inputText.trim().length < 10}
+        icon={
+          classifyCache.current.has(inputText.trim()) ? (
+            <Sparkle16Regular />
+          ) : (
+            <ChevronRight20Regular />
+          )
+        }
+        onClick={handleContinue}
+      >
+        {classifyCache.current.has(inputText.trim()) ? "Ready — Continue" : "Continue"}
+      </Button>
+    </>
+  );
+
   // The card sits in a pinned region during the "input" step so the focused
   // textarea has no scrollable ancestor (keyboard-safe). Longer follow-up /
   // confirm steps move into the single scroll region.
   const cardEl = (
     <Card className={`${styles.card} animate-fade-in-up`}>
-          {step === "input" && (
-            <div className={`${styles.group} animate-fade-in`}>
-              <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
-                Describe what you saw, a near miss, or an improvement idea.
-              </Text>
-              <div className={styles.textareaWrap}>
-                <Textarea
-                  textarea={{ ref: mainInputRef, rows: 4 }}
-                  placeholder={EXAMPLES[exampleIdx]}
-                  value={inputText}
-                  onChange={(_, data) => handleTextChange(data.value)}
-                  resize="none"
-                  size="large"
-                />
-                {prefetching && (
-                  <div className={`${styles.prefetch} animate-fade-in`}>
-                    <Sparkle16Regular className="animate-pulse" />
-                    reading…
-                  </div>
-                )}
-              </div>
-              {inputText.trim().length >= 10 && inputText.trim().length < 20 && (
-                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                  Keep typing — a bit more detail helps…
-                </Text>
-              )}
-              {submitError && (
-                <MessageBar intent="error" className="animate-fade-in">
-                  <MessageBarBody>{submitError}</MessageBarBody>
-                </MessageBar>
-              )}
-              <Button
-                appearance="primary"
-                size="large"
-                className={styles.fullWidth}
-                disabled={inputText.trim().length < 10}
-                icon={
-                  classifyCache.current.has(inputText.trim()) ? (
-                    <Sparkle16Regular />
-                  ) : (
-                    <ChevronRight20Regular />
-                  )
-                }
-                onClick={handleContinue}
-              >
-                {classifyCache.current.has(inputText.trim()) ? "Ready — Continue" : "Continue"}
-              </Button>
-            </div>
-          )}
-
           {step === "classifying" && <ClassifyingSkeleton />}
 
           {step === "followup" && classifyResult && meta && (
@@ -721,18 +742,8 @@ export default function SubmitTab() {
 
   return (
     <TeamsPage>
-      {userName && (
-        <TeamsPinned className={styles.greeting}>
-          <Text as="h1" size={600} weight="bold" block>
-            Hi {userName.split(" ")[0]} <span style={{ marginLeft: "2px" }}>👋</span>
-          </Text>
-          <Text size={300} block style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalS }}>
-            Small ideas. Continuous improvement.
-          </Text>
-        </TeamsPinned>
-      )}
       {step === "input" ? (
-        <TeamsPinned className={styles.bodyPad}>{cardEl}</TeamsPinned>
+        <TeamsPinned className={styles.inputStack}>{inputEl}</TeamsPinned>
       ) : (
         <TeamsScroll className={styles.bodyPad}>{cardEl}</TeamsScroll>
       )}
