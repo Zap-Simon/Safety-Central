@@ -66,7 +66,9 @@ type SubmitStep =
 
 // The Submit flow persists to localStorage so an in-progress report survives a
 // tab switch (Teams remounts the tab) or the app being closed and reopened.
-const DRAFT_KEY = "cranfield.submit.draft.v1";
+// Bump the version suffix whenever the draft shape changes so stale drafts from
+// an older build can never restore into a broken render.
+const DRAFT_KEY = "cranfield.submit.draft.v2";
 
 interface SubmitDraft {
   step: SubmitStep;
@@ -76,7 +78,40 @@ interface SubmitDraft {
   submittedCategory: string;
 }
 
-const STABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm", "done"];
+// Only the "input" step can be resumed from a raw text draft; "followup"/"confirm"
+// additionally require a fully-formed classification (see isValidClassifyResult).
+const RESUMABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm"];
+
+const VALID_CATEGORIES: Category[] = [
+  "Near Miss",
+  "Safety Observation",
+  "Improvement Idea",
+  "Business Improvement",
+  "Supply Request",
+  "Meeting Agenda Item",
+  "Other",
+];
+const VALID_LIST_TARGETS: ListTarget[] = ["near-miss", "safety-ideas", "business-ideas"];
+
+// A restored classification is only safe to render in stage 2 if every field the
+// confirm/followup UI reads is present and the right type. A draft from an older
+// build (e.g. missing followUpQuestions, or an unknown category) would otherwise
+// crash `.map(...)` / leave `meta` undefined and blank the tab.
+function isValidClassifyResult(r: any): r is ClassifyResult {
+  return (
+    !!r &&
+    typeof r === "object" &&
+    VALID_CATEGORIES.includes(r.category) &&
+    VALID_LIST_TARGETS.includes(r.listTarget) &&
+    typeof r.confidence === "number" &&
+    Array.isArray(r.followUpQuestions)
+  );
+}
+
+// A clean text-only draft: keep what the user typed but start stage 1 fresh.
+function inputOnlyDraft(inputText: string): SubmitDraft {
+  return { step: "input", inputText, classifyResult: null, followUpAnswers: [], submittedCategory: "" };
+}
 
 function loadDraft(): SubmitDraft | null {
   try {
@@ -88,17 +123,24 @@ function loadDraft(): SubmitDraft | null {
     // so drop back to the nearest stable step the user can act on.
     if (d.step === "classifying") d.step = "input";
     if (d.step === "submitting") d.step = d.classifyResult ? "confirm" : "input";
-    // Guard against a corrupted/unknown step landing on a non-rendered branch,
-    // and against confirm/followup steps with no classification to act on.
-    if (!STABLE_STEPS.includes(d.step)) return null;
-    if ((d.step === "confirm" || d.step === "followup") && !d.classifyResult) return null;
-    return {
-      step: d.step,
-      inputText: d.inputText,
-      classifyResult: d.classifyResult ?? null,
-      followUpAnswers: Array.isArray(d.followUpAnswers) ? d.followUpAnswers : [],
-      submittedCategory: typeof d.submittedCategory === "string" ? d.submittedCategory : "",
-    };
+    // A completed submission shouldn't reopen — start fresh next time.
+    if (d.step === "done") return null;
+    // Unknown/corrupted step: don't try to render it.
+    if (!RESUMABLE_STEPS.includes(d.step)) return null;
+    // Stage 2 needs a valid classification. If it's missing or from an older
+    // shape, fall back to stage 1 so the user keeps their text instead of a
+    // blank, stuck card.
+    if (d.step === "confirm" || d.step === "followup") {
+      if (!isValidClassifyResult(d.classifyResult)) return inputOnlyDraft(d.inputText);
+      return {
+        step: d.step,
+        inputText: d.inputText,
+        classifyResult: d.classifyResult,
+        followUpAnswers: Array.isArray(d.followUpAnswers) ? d.followUpAnswers : [],
+        submittedCategory: typeof d.submittedCategory === "string" ? d.submittedCategory : "",
+      };
+    }
+    return inputOnlyDraft(d.inputText);
   } catch {
     return null;
   }
@@ -365,12 +407,15 @@ export default function SubmitTab() {
       });
       const data = await resp.json();
       if (!data.success) throw new Error(data.error || "Classification failed");
+      // Normalise the response so the stage-2 UI is always safe to render: an
+      // unknown category would leave `meta` undefined (blank card) and a non-array
+      // followUpQuestions would crash `.map(...)`.
       const result: ClassifyResult = {
-        category: data.category,
-        listTarget: data.listTarget,
-        confidence: data.confidence,
-        reasoning: data.reasoning,
-        followUpQuestions: data.followUpQuestions || [],
+        category: VALID_CATEGORIES.includes(data.category) ? data.category : "Other",
+        listTarget: VALID_LIST_TARGETS.includes(data.listTarget) ? data.listTarget : "business-ideas",
+        confidence: typeof data.confidence === "number" ? data.confidence : 0,
+        reasoning: typeof data.reasoning === "string" ? data.reasoning : "",
+        followUpQuestions: Array.isArray(data.followUpQuestions) ? data.followUpQuestions : [],
       };
       classifyCache.current.set(key, result);
       classifyInFlight.current.delete(key);
