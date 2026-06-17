@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, Users, Phone, Mail, CheckCircle, AlertCircle, Building, Shield } from "lucide-react";
 import { CSCWorkflow, CSC_WORKFLOW_MODULES } from "@shared/schema";
