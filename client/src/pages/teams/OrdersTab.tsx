@@ -52,7 +52,7 @@ const useStyles = makeStyles({
     borderBottomStyle: "solid",
     borderBottomColor: tokens.colorNeutralStroke2,
   },
-  input: { flexGrow: 1 },
+  input: { flexGrow: 1, minWidth: 0 },
   clearRow: {
     display: "flex",
     justifyContent: "flex-end",
