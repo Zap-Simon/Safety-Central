@@ -30,6 +30,7 @@ import {
 } from "@fluentui/react-icons";
 import {
   TeamsPage,
+  TeamsPinned,
   TeamsScroll,
   TeamsCenter,
   TeamsFullScreen,
@@ -239,7 +240,7 @@ const useStyles = makeStyles({
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
     paddingTop: tokens.spacingVerticalM,
-    paddingBottom: tokens.spacingVerticalXXXL,
+    paddingBottom: tokens.spacingVerticalL,
   },
   helper: {
     display: "flex",
@@ -653,11 +654,9 @@ export default function SubmitTab() {
     </>
   );
 
-  // Every step (including "input") lives in the single scroll region. Android's
-  // on-screen keyboard shrinks the visual viewport; if the input step were pinned
-  // (non-scrolling) the Continue button below the textarea would sit under the
-  // keyboard with no way to reach it. A scroll region lets the user scroll the
-  // button into view, and the extra bottom padding keeps it clear of the keyboard.
+  // The card sits in a pinned region during the "input" step so the focused
+  // textarea has no scrollable ancestor (keyboard-safe). Longer follow-up /
+  // confirm steps move into the single scroll region.
   const cardEl = (
     <Card className={`${styles.card} animate-fade-in-up`}>
           {step === "classifying" && <ClassifyingSkeleton />}
@@ -808,7 +807,7 @@ export default function SubmitTab() {
   return (
     <TeamsPage>
       {step === "input" ? (
-        <TeamsScroll className={styles.inputStack}>{inputEl}</TeamsScroll>
+        <TeamsPinned className={styles.inputStack}>{inputEl}</TeamsPinned>
       ) : (
         <TeamsScroll className={styles.bodyPad}>{cardEl}</TeamsScroll>
       )}

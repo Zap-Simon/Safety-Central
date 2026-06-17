@@ -362,6 +362,16 @@ html, body {
   background-color: #ffffff;
 }
 
+/* Render at the app's designed text sizes regardless of the device's system
+   font-size / display-size setting. Without this, some Android devices (and the
+   Teams mobile WebView) multiply every font size by the user's accessibility
+   font scale, making the whole UI look oversized on those phones only. */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body::after {
   content: '';
   position: fixed;
