@@ -3,7 +3,6 @@ import {
   Button,
   Textarea,
   Card,
-  Badge,
   Spinner,
   ProgressBar,
   Text,
@@ -672,14 +671,6 @@ export default function SubmitTab() {
                   <Text weight="semibold" size={300} style={{ color: meta.fg }}>
                     {classifyResult.category}
                   </Text>
-                  <Badge
-                    appearance="tint"
-                    color="informative"
-                    shape="rounded"
-                    style={{ marginLeft: "auto" }}
-                  >
-                    {Math.round(classifyResult.confidence * 100)}% sure
-                  </Badge>
                 </div>
                 <Text size={200} style={{ color: tokens.colorNeutralForeground3, marginTop: tokens.spacingVerticalXS, display: "block" }}>
                   A couple of quick questions will help us record this accurately.
