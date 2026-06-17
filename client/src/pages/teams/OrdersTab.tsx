@@ -347,7 +347,7 @@ export default function OrdersTab() {
                   Clear list
                 </Button>
               </DialogTrigger>
-              <DialogSurface style={{ maxWidth: "min(400px, calc(100vw - 48px))", margin: "0 24px" }}>
+              <DialogSurface style={{ maxWidth: "min(400px, calc(100vw - 48px))" }}>
                 <DialogBody>
                   <DialogTitle>Clear the whole order list?</DialogTitle>
                   <DialogContent>
