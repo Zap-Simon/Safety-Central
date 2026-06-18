@@ -129,6 +129,9 @@ export default function MeetingHistory() {
   const [editingNotesItem, setEditingNotesItem] = useState<MeetingItem | null>(null);
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
   const [isEnhancingNotes, setIsEnhancingNotes] = useState<boolean>(false);
+  const [closeOutcomeItem, setCloseOutcomeItem] = useState<MeetingItem | null>(null);
+  const [closeOutcomeText, setCloseOutcomeText] = useState<string>('');
+  const [isClosingWithOutcome, setIsClosingWithOutcome] = useState<boolean>(false);
   
   const [newIdeaForm, setNewIdeaForm] = useState({
     type: 'Business Ideas' as 'Business Ideas' | 'Safety Ideas',
@@ -473,14 +476,55 @@ export default function MeetingHistory() {
             return newSet;
           });
         }, 2000);
+        return true;
       } else {
         showError('Update Failed', result.error || 'Failed to update action details');
+        return false;
       }
     } catch (error) {
       console.error('Error updating action fields:', error);
       showError('Update Failed', 'Failed to update action details');
+      return false;
     } finally {
       setIsUpdatingAction('');
+    }
+  };
+
+  // When closing an item that has no recorded action/outcome, prompt for it so the
+  // minutes export has something to show. The fields checked here mirror exactly the
+  // ones the export's "Action Required" column renders (assignedTo/status/due/notes),
+  // so the prompt fires precisely when the export would otherwise read
+  // "Discussed and closed — no action required". Items currently in the Actioned
+  // step keep their captured action and skip the prompt.
+  const itemHasActionData = (item: MeetingItem) =>
+    !!(item.actionStatus || item.actionAssignedTo || item.actionDueDate || item.actionNotes);
+
+  const requestStatusChange = (item: MeetingItem, newStatus: string) => {
+    if (newStatus === 'Closed' && item.status !== 'Actioned' && !itemHasActionData(item)) {
+      setCloseOutcomeItem(item);
+      setCloseOutcomeText('');
+    } else {
+      updateItemStatus(item, newStatus);
+    }
+  };
+
+  const confirmCloseWithOutcome = async () => {
+    if (!closeOutcomeItem) return;
+    const item = closeOutcomeItem;
+    const outcome = closeOutcomeText.trim();
+    setIsClosingWithOutcome(true);
+    try {
+      // If recording the outcome fails, keep the dialog open and do NOT close the
+      // item — otherwise we'd close it while losing what was actioned.
+      if (outcome) {
+        const saved = await updateActionFields(item, { actionNotes: outcome });
+        if (!saved) return;
+      }
+      await updateItemStatus(item, 'Closed');
+      setCloseOutcomeItem(null);
+      setCloseOutcomeText('');
+    } finally {
+      setIsClosingWithOutcome(false);
     }
   };
 
@@ -2818,7 +2862,7 @@ export default function MeetingHistory() {
                                                 <label className="text-xs text-gray-600 font-medium">Status:</label>
                                                 <select
                                                   value={item.status}
-                                                  onChange={(e) => updateItemStatus(item, e.target.value)}
+                                                  onChange={(e) => requestStatusChange(item, e.target.value)}
                                                   disabled={isUpdatingStatus === item.id}
                                                   className="text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white hover:bg-gray-50 transition-colors min-w-0 flex-1 sm:flex-none sm:min-w-[120px]"
                                                   title="Update status"
@@ -4404,12 +4448,13 @@ export default function MeetingHistory() {
                             key={status}
                             onClick={() => {
                               if (editingNotesItem) {
-                                updateMeetingNotes(editingNotesItem, editingMeetingNotes);
-                                updateItemStatus(editingNotesItem, status);
+                                const target = editingNotesItem;
+                                updateMeetingNotes(target, editingMeetingNotes);
                                 setShowNotesModal(false);
                                 setEditingNotesItem(null);
                                 setEditingMeetingNotes('');
                                 setShowSaveDropdown(false);
+                                requestStatusChange(target, status);
                               }
                             }}
                             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors text-left"
@@ -4422,6 +4467,55 @@ export default function MeetingHistory() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Close Item — capture outcome when closing directly (no Actioned step) */}
+        <Dialog open={!!closeOutcomeItem} onOpenChange={(open) => { if (!open) { setCloseOutcomeItem(null); setCloseOutcomeText(''); } }}>
+          <DialogContent className="w-[95vw] max-w-lg mx-auto my-4" aria-describedby="close-outcome-description">
+            <DialogHeader className="pb-3">
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <i className="fas fa-lock text-gray-500"></i>
+                Close item
+              </DialogTitle>
+              <div id="close-outcome-description" className="sr-only">Record what was actioned before closing</div>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                  What was actioned / what was the outcome?
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  This item is being closed without going through the Actioned step. Record what was decided or done so it shows in the meeting minutes export. Leave blank to record "Discussed and closed — no action required".
+                </p>
+                <textarea
+                  value={closeOutcomeText}
+                  onChange={(e) => setCloseOutcomeText(e.target.value)}
+                  placeholder="e.g. Discussed as a team; agreed to scope external access on future jobs."
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-3 sm:py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                  data-testid="textarea-close-outcome"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 min-h-[44px] touch-manipulation"
+                  onClick={() => { setCloseOutcomeItem(null); setCloseOutcomeText(''); }}
+                  disabled={isClosingWithOutcome}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 min-h-[44px] touch-manipulation bg-gray-700 hover:bg-gray-800 text-white"
+                  onClick={confirmCloseWithOutcome}
+                  disabled={isClosingWithOutcome}
+                  data-testid="button-confirm-close-outcome"
+                >
+                  {isClosingWithOutcome ? 'Closing…' : 'Close item'}
+                </Button>
               </div>
             </div>
           </DialogContent>

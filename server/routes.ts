@@ -1674,13 +1674,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Remove fake HSO action text - we don't have an HSO
         const hsoAction = '';
         
-        // Follow-up requirements
+        // Action Required — sourced strictly from the real actioned system (no boilerplate)
         let followUp = '';
-        if (item.assignedTo) {
-          followUp = `Assigned to: ${item.assignedTo}`;
-        }
-        if (item.actionStartDate) {
-          followUp += followUp ? ` | Start Date: ${item.actionStartDate}` : `Start Date: ${item.actionStartDate}`;
+        const isClosed = item.status === 'Closed';
+        const hasActionData = item.actionAssignedTo || item.actionStatus || item.actionDueDate || item.actionNotes;
+        if (hasActionData) {
+          const parts: string[] = [];
+          if (item.actionAssignedTo) parts.push(`Assigned to: ${item.actionAssignedTo}`);
+          if (item.actionStatus) parts.push(`Status: ${item.actionStatus}`);
+          if (item.actionDueDate) parts.push(`Due: ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}`);
+          if (item.actionNotes) parts.push(`${isClosed ? 'Outcome' : 'Action'}: ${item.actionNotes}`);
+          followUp = parts.join(' | ');
+        } else if (isClosed) {
+          followUp = 'Discussed and closed — no action required.';
         }
         
         return [
@@ -5232,33 +5238,38 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 25%;">Agenda Item</th>
-                <th style="width: 35%;">Discussion Notes</th>
-                <th style="width: 40%;">Action Required</th>
+                <th style="width: 40%;">Agenda Item</th>
+                <th style="width: 30%;">Discussion Notes</th>
+                <th style="width: 30%;">Action Required</th>
             </tr>
         </thead>
         <tbody>
             ${filteredData.map(item => {
               const typeColor = typeColors[item.type as keyof typeof typeColors] || '#6b7280';
-              
-              let discussionNotes = item.description || '';
+
+              // The original submission IS the agenda item (sent from the Teams tab,
+              // synced from SharePoint). It belongs next to the title, not in the
+              // meeting discussion column.
+              let submissionText = item.description || '';
               if (item.secondaryDescription) {
-                discussionNotes += discussionNotes ? `\n\nHow it happened: ${item.secondaryDescription}` : item.secondaryDescription;
+                submissionText += submissionText ? `\n\nHow it happened: ${item.secondaryDescription}` : item.secondaryDescription;
               }
-              
+
+              const meetingDiscussion = (item.meetingNotes || '').trim();
+
               return `
                 <tr>
                     <td>
                         <div class="type-badge" style="background-color: ${typeColor};">${item.type}</div>
                         <div class="agenda-item">${item.title || `${item.type} Item`}</div>
+                        ${submissionText ? `<div class="discussion-notes">${submissionText}</div>` : ''}
                         <div class="follow-up">
                             <strong>Submitted by:</strong> ${item.submittedBy || 'Unknown'}<br>
                             <strong>Status:</strong> ${item.status || 'Submitted'}
                         </div>
                     </td>
                     <td>
-                        <div class="discussion-notes">${discussionNotes}</div>
-                        ${item.meetingNotes ? `<div class="meeting-notes"><strong>Meeting Discussion:</strong> ${item.meetingNotes}</div>` : ''}
+                        ${meetingDiscussion ? `<div class="discussion-notes">${meetingDiscussion}</div>` : '<div class="follow-up">—</div>'}
                     </td>
                     <td>
                         ${generateActionRequiredSection(item)}
@@ -5347,98 +5358,44 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
   return htmlContent;
 }
 
-// Generate action required section with improved logic instead of generic text
+// Generate the "Action Required" column strictly from the real actioned system.
+// No fabricated/boilerplate text — only what was actually recorded.
 function generateActionRequiredSection(item: any): string {
-  let actionHtml = '';
-  
-  // Check for embedded action data first
-  if (item.actionAssignedTo || item.actionStatus || item.actionNotes) {
+  const isClosed = item.status === 'Closed';
+  const hasActionData = !!(item.actionAssignedTo || item.actionStatus || item.actionDueDate || item.actionNotes);
+
+  if (hasActionData) {
+    let actionHtml = '';
+
     if (item.actionAssignedTo) {
       actionHtml += `<div class="follow-up"><strong>Assigned to:</strong> ${item.actionAssignedTo}</div>`;
     }
-    
+
     if (item.actionStatus) {
       actionHtml += `<div class="follow-up"><strong>Status:</strong> ${item.actionStatus}</div>`;
     }
-    
+
     if (item.actionDueDate) {
       actionHtml += `<div class="follow-up"><strong>Due:</strong> ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}</div>`;
     }
-    
+
     if (item.actionNotes) {
-      actionHtml += `<div class="follow-up"><strong>Notes:</strong> ${item.actionNotes}</div>`;
+      // For a closed item the action notes capture what was done / the outcome;
+      // for an in-flight item they describe the action still to do.
+      const notesLabel = isClosed ? 'Outcome' : 'Action';
+      actionHtml += `<div class="follow-up"><strong>${notesLabel}:</strong> ${item.actionNotes}</div>`;
     }
-    
-    return actionHtml || '<div class="follow-up">Action details to be updated.</div>';
-  }
-  
-  // If there are actual meeting notes, use them as the action/decision
-  if (item.meetingNotes && item.meetingNotes.trim() && item.meetingNotes.trim() !== '') {
-    actionHtml += `<div class="follow-up"><strong>Decision:</strong> ${item.meetingNotes}</div>`;
-    
-    // Add assignment if available
-    if (item.assignedTo) {
-      actionHtml += `<div class="follow-up"><strong>Assigned to:</strong> ${item.assignedTo}</div>`;
-    }
-    
+
     return actionHtml;
   }
 
-  // If assigned to someone specific, provide personalized action
-  if (item.assignedTo) {
-    actionHtml += `<div class="follow-up"><strong>Assigned to:</strong> ${item.assignedTo}</div>`;
-    const actionText = item.status === 'Actioned' ? 'implement and report back' : 'review and assess feasibility';
-    actionHtml += `<div class="follow-up"><strong>Action:</strong> ${actionText} by next meeting</div>`;
-    return actionHtml;
+  // Discussed and closed on the spot with no follow-up action recorded.
+  if (isClosed) {
+    return '<div class="follow-up">Discussed and closed — no action required.</div>';
   }
-  
-  // Generate appropriate action based on type and status (no generic "Monitor progress")
-  switch (item.type) {
-    case 'Near Miss':
-      if (item.status === 'Closed') {
-        actionHtml = '<div class="follow-up"><strong>Status:</strong> Incident reviewed, preventive measures implemented, risk register updated.</div>';
-      } else if (item.status === 'Actioned') {
-        actionHtml = '<div class="follow-up"><strong>Action:</strong> HSC implementing preventive measures and updating documentation.</div>';
-      } else {
-        actionHtml = '<div class="follow-up"><strong>Required:</strong> HSC to review incident details and implement preventive measures.</div>';
-      }
-      break;
-    case 'Safety Ideas':
-      if (item.status === 'Closed') {
-        actionHtml = '<div class="follow-up"><strong>Status:</strong> Safety improvement evaluated and implementation decision made.</div>';
-      } else if (item.status === 'Actioned') {
-        actionHtml = '<div class="follow-up"><strong>Action:</strong> HSC assessing implementation feasibility and resource requirements.</div>';
-      } else {
-        actionHtml = '<div class="follow-up"><strong>Required:</strong> Pending review by Health & Safety Coordinator for feasibility assessment.</div>';
-      }
-      break;
-    case 'Business Ideas':
-      if (item.status === 'Closed') {
-        actionHtml = '<div class="follow-up"><strong>Status:</strong> Business case evaluated and implementation decision finalized.</div>';
-      } else if (item.status === 'Actioned') {
-        actionHtml = '<div class="follow-up"><strong>Action:</strong> Management evaluating business case and implementation timeline.</div>';
-      } else {
-        actionHtml = '<div class="follow-up"><strong>Required:</strong> Pending management review for business case evaluation.</div>';
-      }
-      break;
-    case 'Actions':
-      if (item.status === 'Closed') {
-        actionHtml = '<div class="follow-up"><strong>Status:</strong> Action completed and verified by responsible person.</div>';
-      } else if (item.status === 'In Progress') {
-        actionHtml = '<div class="follow-up"><strong>Action:</strong> Action in progress, monitoring completion status.</div>';
-      } else {
-        actionHtml = '<div class="follow-up"><strong>Required:</strong> Action item pending assignment and commencement.</div>';
-      }
-      break;
-    default:
-      actionHtml = '<div class="follow-up"><strong>Required:</strong> Item requires review to determine appropriate action plan.</div>';
-  }
-  
-  if (item.actionStartDate) {
-    actionHtml += `<div class="follow-up"><strong>Start Date:</strong> ${item.actionStartDate}</div>`;
-  }
-  
-  return actionHtml;
+
+  // Still open / in discussion with no action captured yet.
+  return '<div class="follow-up">—</div>';
 }
 
 // Generate attendance section with UI synchronization
