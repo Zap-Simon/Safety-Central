@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
-import { parseSharePointDate, formatDisplayDate, getDateGroupKey, isSameDay, getMeetingStatus } from "@shared/dateUtils";
+import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
 import { predictiveText } from "@/lib/predictiveText";
 import { InlineTextarea } from "@/components/ui/inline-textarea";
 import { format } from "date-fns";
@@ -2514,7 +2514,11 @@ export default function MeetingHistory() {
                             {formatDate(date)}
                           </span>
                           <span className="ml-2 text-xs text-gray-500">
-                            ({meetingItems.filter(item => isSameDay(item.meetingDate, date)).length})
+                            {/* Count using the SAME date-group key the meeting view and the
+                                server export use (UTC day key). isSameDay() compares in the
+                                browser's LOCAL timezone, which dropped Safety/Near Miss items
+                                whose calculated meeting date crossed the UTC/local day boundary. */}
+                            ({meetingItems.filter(item => getDateGroupKey(item.meetingDate) === getDateGroupKey(date)).length})
                           </span>
                         </div>
                       </label>
