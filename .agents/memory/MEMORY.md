@@ -9,4 +9,5 @@
 - [Teams tabs share one auth provider](teams-shared-auth-provider.md) — run Teams SSO once in a provider above the tab routes; per-tab initAuth flashes the sign-in loader on every tab switch since tabs remount.
 - [Orders admin authorization](orders-admin-allowlist.md) — order-admin gate is an ORDER_ADMINS email/name allowlist (not staff role); prefer email (display names are mutable); remove/clear are soft-archive.
 - [Persisting Teams tab state across remounts](teams-tab-state-persistence.md) — tabs remount on switch/close, wiping useState; persist multi-step form drafts to localStorage, skip/normalise transient in-flight steps.
+- [Meeting export formats lockstep](meeting-export-lockstep.md) — HTML/CSV/Markdown/Word minutes share action-column + submission semantics via meeting-export-shared.ts; no fabricated boilerplate.
 - [Teams swipe-to-delete (framer-motion)](teams-swipe-to-delete.md) — admin order cards delete via left-swipe; Fluent v9 has no swipe primitive; need dragDirectionLock + touchAction pan-y or vertical scroll breaks.

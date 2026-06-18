@@ -1,6 +1,7 @@
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, BorderStyle, WidthType, HeadingLevel, AlignmentType } from "docx";
+import { buildActionRequiredLines, isEmptyActionPlaceholder, type ActionLine } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -14,6 +15,13 @@ interface MeetingItem {
   submittedDate: string;
   ideaType?: string;
   assignedTo?: string;
+  secondaryDescription?: string;
+  actionAssignedTo?: string;
+  actionStatus?: string;
+  actionPriority?: string;
+  actionStartDate?: string;
+  actionDueDate?: string;
+  actionNotes?: string;
 }
 
 interface AttendanceData {
@@ -36,6 +44,8 @@ interface TemplateData {
     submittedDate: string;
     ideaType?: string;
     meetingNotes: string;
+    secondaryDescription?: string;
+    actionLines: ActionLine[];
   }>;
   managementTeam: Array<{
     name: string;
@@ -144,7 +154,9 @@ export class AdvancedWordTemplateEngine {
       submittedBy: item.submittedBy || 'Unknown',
       submittedDate: new Date(item.submittedDate).toLocaleDateString('en-GB'),
       ideaType: item.ideaType,
-      meetingNotes: item.meetingNotes || 'No notes recorded'
+      meetingNotes: item.meetingNotes || 'No notes recorded',
+      secondaryDescription: item.secondaryDescription || '',
+      actionLines: buildActionRequiredLines(item)
     }));
 
     // Count items by type
@@ -432,8 +444,27 @@ export class AdvancedWordTemplateEngine {
                         size: 20, // 10pt
                         color: "4B5563"
                       })],
-                      spacing: { after: item.meetingNotes ? 120 : 0 }
+                      spacing: { after: 0 }
                     }),
+                    // "How it happened" follow-up belongs to the agenda submission
+                    ...(item.secondaryDescription ? [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "How it happened: ",
+                            bold: true,
+                            size: 20, // 10pt
+                            color: "374151"
+                          }),
+                          new TextRun({
+                            text: item.secondaryDescription,
+                            size: 20, // 10pt
+                            color: "4B5563"
+                          })
+                        ],
+                        spacing: { before: 60 }
+                      })
+                    ] : []),
                     // Add meeting notes if present
                     ...(item.meetingNotes && item.meetingNotes !== 'No notes recorded' ? [
                       new Paragraph({
@@ -453,6 +484,35 @@ export class AdvancedWordTemplateEngine {
                         ],
                         spacing: { before: 80 }
                       })
+                    ] : []),
+                    // Action Required — shared, compliant action lines (omit empty placeholder)
+                    ...(!isEmptyActionPlaceholder(item.actionLines) ? [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Action Required:",
+                            bold: true,
+                            size: 20, // 10pt
+                            color: "374151"
+                          })
+                        ],
+                        spacing: { before: 80 }
+                      }),
+                      ...item.actionLines.map(line => new Paragraph({
+                        children: [
+                          ...(line.label ? [new TextRun({
+                            text: `${line.label}: `,
+                            bold: true,
+                            size: 18, // 9pt
+                            color: "374151"
+                          })] : []),
+                          new TextRun({
+                            text: line.value,
+                            size: 18, // 9pt
+                            color: "4B5563"
+                          })
+                        ]
+                      }))
                     ] : [])
                   ],
                   shading: { fill: index % 2 === 0 ? "F8FAFC" : "FFFFFF" },

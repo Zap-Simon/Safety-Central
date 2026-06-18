@@ -6,6 +6,7 @@ import { resolveDownstreamToken, AuthError } from "./teams-obo-auth";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
+import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText } from "./meeting-export-shared";
 import { db } from "./db";
 import { 
   cardOrdering, 
@@ -1644,12 +1645,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       // Professional Meeting Minutes CSV format matching Word template
+      // Column setup matches the HTML/PDF minutes exactly:
+      //   Agenda Item        = item title
+      //   Submission Details = original submission (description + how it happened)
+      //   Discussion Notes   = the actual meeting notes only
+      //   Action Required    = real actioned-system fields only (no boilerplate)
       const csvHeaders = [
         'Agenda Item',
+        'Submission Details',
         'Discussion Notes',
-        'Meeting Notes',
-        'HSO Action',
-        'Follow-up Required',
+        'Action Required',
         'Type',
         'Status',
         'Submitted By',
@@ -1659,42 +1664,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       const csvRows = filteredData.map((item: any) => {
-        // Format agenda item title professionally
+        // Agenda Item = title
         const agendaItem = item.title || `${item.type} Item`;
         
-        // Discussion Notes = the actual idea/description content
-        let discussionNotes = item.description || '';
-        if (item.secondaryDescription) {
-          discussionNotes += discussionNotes ? `\n\nHow it happened: ${item.secondaryDescription}` : item.secondaryDescription;
-        }
+        // Submission Details = the original submission (description + how it happened)
+        const submissionDetails = buildAgendaSubmissionText(item);
         
-        // Meeting Notes = actual meeting notes from SharePoint
+        // Discussion Notes = actual meeting notes from SharePoint
         const meetingNotes = item.meetingNotes || '';
         
-        // Remove fake HSO action text - we don't have an HSO
-        const hsoAction = '';
-        
         // Action Required — sourced strictly from the real actioned system (no boilerplate)
-        let followUp = '';
-        const isClosed = item.status === 'Closed';
-        const hasActionData = item.actionAssignedTo || item.actionStatus || item.actionDueDate || item.actionNotes;
-        if (hasActionData) {
-          const parts: string[] = [];
-          if (item.actionAssignedTo) parts.push(`Assigned to: ${item.actionAssignedTo}`);
-          if (item.actionStatus) parts.push(`Status: ${item.actionStatus}`);
-          if (item.actionDueDate) parts.push(`Due: ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}`);
-          if (item.actionNotes) parts.push(`${isClosed ? 'Outcome' : 'Action'}: ${item.actionNotes}`);
-          followUp = parts.join(' | ');
-        } else if (isClosed) {
-          followUp = 'Discussed and closed — no action required.';
-        }
+        const actionRequired = actionRequiredPlainText(item);
         
         return [
           `"${agendaItem.replace(/"/g, '""')}"`,
-          `"${discussionNotes.replace(/"/g, '""')}"`,
+          `"${submissionDetails.replace(/"/g, '""')}"`,
           `"${meetingNotes.replace(/"/g, '""')}"`,
-          `"${hsoAction.replace(/"/g, '""')}"`,
-          `"${followUp.replace(/"/g, '""')}"`,
+          `"${actionRequired.replace(/"/g, '""')}"`,
           item.type || '',
           item.status || '',
           item.submittedBy || '',
@@ -4847,7 +4833,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <style>
         @page {
             size: A4;
-            margin: 1.5cm 1.2cm 1.6cm 1.2cm;
+            margin: 1cm 0.7cm 1.3cm 0.7cm;
             @bottom-center {
                 content: "Cranfield Glass Christchurch  |  Health & Safety Meeting Minutes";
                 font-family: Arial, sans-serif;
@@ -4989,18 +4975,18 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         
         .items-table th {
             background-color: #f8f9fa;
-            padding: 12px;
+            padding: 12px 14px;
             text-align: left;
             font-weight: bold;
             border: 1px solid #dee2e6;
-            font-size: 10pt;
+            font-size: 11pt;
         }
         
         .items-table td {
-            padding: 12px;
+            padding: 12px 14px;
             border: 1px solid #dee2e6;
             vertical-align: top;
-            font-size: 10pt;
+            font-size: 11pt;
         }
         
         .type-badge {
@@ -5039,7 +5025,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         }
         
         .follow-up {
-            font-size: 9pt;
+            font-size: 10.5pt;
             color: #666;
         }
         
@@ -5192,8 +5178,9 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         }
 
         @media print {
-            body { font-size: 10pt; }
-            .items-table th, .items-table td { font-size: 9pt; }
+            body { font-size: 11pt; }
+            .items-table th, .items-table td { font-size: 10.5pt; }
+            .follow-up { font-size: 10pt; }
             .analytics-dashboard { break-inside: avoid; }
             .analytics-breakdowns { grid-template-columns: repeat(3, 1fr); }
         }
@@ -5250,10 +5237,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
               // The original submission IS the agenda item (sent from the Teams tab,
               // synced from SharePoint). It belongs next to the title, not in the
               // meeting discussion column.
-              let submissionText = item.description || '';
-              if (item.secondaryDescription) {
-                submissionText += submissionText ? `\n\nHow it happened: ${item.secondaryDescription}` : item.secondaryDescription;
-              }
+              const submissionText = buildAgendaSubmissionText(item);
 
               const meetingDiscussion = (item.meetingNotes || '').trim();
 
@@ -5359,43 +5343,15 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
 }
 
 // Generate the "Action Required" column strictly from the real actioned system.
-// No fabricated/boilerplate text — only what was actually recorded.
+// Rendering is shared with every other export format via buildActionRequiredLines.
 function generateActionRequiredSection(item: any): string {
-  const isClosed = item.status === 'Closed';
-  const hasActionData = !!(item.actionAssignedTo || item.actionStatus || item.actionDueDate || item.actionNotes);
-
-  if (hasActionData) {
-    let actionHtml = '';
-
-    if (item.actionAssignedTo) {
-      actionHtml += `<div class="follow-up"><strong>Assigned to:</strong> ${item.actionAssignedTo}</div>`;
-    }
-
-    if (item.actionStatus) {
-      actionHtml += `<div class="follow-up"><strong>Status:</strong> ${item.actionStatus}</div>`;
-    }
-
-    if (item.actionDueDate) {
-      actionHtml += `<div class="follow-up"><strong>Due:</strong> ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}</div>`;
-    }
-
-    if (item.actionNotes) {
-      // For a closed item the action notes capture what was done / the outcome;
-      // for an in-flight item they describe the action still to do.
-      const notesLabel = isClosed ? 'Outcome' : 'Action';
-      actionHtml += `<div class="follow-up"><strong>${notesLabel}:</strong> ${item.actionNotes}</div>`;
-    }
-
-    return actionHtml;
-  }
-
-  // Discussed and closed on the spot with no follow-up action recorded.
-  if (isClosed) {
-    return '<div class="follow-up">Discussed and closed — no action required.</div>';
-  }
-
-  // Still open / in discussion with no action captured yet.
-  return '<div class="follow-up">—</div>';
+  return buildActionRequiredLines(item)
+    .map((line) =>
+      line.label
+        ? `<div class="follow-up"><strong>${line.label}:</strong> ${line.value}</div>`
+        : `<div class="follow-up">${line.value}</div>`
+    )
+    .join('');
 }
 
 // Generate attendance section with UI synchronization

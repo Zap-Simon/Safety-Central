@@ -5,6 +5,8 @@
  * for PDF export with navigation bookmarks (similar to Typora approach)
  */
 
+import { buildActionRequiredLines } from "./meeting-export-shared";
+
 interface MeetingItem {
   id: string;
   title: string;
@@ -366,83 +368,11 @@ ${allAttendees.glaziers.map(attendee => {
    * Generate action text based on item type and status - improved to avoid generic text
    */
   private static generateActionText(item: MeetingItem): string {
-    // Check for embedded action data first
-    if (item.actionAssignedTo || item.actionStatus || item.actionNotes) {
-      let actionText = '';
-      
-      if (item.actionAssignedTo) {
-        actionText += `**Assigned to:** ${item.actionAssignedTo}. `;
-      }
-      
-      if (item.actionStatus) {
-        actionText += `**Status:** ${item.actionStatus}. `;
-      }
-      
-      if (item.actionDueDate) {
-        actionText += `**Due:** ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}. `;
-      }
-      
-      if (item.actionNotes) {
-        actionText += `**Notes:** ${item.actionNotes}`;
-      }
-      
-      return actionText || 'Action details to be updated.';
-    }
-    
-    // If there are actual meeting notes, use them as the action/decision
-    if (item.meetingNotes && item.meetingNotes.trim() && item.meetingNotes.trim() !== '') {
-      let actionText = `**Decision:** ${item.meetingNotes}`;
-      
-      // Add assignment if available
-      if (item.assignedTo) {
-        actionText += ` **Assigned to:** ${item.assignedTo}`;
-      }
-      
-      return actionText;
-    }
-
-    // If assigned to someone specific, provide personalized action
-    if (item.assignedTo) {
-      return `${item.assignedTo} to ${item.status === 'Actioned' ? 'implement and report back' : 'review and assess feasibility'} by next meeting.`;
-    }
-    
-    // Generate appropriate action based on type and status
-    switch (item.type) {
-      case 'Near Miss':
-        if (item.status === 'Closed') {
-          return 'Incident reviewed, preventive measures implemented, risk register updated.';
-        } else if (item.status === 'Actioned') {
-          return 'HSC implementing preventive measures and updating documentation.';
-        } else {
-          return 'HSC to review incident details and implement preventive measures.';
-        }
-      case 'Safety Ideas':
-        if (item.status === 'Closed') {
-          return 'Safety improvement evaluated and implementation decision made.';
-        } else if (item.status === 'Actioned') {
-          return 'HSC assessing implementation feasibility and resource requirements.';
-        } else {
-          return 'Pending review by Health & Safety Coordinator for feasibility assessment.';
-        }
-      case 'Business Ideas':
-        if (item.status === 'Closed') {
-          return 'Business case evaluated and implementation decision finalized.';
-        } else if (item.status === 'Actioned') {
-          return 'Management evaluating business case and implementation timeline.';
-        } else {
-          return 'Pending management review for business case evaluation.';
-        }
-      case 'Actions':
-        if (item.status === 'Closed') {
-          return 'Action completed and verified by responsible person.';
-        } else if (item.status === 'In Progress') {
-          return 'Action in progress, monitoring completion status.';
-        } else {
-          return 'Action item pending assignment and commencement.';
-        }
-      default:
-        return 'Item requires review to determine appropriate action plan.';
-    }
+    // Sourced strictly from the real actioned system, shared with every other
+    // export format. No fabricated type/status boilerplate.
+    return buildActionRequiredLines(item)
+      .map(line => (line.label ? `**${line.label}:** ${line.value}` : line.value))
+      .join('  \n');
   }
 
   /**
