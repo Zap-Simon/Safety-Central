@@ -32,7 +32,7 @@ interface ActionableItem {
 export default function Actions() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('open');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [isUpdatingAction, setIsUpdatingAction] = useState<string>('');
@@ -80,6 +80,12 @@ export default function Actions() {
     return hasActionData;
   });
 
+  // A finished/archived action is one that's either fully Completed or sitting in
+  // "Ready to Close" awaiting formal closure. These are kept out of the live
+  // workload numbers so the dashboard reflects only actions still to manage.
+  const isArchivedStatus = (status?: string) =>
+    status === 'Completed' || status === 'Ready to Close';
+
   const filteredItems = actionItems.filter(item => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -94,9 +100,13 @@ export default function Actions() {
 
     if (filterStatus !== 'all') {
       const itemStatus = item.actionStatus || 'Not Started';
-      if (filterStatus === 'open' && (itemStatus === 'Completed' || itemStatus === 'Ready to Close')) return false;
+      const isArchived = isArchivedStatus(itemStatus);
+      // "open" = live actions you still need to manage (hides anything finished).
+      if (filterStatus === 'open' && isArchived) return false;
+      // "archived" = finished work (Completed or Ready to Close) kept out of the way.
+      if (filterStatus === 'archived' && !isArchived) return false;
       if (filterStatus === 'Completed' && itemStatus !== 'Completed') return false;
-      if (filterStatus !== 'open' && filterStatus !== 'Completed' && itemStatus !== filterStatus) return false;
+      if (filterStatus !== 'open' && filterStatus !== 'archived' && filterStatus !== 'Completed' && itemStatus !== filterStatus) return false;
     }
 
     if (filterPriority !== 'all' && item.actionPriority !== filterPriority) return false;
@@ -265,13 +275,13 @@ export default function Actions() {
 
   const stats = {
     total: actionItems.length,
-    open: actionItems.filter(i => !i.actionStatus || i.actionStatus !== 'Completed').length,
+    open: actionItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
     completed: actionItems.filter(i => i.actionStatus === 'Completed').length,
     overdue: actionItems.filter(i => {
-      if (!i.actionDueDate || i.actionStatus === 'Completed') return false;
+      if (!i.actionDueDate || isArchivedStatus(i.actionStatus)) return false;
       return new Date(i.actionDueDate) < new Date();
     }).length,
-    highPriority: actionItems.filter(i => i.actionPriority === 'High' && i.actionStatus !== 'Completed').length
+    highPriority: actionItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
   };
 
   const exportToCSV = async () => {
@@ -499,13 +509,14 @@ export default function Actions() {
                   className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                   data-testid="select-filter-status"
                 >
+                  <option value="open">Open (to manage)</option>
                   <option value="all">All Status</option>
-                  <option value="open">Open</option>
                   <option value="Not Started">Not Started</option>
                   <option value="In Progress">In Progress</option>
                   <option value="On Hold">On Hold</option>
                   <option value="Completed">Completed</option>
                   <option value="Ready to Close">Ready to Close</option>
+                  <option value="archived">Archived (finished)</option>
                 </select>
                 <select
                   value={filterPriority}
@@ -539,16 +550,16 @@ export default function Actions() {
             <Target className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Actions Found</h3>
             <p className="text-gray-500 mb-4">
-              {searchQuery || filterStatus !== 'all' || filterPriority !== 'all' || filterType !== 'all'
+              {actionItems.length > 0
                 ? 'Try adjusting your filters to find more actions.'
                 : 'Actions will appear here when items are set to "Actioned" status in Meeting History.'}
             </p>
-            {(searchQuery || filterStatus !== 'all' || filterPriority !== 'all' || filterType !== 'all') && (
+            {actionItems.length > 0 && (
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearchQuery('');
-                  setFilterStatus('all');
+                  setFilterStatus('open');
                   setFilterPriority('all');
                   setFilterType('all');
                 }}
