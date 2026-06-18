@@ -4833,7 +4833,11 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <style>
         @page {
             size: A4;
-            margin: 1cm 0.7cm 1.3cm 0.7cm;
+            /* Narrow, symmetric side margins so the content block is centred on
+               the page and uses as much of the A4 width as possible. Paged.js
+               reads these values and bakes them into each sheet as the content
+               inset (the bottom keeps room for the page footer). */
+            margin: 0.8cm 0.5cm 1.2cm 0.5cm;
             @bottom-center {
                 content: "Cranfield Glass Christchurch  |  Health & Safety Meeting Minutes";
                 font-family: Arial, sans-serif;
@@ -4874,7 +4878,17 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         }
         
         @media print {
-            body {
+            /* Remove the browser's own print margin so each A4 sheet that
+               Paged.js produces maps 1:1 to the physical page. Without this the
+               browser adds its default margin on top of the sheet, scaling it
+               down and pinning it to the top-left corner (the "not centred /
+               too small" effect). Paged.js still supplies the real content
+               inset and footer inside every sheet. */
+            @page {
+                margin: 0;
+            }
+            
+            html, body {
                 margin: 0 !important;
                 padding: 0 !important;
             }
