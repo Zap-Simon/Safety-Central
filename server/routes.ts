@@ -4790,11 +4790,13 @@ function generateAnalyticsChartsHTML(analytics: any): string {
           </div>
           <div class="metric-chip">
             <span class="metric-chip-num">${outstandingRate}%</span>
-            <span class="metric-chip-label">Still To Be Completed (${outstandingCount} of ${totalItems})</span>
+            <span class="metric-chip-label">Still To Do</span>
+            <span class="metric-chip-sub">${outstandingCount} of ${totalItems}</span>
           </div>
           <div class="metric-chip">
             <span class="metric-chip-num metric-chip-accent">${completedRate}%</span>
-            <span class="metric-chip-label">Completed &amp; Closed (${completedCount} of ${totalItems})</span>
+            <span class="metric-chip-label">Completed</span>
+            <span class="metric-chip-sub">${completedCount} of ${totalItems}</span>
           </div>
         </div>
       </div>
@@ -5163,9 +5165,9 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 64px;
-            max-width: 130px;
-            padding: 4px 12px;
+            justify-content: center;
+            min-width: 84px;
+            padding: 6px 14px;
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
@@ -5187,9 +5189,18 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            margin-top: 2px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .metric-chip-sub {
+            font-size: 6.5pt;
+            color: #9ca3af;
             margin-top: 1px;
             text-align: center;
-            line-height: 1.25;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
         .analytics-breakdowns {
