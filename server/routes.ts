@@ -4842,7 +4842,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cranfield Glass - Meeting Minutes</title>
+    <title>Cranfield Glass - Meeting Minutes${meetingDate && meetingDate !== 'All Meetings' ? ` ${meetingDate.replace(/\//g, '-')}` : ''}</title>
     <style>
         @page {
             size: A4;
@@ -5461,7 +5461,10 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   const hasSigs = Object.keys(signaturesForMeeting).length > 0;
 
   const formatDate = (iso: string) => {
-    try { return new Date(iso).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return iso; }
+    // Format in New Zealand time so a signature made during the NZ working day
+    // shows the correct local date. Without timeZone the server (UTC) would roll
+    // an evening/morning NZ signing back to the previous calendar day.
+    try { return new Date(iso).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' }); } catch { return iso; }
   };
 
   const signedAttendees = allAttendees.filter(a => {
