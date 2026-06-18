@@ -5004,9 +5004,11 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             font-weight: bold;
             border: 1px solid #dee2e6;
             font-size: 11pt;
-            /* Long words / URLs wrap instead of forcing the column wider. */
+            /* Long words / URLs wrap instead of forcing the column wider.
+               'anywhere' guarantees even an unbreakable token (a pasted URL,
+               file path or system ID) breaks, so no cell can overflow. */
             word-wrap: break-word;
-            overflow-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         
         .items-table td {
@@ -5014,9 +5016,12 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             border: 1px solid #dee2e6;
             vertical-align: top;
             font-size: 11pt;
-            /* Keep content inside the fixed column width. */
+            /* Keep content inside the fixed column width. A Near Miss
+               "How it happened" line often contains a long unbroken token;
+               'anywhere' forces it to wrap so the column never grows wider
+               than Business / Safety rows. */
             word-wrap: break-word;
-            overflow-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         
         /* Keep each agenda item whole: never split a single item's row across a
