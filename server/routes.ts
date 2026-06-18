@@ -4971,6 +4971,12 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             border-collapse: collapse;
             margin-bottom: 30px;
             border: 1px solid #dee2e6;
+            /* Fixed layout makes every column honour its declared width (40/30/30)
+               regardless of how much text a row contains. Without this the browser
+               uses content-based sizing, so a long Discussion note or a Near Miss
+               "How it happened" line would steal width from the other columns and
+               make rows look uneven. */
+            table-layout: fixed;
         }
         
         .items-table th {
@@ -4980,6 +4986,9 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             font-weight: bold;
             border: 1px solid #dee2e6;
             font-size: 11pt;
+            /* Long words / URLs wrap instead of forcing the column wider. */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .items-table td {
@@ -4987,6 +4996,9 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             border: 1px solid #dee2e6;
             vertical-align: top;
             font-size: 11pt;
+            /* Keep content inside the fixed column width. */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .type-badge {

@@ -34,7 +34,11 @@ export function buildAgendaSubmissionText(item: any): string {
  * and rules stay identical everywhere.
  */
 export function buildActionRequiredLines(item: any): ActionLine[] {
-  const isClosed = item?.status === 'Closed';
+  const status = item?.status || '';
+  const isClosed = status === 'Closed';
+  // Items that have been picked up for implementation. SharePoint uses
+  // "Actioned"; the local action tracker may surface them as "Actions".
+  const isActioned = status === 'Actioned' || status === 'Actions';
   const hasActionData = !!(item?.actionAssignedTo || item?.actionStatus || item?.actionDueDate || item?.actionNotes);
 
   if (hasActionData) {
@@ -53,6 +57,16 @@ export function buildActionRequiredLines(item: any): ActionLine[] {
   // Discussed and closed on the spot with no follow-up action recorded.
   if (isClosed) {
     return [{ label: '', value: 'Discussed and closed — no action required.' }];
+  }
+
+  // Marked as actioned but the detailed action fields were never recorded
+  // (e.g. items actioned before action-tracking was added). Reflect the real
+  // status only — no inferred assignment/outcome text — so the column isn't
+  // blank. Re-actioning the item (move it back to Submitted, then action it
+  // again with the details filled in) replaces this with the full
+  // Assigned to / Status / Due / Action breakdown.
+  if (isActioned) {
+    return [{ label: 'Status', value: 'Actioned' }];
   }
 
   // Still open / in discussion with no action captured yet.
