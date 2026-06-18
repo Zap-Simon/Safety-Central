@@ -62,7 +62,15 @@ export default function Actions() {
       return res.json();
     }),
     staleTime: 5 * 60 * 1000,
-    retry: 1,
+    // Retry transient server/network failures (e.g. a not-yet-ready token just
+    // after a deploy reload) so the action list self-heals. Do NOT retry when the
+    // user needs to sign in again — that would just re-trigger sign-in popups.
+    retry: (failureCount, error) => {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (/interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
 
   const meetingItems: ActionableItem[] = (apiResponse as any)?.data || [];

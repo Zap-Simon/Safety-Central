@@ -4833,11 +4833,13 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <style>
         @page {
             size: A4;
-            /* Narrow, symmetric side margins so the content block is centred on
-               the page and uses as much of the A4 width as possible. Paged.js
-               reads these values and bakes them into each sheet as the content
-               inset (the bottom keeps room for the page footer). */
-            margin: 0.8cm 0.5cm 1.2cm 0.5cm;
+            /* Symmetric left/right margins keep the content block centred on the
+               page; the larger bottom margin reserves room for the page footer.
+               These stay comfortably inside the printable area of every printer,
+               so the browser never has to shrink-to-fit and anchor the page in
+               the top-left corner. Paged.js reads these values and bakes them
+               into each sheet as the content inset + footer band. */
+            margin: 1.1cm 1.4cm 1.5cm 1.4cm;
             @bottom-center {
                 content: "Cranfield Glass Christchurch  |  Health & Safety Meeting Minutes";
                 font-family: Arial, sans-serif;
@@ -4878,30 +4880,32 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         }
         
         @media print {
-            /* Remove the browser's own print margin so each A4 sheet that
-               Paged.js produces maps 1:1 to the physical page. Without this the
-               browser adds its default margin on top of the sheet, scaling it
-               down and pinning it to the top-left corner (the "not centred /
-               too small" effect). Paged.js still supplies the real content
-               inset and footer inside every sheet. */
-            @page {
-                margin: 0;
-            }
-            
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
-            .container {
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                max-width: none !important;
-            }
-            
+            /* Let Paged.js own the page geometry: it reads the single @page rule
+               above and maps each sheet to the physical page with the declared
+               margins (top margin + bottom footer band) intact. We deliberately
+               do NOT override @page to margin:0 here — doing so makes the sheet
+               demand the full A4 incl. the printer's non-printable edge, which
+               forces the browser to shrink-to-fit and anchor everything in the
+               top-left corner (no top margin, footer floating up the page). */
             .print-button {
                 display: none !important;
+            }
+        }
+        
+        @media screen {
+            /* On-screen preview: show each Paged.js sheet as a centred sheet of
+               "paper" on a grey desk so the document reads centred (not pinned
+               left) before the user prints. Only affects the screen view. */
+            body {
+                background: #f3f4f6;
+            }
+            .pagedjs_pages {
+                margin: 0 auto;
+            }
+            .pagedjs_page {
+                margin: 0 auto 0.5cm auto !important;
+                background: #ffffff;
+                box-shadow: 0 0 0.4cm rgba(0, 0, 0, 0.15);
             }
         }
         

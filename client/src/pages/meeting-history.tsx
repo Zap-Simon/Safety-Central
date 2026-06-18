@@ -795,10 +795,28 @@ export default function MeetingHistory() {
     }
   };
 
-  // Fetch meeting history from backend API
-  const { data: apiResponse, isLoading } = useQuery({
+  // Fetch meeting history from backend API.
+  // IMPORTANT: check res.ok before parsing. The server returns 401 with a body of
+  // { authenticated:false, data:[] } when the SharePoint token is missing or has
+  // expired (common right after a deploy, before MSAL has re-acquired a token).
+  // If we blindly parsed that body we'd render an EMPTY list and every item would
+  // appear to vanish. Throwing instead lets React Query retry, which lets the
+  // request self-heal once a fresh token is available a moment later.
+  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/meeting-history'],
-    queryFn: () => authenticatedFetch('/api/meeting-history').then(res => res.json()),
+    queryFn: () => authenticatedFetch('/api/meeting-history').then(async res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }),
+    // Only retry transient server/network failures (e.g. a token that wasn't ready
+    // for a beat right after a deploy reload). Do NOT retry when the user needs to
+    // sign in again — retrying would just re-trigger sign-in popups over and over.
+    retry: (failureCount, error) => {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (/interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
+      return failureCount < 3;
+    },
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
 
   // Meeting attendance query
@@ -2187,6 +2205,36 @@ export default function MeetingHistory() {
       
       <div className="pt-16 sm:pt-20 bg-gray-50 min-h-screen">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+
+          {/* Session-expired / auth-failure banner. Shown instead of silently
+              rendering an empty list when /api/meeting-history fails (e.g. an
+              expired SharePoint token after a deploy). Lets the user re-authenticate. */}
+          {isError && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-amber-900">Couldn't load your meeting items</p>
+                  <p className="text-xs text-amber-700">Your session may have expired. Sign in again to bring them back — nothing has been deleted.</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white flex-shrink-0"
+                onClick={async () => {
+                  try {
+                    await authService.signIn();
+                  } catch (e) {
+                    console.error('Re-authentication failed:', e);
+                  }
+                  refetch();
+                }}
+              >
+                <LogIn size={16} className="mr-1.5" />
+                Sign in again
+              </Button>
+            </div>
+          )}
 
           {/* Page Header - Mobile Optimized */}
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-3 sm:p-6 mb-4 sm:mb-8 border border-gray-200">
