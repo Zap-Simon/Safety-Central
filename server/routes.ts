@@ -5015,6 +5015,20 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             overflow-wrap: break-word;
         }
         
+        /* Keep each agenda item whole: never split a single item's row across a
+           page boundary. Paged.js honours break-inside on table rows, so an item
+           that won't fit in the remaining space is pushed to the next page intact
+           instead of being cut in half. */
+        .items-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        
+        /* Repeat the column header at the top of every page the table spans. */
+        .items-table thead {
+            display: table-header-group;
+        }
+        
         .type-badge {
             display: inline-block;
             padding: 4px 8px;
@@ -5249,11 +5263,16 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <div class="section-header">II. Meeting Minutes</div>
     
     <table class="items-table">
+        <colgroup>
+            <col style="width: 40%;">
+            <col style="width: 30%;">
+            <col style="width: 30%;">
+        </colgroup>
         <thead>
             <tr>
-                <th style="width: 40%;">Agenda Item</th>
-                <th style="width: 30%;">Discussion Notes</th>
-                <th style="width: 30%;">Action Required</th>
+                <th>Agenda Item</th>
+                <th>Discussion Notes</th>
+                <th>Action Required</th>
             </tr>
         </thead>
         <tbody>
