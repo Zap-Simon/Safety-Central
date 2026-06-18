@@ -3,6 +3,7 @@
 - [Global mobile CSS quirks](global-mobile-css-quirks.md) — index.css forces `button{min-height:44px}` on mobile (ovals small round buttons); plus iOS safe-area inset setup.
 - [Teams tab routing & manifest coupling](teams-tab-routing.md) — Teams tab lives at an unlisted route; App.tsx route + teams-app/manifest.json + published domain must stay in lockstep, else silent 404 in Teams.
 - [PDF/HTML export page footers](pdf-export-page-footers.md) — browser print ignores @page counter margin boxes; inline Paged.js (base64-bundled) into the standalone export for reliable offline "Page X of Y".
+- [Paged.js split-table column widths](pagedjs-table-column-widths.md) — Paged.js doesn't copy <colgroup> to continuation table fragments; pin widths via th/td:nth-child to stop column drift across pages.
 - [Teams manifest icons & color override](teams-manifest-icons.md) — outline.png must be 32×32 transparent + white glyph or Teams shows your literal color instead of its theme tint; app name "Improve+".
 - [Dual-token backend (Teams OBO + main-app MSAL)](dual-token-teams-obo.md) — shared API endpoints detect token audience: Teams SSO tokens get OBO-exchanged server-side, main-app MSAL tokens pass through unchanged; never re-add browser MSAL to Teams tabs.
 - [Teams per-tab brand theming (Fluent v9)](teams-per-tab-theming.md) — both Teams tabs now share ONE blue brand (berry/purple removed); technique to recolour a single tab kept as reference only.

@@ -5037,6 +5037,19 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             overflow-wrap: anywhere;
         }
         
+        /* Pin every column width on the cells themselves (by position), not only
+           via <colgroup>. When Paged.js splits the table across pages it creates a
+           fresh table fragment per page and does NOT reliably copy the <colgroup>,
+           so continuation pages would otherwise fall back to content-based sizing
+           and the Agenda Item / final column widths would drift between page 1 and
+           later pages. These per-cell rules keep all pages at a consistent 40/30/30. */
+        .items-table th:nth-child(1),
+        .items-table td:nth-child(1) { width: 40%; }
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2) { width: 30%; }
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3) { width: 30%; }
+
         /* Keep each agenda item whole: never split a single item's row across a
            page boundary. Paged.js honours break-inside on table rows, so an item
            that won't fit in the remaining space is pushed to the next page intact
