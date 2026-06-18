@@ -4765,6 +4765,17 @@ function generateAnalyticsChartsHTML(analytics: any): string {
   
   const version = "v1.2.0";
 
+  // Plain-language progress figures so anyone outside the business can read the
+  // export at a glance: how many items there are, the share still to be done,
+  // and the share already finished.
+  const totalItems = analytics.totalItems || 0;
+  const outstandingCount = analytics.outstandingActions || 0;
+  const completedCount = Math.max(0, totalItems - outstandingCount);
+  const completedRate = analytics.completionRate || 0;
+  // Derive the outstanding share from the completed share so the two always add
+  // up to 100% (avoids a 99%/101% mismatch from rounding each independently).
+  const outstandingRate = totalItems > 0 ? 100 - completedRate : 0;
+
   return `
     <div class="analytics-dashboard">
       <div class="analytics-bar">
@@ -4774,16 +4785,16 @@ function generateAnalyticsChartsHTML(analytics: any): string {
         </div>
         <div class="analytics-metrics">
           <div class="metric-chip">
-            <span class="metric-chip-num">${analytics.totalItems}</span>
+            <span class="metric-chip-num">${totalItems}</span>
             <span class="metric-chip-label">Total Items</span>
           </div>
           <div class="metric-chip">
-            <span class="metric-chip-num">${analytics.outstandingActions}</span>
-            <span class="metric-chip-label">Outstanding</span>
+            <span class="metric-chip-num">${outstandingRate}%</span>
+            <span class="metric-chip-label">Still To Be Completed (${outstandingCount} of ${totalItems})</span>
           </div>
           <div class="metric-chip">
-            <span class="metric-chip-num metric-chip-accent">${analytics.completionRate}%</span>
-            <span class="metric-chip-label">Complete</span>
+            <span class="metric-chip-num metric-chip-accent">${completedRate}%</span>
+            <span class="metric-chip-label">Completed &amp; Closed (${completedCount} of ${totalItems})</span>
           </div>
         </div>
       </div>
@@ -5153,6 +5164,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             flex-direction: column;
             align-items: center;
             min-width: 64px;
+            max-width: 130px;
             padding: 4px 12px;
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -5176,6 +5188,8 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             text-transform: uppercase;
             letter-spacing: 0.3px;
             margin-top: 1px;
+            text-align: center;
+            line-height: 1.25;
         }
 
         .analytics-breakdowns {
