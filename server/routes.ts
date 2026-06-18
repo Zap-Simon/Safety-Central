@@ -5496,7 +5496,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
               ? `<img src="${sig.signatureData}" style="max-width: 200px; max-height: 60px; display: block; border-bottom: 2px solid #374151;" alt="Signature">`
               : `<div style="border-bottom: 2px solid #374151; height: 48px;"></div>`
           }
-          <div style="font-size: 8pt; color: #9ca3af; margin-top: 6px;">Signed: ${formatDate(sig.signedAt)}</div>
+          <div style="font-size: 9.5pt; color: #374151; margin-top: 8px;">Signed: <strong style="color: #1f2937;">${formatDate(sig.signedAt)}</strong></div>
         </div>`;
     }).join('');
 
