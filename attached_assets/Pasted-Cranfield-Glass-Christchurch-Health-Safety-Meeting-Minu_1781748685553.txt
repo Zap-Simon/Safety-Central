@@ -1,0 +1,260 @@
+Cranfield Glass Christchurch
+Health & Safety Meeting Minutes
+Meeting Topic:
+Tuesday Staff Meeting
+Date:
+16/06/2026
+Generated:
+18/06/2026
+Meeting Analytics
+v1.2.0 · Generated 18 June 2026
+25
+Total Items
+8
+Outstanding
+68%
+Complete
+Status
+Closed
+17
+Actioned
+8
+Type
+Near Miss
+1
+Safety Ideas
+7
+Business Ideas
+17
+Top Contributors
+Emma White
+6
+Kevin Young
+5
+Struan O'Donnell
+5
+I. Agenda
+Matters arising from previous meeting minutes
+Health and Safety – Refer below
+BAU – Business as Usual
+Other items as required
+II. Meeting Minutes
+Agenda Item	Discussion Notes	Action Required
+Near Miss
+3b Airedale courts
+Submitted by: Ryan Newman
+Status: Closed
+Sash dropped on my hand
+
+How it happened: I was holding a sash while struan removed the screws, as the last screw came out it drop on my hand as the weight was too heavy and i tried to bring the top in before it let go and hit the ground
+Meeting Discussion: We discussed as a team a few ways to remove windows from inside a building to make it safer, also how e can also scope for external access on jobs like these.
+Decision: We discussed as a team a few ways to remove windows from inside a building to make it safer, also how e can also scope for external access on jobs like these.
+Safety Ideas
+"Check loose rivets on scaffolding before use"
+Submitted by: Daniel Conlan
+Status: Actioned
+Rivets loose on scaffolding - need to be checked for safety.
+Meeting Discussion: Only usable at full height. Is there a ladder that is vertical instead of a angle. Simon will be doing a inspection on scaffolding. Hoani look at getting new platform - bent aluminum not ideal. Hoani looking into it. Simon to find brand etc
+Decision: Only usable at full height. Is there a ladder that is vertical instead of a angle. Simon will be doing a inspection on scaffolding. Hoani look at getting new platform - bent aluminum not ideal. Hoani looking into it. Simon to find brand etc
+Safety Ideas
+"Need more vans and roof repairs for vehicles"
+Submitted by: Kevin Young
+Status: Actioned
+Extra van needed. Kevin's van roof to be fixed due to leaking. Dans vans roof tearing.
+Meeting Discussion: Vehicle inspections to be done.
+Decision: Vehicle inspections to be done.
+Safety Ideas
+"Noise from tools — need better PPE reminders"
+Submitted by: Emma White
+Status: Actioned
+Activities that create noise - power tools, hacking out, grinder, wear PPE and document.
+Meeting Discussion: Discussion held on what activities we do daily that creates noise; Belt Sander, Power Tools; Cordless Drill, Cordless Grinder.
+Decision: Discussion held on what activities we do daily that creates noise; Belt Sander, Power Tools; Cordless Drill, Cordless Grinder.
+Safety Ideas
+"Track noisy tasks to manage sound levels"
+Submitted by: Simon Hubbard
+Status: Actioned
+Simon is looking for a list of activities that create noise so we can keep track of noise levels in our daily work.
+Meeting Discussion: Using the board to remember safety ideas while on-site.
+Decision: Using the board to remember safety ideas while on-site.
+Safety Ideas
+"Need bigger plasters in first aid kit"
+Submitted by: Kevin Young
+Status: Actioned
+Can we please have some plasters, ideally the 2.4cm ones over the 1.9
+Meeting Discussion: Larger and wider plasters
+Decision: Larger and wider plasters
+Safety Ideas
+"First aid kit needs restocking — it's expired"
+Submitted by: Struan O'Donnell
+Status: Actioned
+My first aid has expired
+Meeting Discussion: Everyone to check first aid kits - eyewash etc check expiry dates, low stock etc
+Decision: Everyone to check first aid kits - eyewash etc check expiry dates, low stock etc
+Safety Ideas
+"Fix sharp screw ends in corners"
+Submitted by: Kevin Young
+Status: Closed
+Grind back screws, use smaller ones or put another board in corners!
+Meeting Discussion: Discussed last meeting - new screws in office behind Simon. Different sizes for securing plywood etc
+Decision: Discussed last meeting - new screws in office behind Simon. Different sizes for securing plywood etc
+Business Ideas
+"Great job by Sam — happy customer feedback!"
+Submitted by: Emma White
+Status: Closed
+Positive Feedback! Sam has just completed the Job (37 Tovey Street) and we had a chat along the way.  What a nice personable courteous fellow he is and a Chiefs Fan as well   :) Customer also advised 'Thanks for your help with this issue and I will have no hesitation of recommending Cranfield Glass to Friends and Family' - Good work Sam
+Meeting Discussion: We talked with the glaziers—great job, Struan!
+Decision: We talked with the glaziers—great job, Struan!
+Business Ideas
+"Great feedback for Struan's work — keep it up!"
+Submitted by: Emma White
+Status: Closed
+Feedback from AMN Customer: Struan was 10 out of 10. No mess. Very quiet. Good workmanship. Approachable! Good work Struan
+Status: Business case evaluated and implementation decision finalized.
+Business Ideas
+"Great job on last night's pharmacy callout!"
+Submitted by: Emma White
+Status: Closed
+Positive Feedback - Last Night's callout, the owner of the pharmacy wanted to pass on how amazing our glazier was, he was very efficient and was really happy with the quick response and also mentioned how professional the glazier was. Good job Struan.
+Status: Business case evaluated and implementation decision finalized.
+Business Ideas
+"Customer feedback on recent installation job"
+Submitted by: Debra Craig
+Status: Closed
+Job 42542, email received from Wee, thanks Kevin and James:
+Hi,
+
+Thanks for your work. Appreciate the guy who came to install yesterday and James too, please let him know..
+I just transferred payment to your account. Please have a look.
+
+Regards
+Wee
+Status: Business case evaluated and implementation decision finalized.
+Business Ideas
+"Great customer feedback for Sam's service!"
+Submitted by: Emma White
+Status: Closed
+Job 42734 - Positive Feedback from a customer through AMN - "Sam was very helpful and professional in his service and work". Well done Sam :)
+Status: Business case evaluated and implementation decision finalized.
+Business Ideas
+"Great service on Job 42437 — keep it up!"
+Submitted by: Debra Craig
+Status: Closed
+Job 42437 - James has still got it!
+Thank you very much for the great service. I have just made payment. Cheers, Kath
+Status: Business case evaluated and implementation decision finalized.
+Business Ideas
+"Double Check Measurements to Avoid Mistakes"
+Submitted by: Simon Hubbard
+Status: Closed
+Remember writing sizes and measuring.
+Meeting Discussion: Double-check the measurements. We need to measure three times. Measurements are super important; they save us time!
+Decision: Double-check the measurements. We need to measure three times. Measurements are super important; they save us time!
+Business Ideas
+"Call customers before appointments to confirm"
+Submitted by: Emma White
+Status: Closed
+Calling customers prior to appointment. Including callouts.
+Meeting Discussion: In our next meeting, we'll chat about the changes made to Arolfo that give us better insight into customer expectations.
+Decision: In our next meeting, we'll chat about the changes made to Arolfo that give us better insight into customer expectations.
+Business Ideas
+"Check on Isaac's van at Morrisons"
+Submitted by: Simon Hubbard
+Status: Closed
+Call Morrisons for Isaac's van. Check if ready to be collected.
+Meeting Discussion: Ready to be collected, 18/06
+Decision: Ready to be collected, 18/06
+Business Ideas
+"Staff needed for after-hours job on June 24th"
+Submitted by: Simon Hubbard
+Status: Actioned
+Naylor Love has an after-hours job on Wednesday, June 24th. James will pick and check the availability of staff for a 4 PM start and an 8 PM finish (we'll stay onsite until the job is reasonably complete).
+Meeting Discussion: 2 guys, Wednesday and Thursday night - 4pm - Maori Land Courts Building. Contact James if interested. 6 screens to be completed. Kevin and Dan interested! Will let us know
+Decision: 2 guys, Wednesday and Thursday night - 4pm - Maori Land Courts Building. Contact James if interested. 6 screens to be completed. Kevin and Dan interested! Will let us know
+Business Ideas
+"Order more cleaner, need concentrate this time"
+Submitted by: Kevin Young
+Status: Closed
+Can we please have more cleaner ordered asap
+Can we have the concentrate this time
+Meeting Discussion: Running low on cleaner - need the concentrate. Hoani going to check out Wurth and cans of glass cleaner.
+Decision: Running low on cleaner - need the concentrate. Hoani going to check out Wurth and cans of glass cleaner.
+Business Ideas
+"Order more 6mm and 12mm ply sheets"
+Submitted by: Struan O'Donnell
+Status: Closed
+Can we get more  ply 6mm and 12mm
+Meeting Discussion: Boys to load up offcuts of plywood, too many jobs have full sheets.
+Decision: Boys to load up offcuts of plywood, too many jobs have full sheets.
+Business Ideas
+"Order more film for faster jobs"
+Submitted by: Struan O'Donnell
+Status: Actioned
+Can we get more film ordered
+Meeting Discussion: Needs to be ordered
+Decision: Needs to be ordered
+Business Ideas
+"Need new master gold key for PDU920"
+Submitted by: Struan O'Donnell
+Status: Closed
+Can I get the new master gold key for switched on as I never received one  and there isn't one on the keyring  for PDU920
+Meeting Discussion: No longer needed, since this was a key that was switched on but isn't used anymore.
+Decision: No longer needed, since this was a key that was switched on but isn't used anymore.
+Business Ideas
+"Need more putty for better stock management"
+Submitted by: Struan O'Donnell
+Status: Closed
+Couldn't remember if I put this up the other week  can we get more putty
+Meeting Discussion: More putty to be ordered. Check stock
+Decision: More putty to be ordered. Check stock
+Business Ideas
+"Need more diamond point sprigs for jobs"
+Submitted by: Ryan Newman
+Status: Closed
+We need more diamond point sprigs
+Meeting Discussion: new stock has arrived
+Decision: new stock has arrived
+Business Ideas
+"Put a whiteboard in workshop for stock orders"
+Submitted by: Kevin Young
+Status: Closed
+Maybe we need a whiteboard in workshop for stock orders?
+Meeting Discussion: We’ve created a Teams tab app, Improve+, to make it easier to capture products that need to be ordered. It also improves how we capture safety ideas, near misses, and business ideas.
+Decision: We’ve created a Teams tab app, Improve+, to make it easier to capture products that need to be ordered. It also improves how we capture safety ideas, near misses, and business ideas.
+IV. Meeting Attendance & Sign-Off
+Hoani Hunt
+Company Director  ·  Attended Remotely
+Hoani Hunt
+Signed: 15 Jun 2026
+Simon Hubbard
+Health & Safety Coordinator
+Signature
+Signed: 15 Jun 2026
+James Waites
+Glazing Supervisor  ·  Attended Remotely
+James Waites
+Signed: 15 Jun 2026
+Emma White
+Administrator
+Signature
+Signed: 15 Jun 2026
+Kevin Young
+Glazier
+Signature
+Signed: 15 Jun 2026
+Ryan Newman
+Glazier
+Signature
+Signed: 15 Jun 2026
+Dan Conlan
+Glazier
+Signature
+Signed: 15 Jun 2026
+Struan O'Donnell
+Glazier
+Signature
+Signed: 15 Jun 2026
+Sam Chang
+Glazier
+Signature
+Signed: 15 Jun 2026
