@@ -5333,6 +5333,16 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
 
               const meetingDiscussion = (item.meetingNotes || '').trim();
 
+              // Format the submission date in NZ time so an item submitted during
+              // the NZ working day doesn't roll back a day on the UTC server.
+              let submittedOn = '';
+              if (item.submittedDate) {
+                const d = new Date(item.submittedDate);
+                if (!isNaN(d.getTime())) {
+                  submittedOn = d.toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
+                }
+              }
+
               return `
                 <tr>
                     <td>
@@ -5341,6 +5351,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
                         ${submissionText ? `<div class="discussion-notes">${submissionText}</div>` : ''}
                         <div class="follow-up">
                             <strong>Submitted by:</strong> ${item.submittedBy || 'Unknown'}<br>
+                            ${submittedOn ? `<strong>Submitted on:</strong> ${submittedOn}<br>` : ''}
                             <strong>Status:</strong> ${item.status || 'Submitted'}
                         </div>
                     </td>
