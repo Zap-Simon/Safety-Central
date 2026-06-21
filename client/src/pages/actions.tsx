@@ -35,6 +35,7 @@ export default function Actions() {
   const [filterStatus, setFilterStatus] = useState<string>('open');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
+  const [filterAssignedTo, setFilterAssignedTo] = useState<string>('all');
   const [isUpdatingAction, setIsUpdatingAction] = useState<string>('');
   const [recentlySavedActions, setRecentlySavedActions] = useState<Set<string>>(new Set());
   const [isEnhancingActionNotes, setIsEnhancingActionNotes] = useState<string>('');
@@ -74,6 +75,10 @@ export default function Actions() {
   });
 
   const meetingItems: ActionableItem[] = (apiResponse as any)?.data || [];
+
+  const uniqueNames: string[] = Array.from(new Set(
+    meetingItems.flatMap(i => [i.submittedBy, i.actionAssignedTo].filter(Boolean) as string[])
+  )).sort();
 
   const actionItems = meetingItems.filter(item => {
     const hasActionData = !!(
@@ -119,6 +124,7 @@ export default function Actions() {
 
     if (filterPriority !== 'all' && item.actionPriority !== filterPriority) return false;
     if (filterType !== 'all' && item.type !== filterType) return false;
+    if (filterAssignedTo !== 'all' && (item.actionAssignedTo || '') !== filterAssignedTo) return false;
 
     return true;
   });
@@ -548,6 +554,18 @@ export default function Actions() {
                   <option value="Business Ideas">Business Ideas</option>
                   <option value="Near Miss">Near Miss</option>
                 </select>
+                <select
+                  value={filterAssignedTo}
+                  onChange={(e) => setFilterAssignedTo(e.target.value)}
+                  className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  data-testid="select-filter-assigned-to"
+                >
+                  <option value="all">All People</option>
+                  <option value="">Unassigned</option>
+                  {uniqueNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -570,6 +588,7 @@ export default function Actions() {
                   setFilterStatus('open');
                   setFilterPriority('all');
                   setFilterType('all');
+                  setFilterAssignedTo('all');
                 }}
               >
                 Clear Filters
@@ -665,14 +684,17 @@ export default function Actions() {
                     </div>
                     <div>
                       <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Assigned To</label>
-                      <input
-                        type="text"
+                      <select
                         value={getActionFieldValue(item, 'actionAssignedTo')}
                         onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
-                        placeholder="Unassigned"
                         className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
-                        data-testid={`input-action-assigned-${item.id}`}
-                      />
+                        data-testid={`select-action-assigned-${item.id}`}
+                      >
+                        <option value="">Unassigned</option>
+                        {uniqueNames.map(name => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Due Date</label>
