@@ -402,9 +402,9 @@ body::after {
     from var(--snake-angle),
     #d1d1d1 0deg,
     #d1d1d1 195deg,
-    rgba(50, 190, 250, 0.7) 220deg,
-    rgba(0, 120, 212, 1)    255deg,
-    rgba(110, 100, 245, 0.7) 285deg,
+    rgba(146, 153, 247, 0.75) 220deg,
+    rgba(91, 95, 199, 1)      255deg,
+    rgba(127, 133, 245, 0.75) 285deg,
     #d1d1d1 310deg,
     #d1d1d1 360deg
   );
@@ -417,18 +417,30 @@ body::after {
   overflow: hidden;
 }
 
-.ai-glow-inner .fui-Textarea {
-  border: none;
-  background-color: transparent;
+/* Strip every Fluent border / focus indicator in all states so only our
+   snake border and custom underline are ever visible. */
+.ai-glow-inner .fui-Textarea,
+.ai-glow-inner .fui-Textarea:hover,
+.ai-glow-inner .fui-Textarea:focus,
+.ai-glow-inner .fui-Textarea:focus-within {
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important;
 }
 
-/* Suppress Fluent's native short bottom focus underline — we replace it below. */
+.ai-glow-inner .fui-Textarea::before,
 .ai-glow-inner .fui-Textarea::after {
   display: none !important;
 }
 
-/* Focus nod to Fluent's classic design: a brand-blue underline that grows from
-   the centre out to full width when the field is focused. */
+.ai-glow-inner textarea,
+.ai-glow-inner textarea:focus {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Focus nod to Fluent's classic design: a Teams-purple underline that grows
+   from the centre out to full width when the field is focused. */
 .ai-glow-inner::after {
   content: '';
   position: absolute;
@@ -437,7 +449,7 @@ body::after {
   height: 2px;
   width: 0;
   transform: translateX(-50%);
-  background: linear-gradient(90deg, #50bef5, #0078d4 50%, #6e64f5);
+  background: linear-gradient(90deg, #9299f7, #5b5fc7 50%, #7579eb);
   border-radius: 2px 2px 0 0;
   transition: width 0.25s cubic-bezier(0.33, 0, 0.1, 1);
   pointer-events: none;
@@ -447,8 +459,8 @@ body::after {
   width: 100%;
 }
 
-/* The snake border "wakes up" on focus: spins a touch faster with a soft glow. */
+/* On focus the snake settles: the spin pauses and a soft purple glow appears. */
 .ai-glow-outer:focus-within {
-  animation-duration: 1.8s;
-  box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.18), 0 2px 12px rgba(0, 120, 212, 0.18);
+  animation-play-state: paused;
+  box-shadow: 0 0 0 1px rgba(91, 95, 199, 0.18), 0 2px 12px rgba(91, 95, 199, 0.18);
 }
