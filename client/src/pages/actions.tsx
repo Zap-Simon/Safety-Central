@@ -449,12 +449,7 @@ export default function Actions() {
       
       <div className="pt-16 sm:pt-20 bg-gray-50 min-h-screen">
         <div className="container mx-auto px-4 py-6">
-        {isError && apiResponse && (
-          <div className="mb-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700 flex items-center gap-2">
-            <i className="fas fa-exclamation-triangle"></i>
-            Showing saved data — live refresh temporarily unavailable. Changes will still save normally.
-          </div>
-        )}
+
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
