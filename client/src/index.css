@@ -384,15 +384,32 @@ body::after {
   pointer-events: none;
 }
 
-@keyframes ai-glow-pulse {
-  0%   { box-shadow: 0 0 0 1.5px rgba(0, 120, 212, 0.25); }
-  25%  { box-shadow: 0 0 0 1.5px rgba(80, 160, 255, 0.55); }
-  50%  { box-shadow: 0 0 0 1.5px rgba(110, 100, 245, 0.50); }
-  75%  { box-shadow: 0 0 0 1.5px rgba(50, 190, 250, 0.50); }
-  100% { box-shadow: 0 0 0 1.5px rgba(0, 120, 212, 0.25); }
+@keyframes snake-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .ai-glow-textarea {
+  position: relative;
   border-radius: 6px;
-  animation: ai-glow-pulse 4s ease-in-out infinite;
+}
+
+.ai-glow-textarea::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 7.5px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 195deg,
+    rgba(50, 190, 250, 0.30) 220deg,
+    rgba(0, 120, 212, 0.85) 255deg,
+    rgba(110, 100, 245, 0.30) 285deg,
+    transparent 310deg,
+    transparent 360deg
+  );
+  animation: snake-spin 3s linear infinite;
+  z-index: -1;
+  pointer-events: none;
 }
