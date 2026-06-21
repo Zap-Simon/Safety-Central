@@ -389,27 +389,24 @@ body::after {
   to   { transform: rotate(360deg); }
 }
 
-.ai-glow-textarea {
-  position: relative;
-  border-radius: 6px;
-}
-
-.ai-glow-textarea::before {
-  content: '';
-  position: absolute;
-  inset: -1.5px;
-  border-radius: 7.5px;
+.ai-glow-outer {
+  padding: 1.5px;
+  border-radius: 7px;
+  animation: snake-spin 3s linear infinite;
   background: conic-gradient(
     from 0deg,
-    transparent 0deg,
-    transparent 195deg,
-    rgba(50, 190, 250, 0.30) 220deg,
-    rgba(0, 120, 212, 0.85) 255deg,
-    rgba(110, 100, 245, 0.30) 285deg,
-    transparent 310deg,
-    transparent 360deg
+    #d1d1d1 0deg,
+    #d1d1d1 195deg,
+    rgba(50, 190, 250, 0.7) 220deg,
+    rgba(0, 120, 212, 1)    255deg,
+    rgba(110, 100, 245, 0.7) 285deg,
+    #d1d1d1 310deg,
+    #d1d1d1 360deg
   );
-  animation: snake-spin 3s linear infinite;
-  z-index: -1;
-  pointer-events: none;
+}
+
+.ai-glow-inner {
+  border-radius: 5.5px;
+  background: #ffffff;
+  overflow: hidden;
 }
