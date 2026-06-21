@@ -415,3 +415,12 @@ body::after {
   background: #ffffff;
   overflow: hidden;
 }
+
+.ai-glow-inner .fui-Textarea {
+  border: none;
+  background-color: transparent;
+}
+
+.ai-glow-inner .fui-Textarea::after {
+  display: none;
+}
