@@ -449,24 +449,25 @@ body::after {
   outline: none !important;
 }
 
-/* Focus nod to Fluent's classic design: a Teams-purple underline that grows
-   from the centre out to full width when the field is focused. */
+/* Exact Fluent focus underline (matches the Orders Input): a solid Teams-purple
+   2px bar that scales out from the centre on focus. */
 .ai-glow-inner::after {
   content: '';
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 2px;
-  width: 0;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, #9299f7, #5b5fc7 50%, #7579eb);
-  border-radius: 2px 2px 0 0;
-  transition: width 0.25s cubic-bezier(0.33, 0, 0.1, 1);
+  background: #5b5fc7;
+  border-bottom-left-radius: 5.5px;
+  border-bottom-right-radius: 5.5px;
+  transform: scaleX(0);
+  transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
   pointer-events: none;
 }
 
 .ai-glow-inner:focus-within::after {
-  width: 100%;
+  transform: scaleX(1);
 }
 
 /* On focus the snake disappears entirely: the spin stops and the border becomes
