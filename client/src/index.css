@@ -471,9 +471,10 @@ body::after {
 }
 
 /* On focus the snake disappears entirely: the spin stops and the border becomes
-   a calm solid neutral (same 1.5px thickness), leaving the Teams-purple
-   underline as the only focus cue. */
+   a calm solid neutral, thinned to 1px (matching the Orders border) so the grey
+   doesn't bleed under the purple underline. The snake itself stays 1.5px at rest. */
 .ai-glow-outer:focus-within {
   animation-play-state: paused;
   background: #d1d1d1;
+  padding: 1px;
 }
