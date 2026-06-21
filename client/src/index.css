@@ -385,11 +385,11 @@ body::after {
 }
 
 @keyframes ai-glow-pulse {
-  0%   { box-shadow: 0 0 0 0px rgba(0, 120, 212, 0),   0 0 6px 1px rgba(0, 120, 212, 0.10); }
-  25%  { box-shadow: 0 0 0 2px rgba(80, 160, 255, 0.08), 0 0 10px 3px rgba(80, 180, 255, 0.14); }
-  50%  { box-shadow: 0 0 0 2px rgba(100, 100, 240, 0.10), 0 0 12px 4px rgba(120, 100, 255, 0.12); }
-  75%  { box-shadow: 0 0 0 2px rgba(60, 180, 240, 0.08), 0 0 10px 3px rgba(60, 200, 255, 0.12); }
-  100% { box-shadow: 0 0 0 0px rgba(0, 120, 212, 0),   0 0 6px 1px rgba(0, 120, 212, 0.10); }
+  0%   { box-shadow: 0 0 0 1.5px rgba(0, 120, 212, 0.25); }
+  25%  { box-shadow: 0 0 0 1.5px rgba(80, 160, 255, 0.55); }
+  50%  { box-shadow: 0 0 0 1.5px rgba(110, 100, 245, 0.50); }
+  75%  { box-shadow: 0 0 0 1.5px rgba(50, 190, 250, 0.50); }
+  100% { box-shadow: 0 0 0 1.5px rgba(0, 120, 212, 0.25); }
 }
 
 .ai-glow-textarea {
