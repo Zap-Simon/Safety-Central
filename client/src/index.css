@@ -384,9 +384,14 @@ body::after {
   pointer-events: none;
 }
 
+@property --snake-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 @keyframes snake-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  to { --snake-angle: 360deg; }
 }
 
 .ai-glow-outer {
@@ -394,7 +399,7 @@ body::after {
   border-radius: 7px;
   animation: snake-spin 3s linear infinite;
   background: conic-gradient(
-    from 0deg,
+    from var(--snake-angle),
     #d1d1d1 0deg,
     #d1d1d1 195deg,
     rgba(50, 190, 250, 0.7) 220deg,
