@@ -42,6 +42,7 @@ export default function Actions() {
   const [localActionEdits, setLocalActionEdits] = useState<Record<string, { actionNotes?: string; actionAssignedTo?: string }>>({});
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
 
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
     const token = await authService.getAccessToken();
@@ -596,199 +597,256 @@ export default function Actions() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {sortedItems.map((item) => {
               const dueDateStatus = getDueDateStatus(item.actionDueDate);
-              const isCompleted = item.actionStatus === 'Completed';
+              const isCompleted = item.actionStatus === 'Completed' || item.actionStatus === 'Ready to Close';
+              const cardTop =
+                isCompleted ? 'bg-green-500' :
+                item.actionPriority === 'High' ? 'bg-red-500' :
+                item.actionPriority === 'Medium' ? 'bg-amber-400' :
+                item.actionPriority === 'Low' ? 'bg-green-400' : 'bg-gray-300';
 
               return (
-                <div
+                <button
                   key={item.id}
-                  className={`bg-white rounded-lg shadow-sm border overflow-hidden transition-opacity ${isCompleted ? 'opacity-60' : ''} ${
-                    item.actionPriority === 'High' && !isCompleted ? 'border-l-4 border-l-red-500 border-t border-r border-b border-gray-100' :
-                    item.actionPriority === 'Medium' && !isCompleted ? 'border-l-4 border-l-amber-500 border-t border-r border-b border-gray-100' :
-                    'border-l-4 border-l-gray-300 border-t border-r border-b border-gray-100'
-                  }`}
+                  onClick={() => setSelectedItem(item)}
+                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-amber-300 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-70' : ''}`}
+                  data-testid={`card-action-${item.id}`}
                 >
-                  {/* Top row: type/priority/status/due */}
-                  <div className="flex items-center gap-1.5 px-4 pt-3 pb-1 flex-wrap">
-                    <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600">
-                      {getTypeIcon(item.type)}
-                      {item.type}
-                    </span>
-                    <Badge variant="outline" className={`h-5 px-2 py-0 leading-none rounded-full text-xs font-medium ${getPriorityColor(item.actionPriority)}`}>
-                      {item.actionPriority || 'No Priority'}
-                    </Badge>
-                    <Badge variant="outline" className={`h-5 px-2 py-0 leading-none rounded-full text-xs font-medium ${getStatusColor(item.actionStatus)}`}>
-                      {item.actionStatus || 'Not Started'}
-                    </Badge>
-                    {dueDateStatus && !isCompleted && (
-                      <span className={`inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium ${dueDateStatus.color}`}>
-                        <Clock className="h-3 w-3" />{dueDateStatus.label}
+                  <div className={`h-1.5 w-full ${cardTop}`} />
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-start gap-1.5 flex-wrap">
+                      <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded-full bg-gray-50 border border-gray-200 text-[10px] font-medium text-gray-500">
+                        {getTypeIcon(item.type)}
                       </span>
-                    )}
-                    {isCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
-                    <span className="ml-auto inline-flex items-center h-5 px-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-500">Meeting: {formatDate(item.meetingDate)}</span>
-                  </div>
+                      <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getPriorityColor(item.actionPriority)}`}>
+                        {item.actionPriority || 'No Priority'}
+                      </Badge>
+                      <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
+                        {item.actionStatus || 'Not Started'}
+                      </Badge>
+                    </div>
 
-                  {/* Title */}
-                  <div className="px-4 pb-2">
-                    <h3 className={`font-semibold text-base ${isCompleted ? 'text-green-900 line-through' : 'text-gray-900'}`}>
+                    <h3 className={`font-semibold text-sm leading-snug ${isCompleted ? 'text-green-800 line-through' : 'text-gray-900'}`}>
                       {item.title || 'Untitled Action'}
                     </h3>
+
                     {item.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{item.description}</p>
+                      <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
                     )}
-                  </div>
 
-                  {/* Editable fields row */}
-                  <div className="px-4 pb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 [&>div]:min-w-0">
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Priority</label>
-                      <select
-                        value={item.actionPriority || ''}
-                        onChange={(e) => {
-                          const priority = e.target.value;
-                          let dueDate = '';
-                          if (priority) {
-                            const today = new Date();
-                            const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
-                            today.setDate(today.getDate() + daysToAdd);
-                            dueDate = today.toISOString().split('T')[0];
-                          }
-                          updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
-                        }}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
-                        data-testid={`select-action-priority-${item.id}`}
-                      >
-                        <option value="">No Priority</option>
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Status</label>
-                      <select
-                        value={item.actionStatus || ''}
-                        onChange={(e) => updateActionFields(item, { actionStatus: e.target.value })}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
-                        data-testid={`select-action-status-${item.id}`}
-                      >
-                        <option value="">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="On Hold">On Hold</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Ready to Close">Ready to Close</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Assigned To</label>
-                      <select
-                        value={getActionFieldValue(item, 'actionAssignedTo')}
-                        onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
-                        data-testid={`select-action-assigned-${item.id}`}
-                      >
-                        <option value="">Unassigned</option>
-                        {uniqueNames.map(name => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Due Date</label>
-                      <input
-                        type="date"
-                        value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
-                        onChange={(e) => updateActionFields(item, { actionDueDate: e.target.value })}
-                        className="w-full mt-0.5 text-xs border border-gray-200 rounded px-2 h-8 bg-white focus:border-amber-400 focus:outline-none min-w-0"
-                        data-testid={`input-action-due-date-${item.id}`}
-                      />
+                    <div className="pt-1 border-t border-gray-50 flex flex-col gap-1">
+                      {item.actionAssignedTo && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
+                          <User className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{item.actionAssignedTo}</span>
+                        </span>
+                      )}
+                      {dueDateStatus && !isCompleted ? (
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${dueDateStatus.color}`}>
+                          <Clock className="h-3 w-3 shrink-0" />{dueDateStatus.label}
+                        </span>
+                      ) : item.actionDueDate ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
+                          <Clock className="h-3 w-3 shrink-0" />{formatDate(item.actionDueDate)}
+                        </span>
+                      ) : null}
+                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
+                        <Calendar className="h-3 w-3 shrink-0" />Meeting: {formatDate(item.meetingDate)}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Action Notes - always visible */}
-                  <div className="px-4 pb-3 border-t border-gray-50 pt-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                        Action Notes <i className="fas fa-robot text-green-500 opacity-70"></i>
-                      </label>
-                      <div className="flex items-center gap-2">
-                        {localActionEdits[item.id]?.actionNotes !== undefined && (
-                          <span className="text-xs text-amber-600 italic flex items-center gap-1">
-                            <i className="fas fa-pencil-alt text-[10px]"></i>Editing...
-                          </span>
-                        )}
-                        {recentlySavedActions.has(item.id) && !localActionEdits[item.id]?.actionNotes && (
-                          <span className="text-xs text-green-600 flex items-center gap-1">
-                            <i className="fas fa-check text-[10px]"></i>Saved
-                          </span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const currentNotes = getActionFieldValue(item, 'actionNotes');
-                            if (!currentNotes.trim()) return;
-                            setIsEnhancingActionNotes(item.id);
-                            try {
-                              const response = await fetch('/api/ai-enhance-notes', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await authService.getAccessToken()}` },
-                                body: JSON.stringify({ content: currentNotes, itemType: 'Action Notes' })
-                              });
-                              if (response.ok) {
-                                const data = await response.json();
-                                setLocalActionEdits(prev => ({ ...prev, [item.id]: { ...prev[item.id], actionNotes: data.enhancedContent } }));
-                                handleActionTextChange(item, 'actionNotes', data.enhancedContent);
-                              }
-                            } catch (error) {
-                              console.error('AI enhancement failed:', error);
-                            } finally {
-                              setIsEnhancingActionNotes('');
-                            }
-                          }}
-                          disabled={!getActionFieldValue(item, 'actionNotes').trim() || isEnhancingActionNotes === item.id}
-                          className="text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white px-2 py-0.5 rounded flex items-center gap-1"
-                        >
-                          {isEnhancingActionNotes === item.id ? (
-                            <><i className="fas fa-spinner fa-spin text-[10px]"></i>Enhancing...</>
-                          ) : (
-                            <><i className="fas fa-wand-magic-sparkles text-[10px]"></i>Finish Text</>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <textarea
-                      value={getActionFieldValue(item, 'actionNotes')}
-                      onChange={(e) => handleActionTextChange(item, 'actionNotes', e.target.value)}
-                      placeholder="Add action notes..."
-                      rows={2}
-                      className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-gray-50 focus:bg-white focus:border-amber-400 focus:outline-none resize-none"
-                      data-testid={`textarea-action-notes-${item.id}`}
-                    />
-                  </div>
-
-                  {/* Meeting Discussion - compact */}
-                  {item.meetingNotes && item.meetingNotes.trim() && (
-                    <div className="px-4 pb-3">
-                      <p className="text-xs text-gray-500">
-                        <span className="font-medium text-gray-600">Discussion: </span>
-                        {item.meetingNotes}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Footer metadata */}
-                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-3 text-xs text-gray-400">
-                    <span className="flex items-center gap-1"><User className="h-3 w-3" />Submitted by: {item.submittedBy}</span>
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Submitted: {formatDate(item.submittedDate)}</span>
-                  </div>
-                </div>
+                </button>
               );
             })}
           </div>
         )}
+
+      {/* Action detail modal */}
+      {selectedItem && (() => {
+        const item = selectedItem;
+        return (
+          <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 pr-6">
+                  {getTypeIcon(item.type)}
+                  <span className="leading-snug">{item.title || 'Untitled Action'}</span>
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 py-2">
+                {item.description && (
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                )}
+
+                {/* Quick-complete banner */}
+                {item.actionStatus !== 'Completed' && (
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+                    onClick={() => {
+                      updateActionFields(item, { actionStatus: 'Completed' });
+                      setSelectedItem({ ...item, actionStatus: 'Completed' });
+                    }}
+                    disabled={isUpdatingAction === item.id}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Mark as Completed
+                  </Button>
+                )}
+
+                {item.actionStatus === 'Completed' && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                    <CheckCircle className="h-4 w-4" />Completed
+                  </div>
+                )}
+
+                {/* Editable fields */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Priority</label>
+                    <select
+                      value={item.actionPriority || ''}
+                      onChange={(e) => {
+                        const priority = e.target.value;
+                        let dueDate = item.actionDueDate || '';
+                        if (priority && !item.actionDueDate) {
+                          const today = new Date();
+                          today.setDate(today.getDate() + (priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30));
+                          dueDate = today.toISOString().split('T')[0];
+                        }
+                        updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
+                        setSelectedItem({ ...item, actionPriority: priority, actionDueDate: dueDate });
+                      }}
+                      className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
+                    >
+                      <option value="">No Priority</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                    <select
+                      value={item.actionStatus || ''}
+                      onChange={(e) => {
+                        updateActionFields(item, { actionStatus: e.target.value });
+                        setSelectedItem({ ...item, actionStatus: e.target.value });
+                      }}
+                      className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
+                    >
+                      <option value="">Not Started</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="On Hold">On Hold</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Ready to Close">Ready to Close</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Assigned To</label>
+                    <select
+                      value={getActionFieldValue(item, 'actionAssignedTo')}
+                      onChange={(e) => {
+                        handleActionTextChange(item, 'actionAssignedTo', e.target.value);
+                        setSelectedItem({ ...item, actionAssignedTo: e.target.value });
+                      }}
+                      className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
+                    >
+                      <option value="">Unassigned</option>
+                      {uniqueNames.map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Due Date</label>
+                    <input
+                      type="date"
+                      value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
+                      onChange={(e) => {
+                        updateActionFields(item, { actionDueDate: e.target.value });
+                        setSelectedItem({ ...item, actionDueDate: e.target.value });
+                      }}
+                      className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Notes */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                      Action Notes <i className="fas fa-robot text-green-500 opacity-70"></i>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {localActionEdits[item.id]?.actionNotes !== undefined && (
+                        <span className="text-xs text-amber-600 italic">Editing…</span>
+                      )}
+                      {recentlySavedActions.has(item.id) && !localActionEdits[item.id]?.actionNotes && (
+                        <span className="text-xs text-green-600 flex items-center gap-1"><i className="fas fa-check text-[10px]"></i>Saved</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const currentNotes = getActionFieldValue(item, 'actionNotes');
+                          if (!currentNotes.trim()) return;
+                          setIsEnhancingActionNotes(item.id);
+                          try {
+                            const response = await fetch('/api/ai-enhance-notes', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await authService.getAccessToken()}` },
+                              body: JSON.stringify({ content: currentNotes, itemType: 'Action Notes' })
+                            });
+                            if (response.ok) {
+                              const data = await response.json();
+                              setLocalActionEdits(prev => ({ ...prev, [item.id]: { ...prev[item.id], actionNotes: data.enhancedContent } }));
+                              handleActionTextChange(item, 'actionNotes', data.enhancedContent);
+                            }
+                          } catch (e) {
+                            console.error('AI enhancement failed:', e);
+                          } finally {
+                            setIsEnhancingActionNotes('');
+                          }
+                        }}
+                        disabled={!getActionFieldValue(item, 'actionNotes').trim() || isEnhancingActionNotes === item.id}
+                        className="text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white px-2 py-0.5 rounded flex items-center gap-1"
+                      >
+                        {isEnhancingActionNotes === item.id
+                          ? <><i className="fas fa-spinner fa-spin text-[10px]"></i>Enhancing...</>
+                          : <><i className="fas fa-wand-magic-sparkles text-[10px]"></i>Finish Text</>}
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    value={getActionFieldValue(item, 'actionNotes')}
+                    onChange={(e) => handleActionTextChange(item, 'actionNotes', e.target.value)}
+                    placeholder="Add action notes..."
+                    rows={3}
+                    className="w-full text-sm border border-gray-200 rounded px-3 py-2 bg-gray-50 focus:bg-white focus:border-amber-400 focus:outline-none resize-none"
+                  />
+                </div>
+
+                {/* Meeting discussion */}
+                {item.meetingNotes && item.meetingNotes.trim() && (
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-[10px] font-medium text-blue-600 uppercase tracking-wide mb-1">Meeting Discussion</p>
+                    <p className="text-sm text-gray-700">{item.meetingNotes}</p>
+                  </div>
+                )}
+
+                {/* Metadata footer */}
+                <div className="flex flex-wrap gap-3 text-xs text-gray-400 pt-1 border-t border-gray-100">
+                  <span className="flex items-center gap-1"><User className="h-3 w-3" />Submitted by {item.submittedBy}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Submitted {formatDate(item.submittedDate)}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />Meeting {formatDate(item.meetingDate)}</span>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
         </div>
       </div>
 
