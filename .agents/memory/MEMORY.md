@@ -14,3 +14,4 @@
 - [Teams swipe-to-delete (framer-motion)](teams-swipe-to-delete.md) — admin order cards delete via left-swipe; Fluent v9 has no swipe primitive; need dragDirectionLock + touchAction pan-y or vertical scroll breaks.
 - [Auth 401 returns a benign {data:[]} body](auth-401-empty-body-trap.md) — data endpoints 401 with a success-shaped {data:[]}; queries MUST check res.ok or items silently vanish after deploys; retry transient only, not interaction-required.
 - [Meeting date grouping consistency](meeting-date-grouping-consistency.md) — per-meeting counts/filters MUST use getDateGroupKey (UTC) not isSameDay (local), or items with calculated dates get miscounted (e.g. 17 vs 25).
+- [Teams SSO token staleness](teams-sso-token-staleness.md) — don't cache the init-time SSO token; fetch fresh via getToken() per request or idle tabs hit bogus "sign-in expired" until reload.

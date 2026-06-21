@@ -333,7 +333,7 @@ export default function SubmitTab() {
 
   // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
   // never re-triggers the "Signing you in…" loader.
-  const { authState, teamsToken, userName, authError, retry } = useTeamsAuth();
+  const { authState, teamsToken, userName, authError, retry, getToken } = useTeamsAuth();
 
   // Restore any in-progress draft once on mount (survives tab switch / app close).
   const [draft] = useState(loadDraft);
@@ -399,9 +399,10 @@ export default function SubmitTab() {
     if (inflight) return inflight;
 
     const promise = (async () => {
+      const token = await getToken();
       const resp = await fetch("/api/ai-classify", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${teamsToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ text: key }),
       });
       const data = await resp.json();
@@ -430,7 +431,7 @@ export default function SubmitTab() {
     setInputText(value);
     if (classifyTimer.current) clearTimeout(classifyTimer.current);
     const key = value.trim();
-    if (key.length >= 20 && teamsToken && !classifyCache.current.has(key)) {
+    if (key.length >= 20 && authState === "authenticated" && !classifyCache.current.has(key)) {
       // Only flag "reading" once the request is actually in flight (after the
       // pause), not during typing — otherwise the UI implies the AI is working
       // while the user is still writing.
@@ -469,7 +470,7 @@ export default function SubmitTab() {
 
   // ─── Submission ───────────────────────────────────────────────────────────
   async function handleSubmit() {
-    if (!classifyResult || !teamsToken) return;
+    if (!classifyResult || authState !== "authenticated") return;
     setStep("submitting");
     setSubmitError("");
 
@@ -488,9 +489,10 @@ export default function SubmitTab() {
         : undefined;
 
     try {
+      const token = await getToken();
       const resp = await fetch("/api/sharepoint/create-item", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${teamsToken}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           listType,
           deferTitle: true,

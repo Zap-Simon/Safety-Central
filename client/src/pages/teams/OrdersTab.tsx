@@ -141,7 +141,7 @@ export default function OrdersTab() {
   const qc = useQueryClient();
   // Auth is shared across both tabs (see TeamsAuthProvider) so switching tabs
   // never re-triggers the "Signing you in…" loader.
-  const { authState, teamsToken, userName, authError, retry } = useTeamsAuth();
+  const { authState, teamsToken, userName, authError, retry, getToken } = useTeamsAuth();
   const [itemText, setItemText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -150,10 +150,12 @@ export default function OrdersTab() {
     queryKey: ["/api/orders/is-admin", teamsToken ? "token" : "none"],
     enabled: authState === "authenticated" && !!teamsToken,
     staleTime: 5 * 60 * 1000,
-    queryFn: () =>
-      fetch("/api/orders/is-admin", {
-        headers: { Authorization: `Bearer ${teamsToken}` },
-      }).then((r) => r.json()),
+    queryFn: async () => {
+      const token = await getToken();
+      return fetch("/api/orders/is-admin", {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json());
+    },
   });
 
   const userIsAdmin = adminData?.isAdmin === true;
@@ -170,11 +172,12 @@ export default function OrdersTab() {
   // ─── Add item ─────────────────────────────────────────────────────────────
   const addMutation = useMutation({
     mutationFn: async (payload: { itemName: string }) => {
+      const token = await getToken();
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${teamsToken}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -211,9 +214,10 @@ export default function OrdersTab() {
   // ─── Remove a single item (admin) ─────────────────────────────────────────
   const removeMutation = useMutation({
     mutationFn: async ({ id }: { id: number }) => {
+      const token = await getToken();
       const res = await fetch(`/api/orders/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${teamsToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to remove item");
@@ -239,9 +243,10 @@ export default function OrdersTab() {
   // ─── Clear the whole list (admin) ─────────────────────────────────────────
   const clearMutation = useMutation({
     mutationFn: async () => {
+      const token = await getToken();
       const res = await fetch("/api/orders/clear", {
         method: "POST",
-        headers: { Authorization: `Bearer ${teamsToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to clear list");

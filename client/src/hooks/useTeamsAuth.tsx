@@ -10,6 +10,15 @@ interface TeamsAuth {
   userName: string;
   authError: string;
   retry: () => void;
+  /**
+   * Always returns a *fresh* Teams SSO token. The Teams JS SDK caches and
+   * silently refreshes the token internally, so call this right before every
+   * API request rather than reusing the token captured at first load —
+   * otherwise a token that expired while the tab sat idle gets sent to the
+   * server, the OBO exchange fails, and the user sees a bogus
+   * "sign-in expired" error even though they're still signed in.
+   */
+  getToken: () => Promise<string>;
 }
 
 // Minimal, dependency-free JWT payload decode (browser-safe, no validation —
@@ -61,13 +70,38 @@ export function TeamsAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Fetch a fresh Teams SSO token for an outgoing request. The SDK handles its
+  // own caching/refresh, so this is cheap on the happy path and transparently
+  // returns a new token once the old one expires. We refresh the stored token
+  // (and any derived display name) so the rest of the UI stays in sync.
+  const getToken = useCallback(async (): Promise<string> => {
+    try {
+      await microsoftTeams.app.initialize();
+      const ssoToken = await microsoftTeams.authentication.getAuthToken();
+      const payload = decodeJwtPayload(ssoToken);
+      setUserName(payload.name || payload.preferred_username || payload.upn || "");
+      setTeamsToken(ssoToken);
+      setAuthError("");
+      setAuthState("authenticated");
+      return ssoToken;
+    } catch (err: any) {
+      const msg = `Teams sign-in failed: ${err?.message || String(err)}`;
+      console.error(msg, err);
+      setAuthError(msg);
+      setUserName("");
+      setTeamsToken(null);
+      setAuthState("unauthenticated");
+      throw new Error(msg);
+    }
+  }, []);
+
   useEffect(() => {
     initAuth();
   }, [initAuth]);
 
   return (
     <TeamsAuthContext.Provider
-      value={{ authState, teamsToken, userName, authError, retry: initAuth }}
+      value={{ authState, teamsToken, userName, authError, retry: initAuth, getToken }}
     >
       {children}
     </TeamsAuthContext.Provider>
