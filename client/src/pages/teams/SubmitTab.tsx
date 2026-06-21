@@ -601,7 +601,7 @@ export default function SubmitTab() {
   // stay inside as the cycling placeholder) with the tagline + descriptor below.
   const inputEl = (
     <>
-      <div className={styles.textareaWrap}>
+      <div className={`${styles.textareaWrap} ai-glow-textarea`}>
         <Textarea
           textarea={{ ref: mainInputRef, rows: 5 }}
           placeholder={EXAMPLES[exampleIdx]}
