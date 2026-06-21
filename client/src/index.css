@@ -411,6 +411,7 @@ body::after {
 }
 
 .ai-glow-inner {
+  position: relative;
   border-radius: 5.5px;
   background: #ffffff;
   overflow: hidden;
@@ -421,6 +422,33 @@ body::after {
   background-color: transparent;
 }
 
+/* Suppress Fluent's native short bottom focus underline — we replace it below. */
 .ai-glow-inner .fui-Textarea::after {
-  display: none;
+  display: none !important;
+}
+
+/* Focus nod to Fluent's classic design: a brand-blue underline that grows from
+   the centre out to full width when the field is focused. */
+.ai-glow-inner::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #50bef5, #0078d4 50%, #6e64f5);
+  border-radius: 2px 2px 0 0;
+  transition: width 0.25s cubic-bezier(0.33, 0, 0.1, 1);
+  pointer-events: none;
+}
+
+.ai-glow-inner:focus-within::after {
+  width: 100%;
+}
+
+/* The snake border "wakes up" on focus: spins a touch faster with a soft glow. */
+.ai-glow-outer:focus-within {
+  animation-duration: 1.8s;
+  box-shadow: 0 0 0 1px rgba(0, 120, 212, 0.18), 0 2px 12px rgba(0, 120, 212, 0.18);
 }
