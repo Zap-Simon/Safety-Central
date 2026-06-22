@@ -904,7 +904,7 @@ export default function Actions() {
                       >
                         {isEnhancingActionNotes === item.id
                           ? <><i className="fas fa-spinner fa-spin text-[10px]"></i>Enhancing...</>
-                          : <><i className="fas fa-wand-magic-sparkles text-[10px]"></i>Finish Text</>}
+                          : <><i className="fas fa-wand-magic-sparkles text-[10px]"></i>Improve Writing</>}
                       </button>
                     </div>
                   </div>
