@@ -1025,12 +1025,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use clean SharePoint Lists service with delegated permissions
       const listsService = new SharePointListsService(accessToken);
       
-      // Fetch main lists and local action data in parallel
-      const [businessIdeas, safetyIdeas, nearMiss, localActionItems] = await Promise.all([
+      // Fetch main lists, local action data, and near-miss investigations in parallel
+      const [businessIdeas, safetyIdeas, nearMiss, localActionItems, allInvestigations] = await Promise.all([
         listsService.getBusinessIdeas(),
         listsService.getSafetyIdeas(),
         listsService.getNearMiss(),
-        storage.getAllActionItems()
+        storage.getAllActionItems(),
+        storage.getAllCompletedInvestigations().catch(() => [] as any[]),
       ]);
       
       // Create a map of local action items by sharePointItemId for quick lookup
@@ -1038,27 +1039,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const actionItem of localActionItems) {
         actionItemsMap.set(actionItem.sharePointItemId, actionItem);
       }
+
+      // Map investigations by nearMissItemId (prefer Complete over Draft when both exist)
+      const investigationMap = new Map<string, any>();
+      for (const inv of allInvestigations) {
+        const existing = investigationMap.get(inv.nearMissItemId);
+        if (!existing || inv.status === 'Complete') {
+          investigationMap.set(inv.nearMissItemId, {
+            investigationStatus: inv.status,
+            investigatorName: inv.investigatorName,
+            riskLevel: inv.riskLevel,          // schema column is riskLevel (risk_level)
+            resultingActions: inv.resultingActions,
+            directorName: inv.directorName,
+            signedAt: inv.signedAt,
+          });
+        }
+      }
       
       // Combine all items into single array and merge local action data
       // Use nullish coalescing (??) to allow intentional clears (empty strings)
       const allItems = [...businessIdeas, ...safetyIdeas, ...nearMiss].map(item => {
         const localAction = actionItemsMap.get(item.id);
-        if (localAction) {
-          return {
-            ...item,
-            actionPriority: localAction.actionPriority ?? item.actionPriority,
-            actionStatus: localAction.actionStatus ?? item.actionStatus,
-            actionAssignedTo: localAction.actionAssignedTo ?? item.actionAssignedTo,
-            actionStartDate: localAction.actionStartDate ?? item.actionStartDate,
-            actionDueDate: localAction.actionDueDate ?? item.actionDueDate,
-            actionNotes: localAction.actionNotes ?? item.actionNotes,
-            // Local meeting notes override SharePoint (local is always latest save)
-            meetingNotes: localAction.meetingNotes !== null && localAction.meetingNotes !== undefined
-              ? localAction.meetingNotes
-              : item.meetingNotes
-          };
-        }
-        return item;
+        const investigation = investigationMap.get(item.id);
+        const merged = localAction ? {
+          ...item,
+          actionPriority: localAction.actionPriority ?? item.actionPriority,
+          actionStatus: localAction.actionStatus ?? item.actionStatus,
+          actionAssignedTo: localAction.actionAssignedTo ?? item.actionAssignedTo,
+          actionStartDate: localAction.actionStartDate ?? item.actionStartDate,
+          actionDueDate: localAction.actionDueDate ?? item.actionDueDate,
+          actionNotes: localAction.actionNotes ?? item.actionNotes,
+          // Local meeting notes override SharePoint (local is always latest save)
+          meetingNotes: localAction.meetingNotes !== null && localAction.meetingNotes !== undefined
+            ? localAction.meetingNotes
+            : item.meetingNotes
+        } : item;
+        // Attach investigation summary to Near Miss items
+        return investigation ? { ...merged, investigation } : merged;
       });
 
       res.json({
@@ -6098,6 +6115,367 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     } catch (error) {
       console.error('Error clearing order items:', error);
       res.status(500).json({ success: false, error: 'Failed to clear order items' });
+    }
+  });
+
+  // ─── Near Miss Investigation endpoints ──────────────────────────────────────
+
+  // Helper: validate a Bearer token by resolving the caller via Graph /me.
+  // Returns the caller object on success, sends 401 and returns null on failure.
+  // Uses the same trust model as all other authenticated endpoints in this app:
+  // tokens are validated by forwarding them to Microsoft Graph — invalid/expired
+  // tokens cause Graph to return 401, which propagates as null here.
+  async function requireNearMissAuth(req: any, res: any): Promise<{ displayName: string; email: string } | null> {
+    const caller = await resolveCallerFromToken(req.headers.authorization);
+    if (!caller) {
+      res.status(401).json({ success: false, error: 'Authentication required. Please sign in with Microsoft 365.' });
+      return null;
+    }
+    return caller;
+  }
+
+  // GET /api/near-miss-investigations/:nearMissItemId
+  app.get('/api/near-miss-investigations/:nearMissItemId', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const inv = await storage.getNearMissInvestigation(req.params.nearMissItemId);
+      res.json({ success: true, data: inv || null });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to fetch investigation' });
+    }
+  });
+
+  // GET /api/near-miss-investigations/completed/all
+  app.get('/api/near-miss-investigations/completed/all', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const invs = await storage.getAllCompletedInvestigations();
+      res.json({ success: true, data: invs });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to fetch investigations' });
+    }
+  });
+
+  // POST /api/near-miss-investigations
+  app.post('/api/near-miss-investigations', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const inv = await storage.createNearMissInvestigation(req.body);
+      res.json({ success: true, data: inv });
+    } catch (error) {
+      console.error('Create investigation error:', error);
+      res.status(500).json({ success: false, error: 'Failed to create investigation' });
+    }
+  });
+
+  // PUT /api/near-miss-investigations/:id
+  // Completed investigations are immutable — reject edits after sign-off.
+  app.put('/api/near-miss-investigations/:id', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
+      // Enforce immutability: do not allow edits to a completed investigation
+      const existing = await storage.getNearMissInvestigationById(id);
+      if (existing && existing.status === 'Complete') {
+        return res.status(403).json({ success: false, error: 'This investigation is complete and cannot be edited.' });
+      }
+      const inv = await storage.updateNearMissInvestigation(id, req.body);
+      res.json({ success: true, data: inv });
+    } catch (error) {
+      console.error('Update investigation error:', error);
+      res.status(500).json({ success: false, error: 'Failed to update investigation' });
+    }
+  });
+
+  // POST /api/near-miss-investigations/:id/complete
+  app.post('/api/near-miss-investigations/:id/complete', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
+      const { directorName, directorSignature, signedAt } = req.body;
+      const inv = await storage.updateNearMissInvestigation(id, { status: 'Complete', directorName, directorSignature, signedAt });
+      res.json({ success: true, data: inv });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to complete investigation' });
+    }
+  });
+
+  // POST /api/ai-near-miss-draft
+  app.post('/api/ai-near-miss-draft', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const { section, context } = req.body;
+      if (!section || !context) return res.status(400).json({ success: false, error: 'section and context required' });
+
+      let systemPrompt = '';
+      let userPrompt = '';
+
+      if (section === 'description') {
+        systemPrompt = `You are assisting with a workplace health & safety investigation report for Cranfield Glass Christchurch, a glass and glazing company in New Zealand. Write a clear, factual, professional narrative describing how a near miss / incident occurred. Use plain English — not overly formal. Write in third person. 2-4 paragraphs.`;
+        userPrompt = `Write the "How did this event happen?" section based on:
+Title: ${context.title || ''}
+Original description: ${context.description || ''}
+How it happened: ${context.secondaryDescription || ''}
+Meeting notes: ${context.meetingNotes || ''}
+Action notes: ${context.actionNotes || ''}
+Event type: ${context.eventType || 'Near Miss'}
+Site/Job: ${context.siteJob || ''}
+Involved persons: ${context.involvedPersons || ''}`;
+      } else if (section === 'contributing') {
+        systemPrompt = `You are assisting with a workplace health & safety investigation. Write the "Contributing Factors" section — explaining what processes were broken, what safeguards were missing, or what conditions allowed this event to occur. Be specific and honest. Use numbered points. Plain English.`;
+        userPrompt = `Based on this near miss event, draft the contributing factors section:
+Title: ${context.title || ''}
+Description: ${context.description || ''}
+Existing contributing factors: ${context.existing || ''}`;
+      } else if (section === 'actions') {
+        systemPrompt = `You are assisting with a workplace H&S investigation. Write a list of resulting actions to prevent recurrence. Use bullet points starting with "•". Be specific and practical. Include training, process changes, communication actions.`;
+        userPrompt = `Draft resulting actions for this near miss:
+Title: ${context.title || ''}
+Description: ${context.description || ''}
+Existing actions: ${context.existing || ''}`;
+      } else {
+        return res.status(400).json({ success: false, error: 'Invalid section' });
+      }
+
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        max_tokens: 500,
+        temperature: 0.4,
+      });
+      const draft = response.choices[0].message.content?.trim() || '';
+      res.json({ success: true, draft });
+    } catch (error) {
+      console.error('AI near-miss draft error:', error);
+      res.status(500).json({ success: false, error: 'AI draft failed' });
+    }
+  });
+
+  // POST /api/generate-near-miss-report
+  app.post('/api/generate-near-miss-report', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const d = req.body;
+      const hazards: any[] = typeof d.hazards === 'string' ? JSON.parse(d.hazards) : (d.hazards || []);
+      const resultingActions: any[] = typeof d.resultingActions === 'string' ? JSON.parse(d.resultingActions) : (d.resultingActions || []);
+
+      // HTML-escape all user-controlled strings to prevent XSS in the exported report.
+      // The report is opened as a standalone HTML page in the browser, so any script
+      // injected via user input (titles, descriptions, names) could execute.
+      const esc = (s: string | undefined | null): string => {
+        if (!s) return '—';
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#x27;');
+      };
+
+      const riskColor = (r: string) =>
+        r === 'Extreme' ? '#000000' : r === 'High' ? '#ef4444' : r === 'Moderate' ? '#eab308' : '#22c55e';
+
+      const riskTextColor = (r: string) => r === 'Extreme' ? '#ffffff' : r === 'Moderate' ? '#000000' : '#ffffff';
+
+      const formatDate = (s: string) => {
+        if (!s) return '—';
+        try { return new Date(s).toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric' }); } catch { return s; }
+      };
+
+      const LIKELIHOODS = ['Rare', 'Unlikely', 'Possible', 'Very Likely', 'Almost Certain'];
+      const CONSEQUENCES = ['Superficial', 'Minor', 'Moderate', 'Major', 'Catastrophic'];
+      const RISK_MATRIX: Record<string, Record<string, string>> = {
+        'Rare': { 'Superficial': 'Low', 'Minor': 'Low', 'Moderate': 'Low', 'Major': 'Low', 'Catastrophic': 'Moderate' },
+        'Unlikely': { 'Superficial': 'Low', 'Minor': 'Low', 'Moderate': 'Low', 'Major': 'Moderate', 'Catastrophic': 'High' },
+        'Possible': { 'Superficial': 'Low', 'Minor': 'Low', 'Moderate': 'Moderate', 'Major': 'Moderate', 'Catastrophic': 'High' },
+        'Very Likely': { 'Superficial': 'Low', 'Minor': 'Moderate', 'Moderate': 'Moderate', 'Major': 'High', 'Catastrophic': 'High' },
+        'Almost Certain': { 'Superficial': 'Moderate', 'Minor': 'Moderate', 'Moderate': 'High', 'Major': 'High', 'Catastrophic': 'Extreme' },
+      };
+
+      const matrixRows = LIKELIHOODS.map(l => {
+        const cells = CONSEQUENCES.map(c => {
+          const r = RISK_MATRIX[l]?.[c] || 'Low';
+          const isSelected = l === d.likelihood && c === d.consequence;
+          return `<td style="padding:6px;text-align:center;font-weight:bold;font-size:10pt;background:${riskColor(r)};color:${riskTextColor(r)};${isSelected ? 'outline:3px solid #1d4ed8;' : ''}">${r}</td>`;
+        }).join('');
+        return `<tr><td style="padding:6px;font-size:9pt;white-space:nowrap;font-weight:500;">${l}</td>${cells}</tr>`;
+      }).join('');
+
+      const hazardRows = hazards.length > 0 ? hazards.map((h: any) => `
+        <tr style="border-bottom:1px solid #e5e7eb;">
+          <td style="padding:8px;font-size:10pt;">${esc(h.hazard)}</td>
+          <td style="padding:8px;font-size:10pt;text-align:center;">${esc(h.likelihood)}</td>
+          <td style="padding:8px;font-size:10pt;text-align:center;">${esc(h.consequence)}</td>
+          <td style="padding:8px;text-align:center;"><span style="background:${riskColor(h.risk)};color:${riskTextColor(h.risk)};font-weight:bold;padding:3px 8px;border-radius:4px;font-size:9pt;">${esc(h.risk)}</span></td>
+          <td style="padding:8px;font-size:10pt;">${esc(h.control)}</td>
+        </tr>`).join('') : `<tr><td colspan="5" style="padding:10px;text-align:center;color:#9ca3af;font-style:italic;">No hazards recorded</td></tr>`;
+
+      const actionRows = resultingActions.length > 0 ? resultingActions.map((a: any) => `
+        <tr style="border-bottom:1px solid #e5e7eb;">
+          <td style="padding:8px;font-size:10pt;">${esc(a.description)}</td>
+          <td style="padding:8px;font-size:10pt;text-align:center;">${esc(a.assignedTo)}</td>
+          <td style="padding:8px;text-align:center;"><span style="background:${a.completed ? '#22c55e' : '#e5e7eb'};color:${a.completed ? '#fff' : '#374151'};padding:2px 8px;border-radius:4px;font-size:9pt;">${a.completed ? 'Done' : 'Pending'}</span></td>
+        </tr>`).join('') : `<tr><td colspan="3" style="padding:10px;text-align:center;color:#9ca3af;font-style:italic;">No resulting actions recorded</td></tr>`;
+
+      const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Near Miss Investigation Report — ${esc(d.itemTitle)}</title>
+  <script>${PAGEDJS_SCRIPT}</script>
+  <style>
+    @page { size: A4; margin: 20mm 18mm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; color: #6b7280; } }
+    body { font-family: Arial, sans-serif; font-size: 11pt; color: #111827; margin: 0; }
+    .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px; }
+    .logo { font-size: 18pt; font-weight: bold; color: #1e3a5f; }
+    .doc-meta { text-align: right; font-size: 9pt; color: #6b7280; }
+    .report-title { font-size: 16pt; font-weight: bold; color: #ea580c; margin: 0 0 4px 0; }
+    .section { break-inside: avoid; margin-bottom: 20px; }
+    .section-header { background: #f3f4f6; padding: 8px 12px; font-weight: bold; font-size: 12pt; color: #1e3a5f; border-left: 4px solid #ea580c; margin-bottom: 10px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .field { margin-bottom: 6px; }
+    .field-label { font-size: 8.5pt; font-weight: bold; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-value { font-size: 10.5pt; color: #111827; margin-top: 2px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; min-height: 22px; }
+    .narrative { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; font-size: 10.5pt; line-height: 1.6; white-space: pre-wrap; }
+    table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+    th { background: #1e3a5f; color: white; padding: 8px; text-align: left; font-size: 9pt; }
+    .risk-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 9pt; }
+    .sig-block { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center; }
+    .sig-line { border-bottom: 2px solid #374151; min-height: 60px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">CRANFIELD GLASS CHRISTCHURCH</div>
+      <div class="report-title">Accident / Near Miss Investigation Report</div>
+      <div style="font-size:9pt;color:#6b7280;">Form Version 2 | Review 30/11/2025</div>
+    </div>
+    <div class="doc-meta">
+      <div>Report ID: CG-NM-${new Date().toLocaleDateString('en-NZ').replace(/\//g, '')}</div>
+      <div>Generated: ${new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+      <div style="margin-top:6px;padding:4px 8px;background:${d.status === 'Complete' ? '#22c55e' : '#f59e0b'};color:white;border-radius:4px;font-weight:bold;font-size:9pt;">Status: ${esc(d.status) || 'Draft'}</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Event Details -->
+  <div class="section">
+    <div class="section-header">1. Event Details</div>
+    <div class="field-grid">
+      <div class="field"><div class="field-label">Investigator</div><div class="field-value">${esc(d.investigatorName)}</div></div>
+      <div class="field"><div class="field-label">Site / Job</div><div class="field-value">${esc(d.siteJob)}</div></div>
+      <div class="field"><div class="field-label">Date of Event</div><div class="field-value">${formatDate(d.eventDate)}</div></div>
+      <div class="field"><div class="field-label">Time of Event</div><div class="field-value">${esc(d.eventTime)}</div></div>
+      <div class="field"><div class="field-label">Meeting Date</div><div class="field-value">${formatDate(d.meetingDate)}</div></div>
+      <div class="field"><div class="field-label">Event Type</div><div class="field-value">${esc(d.eventType)}</div></div>
+    </div>
+  </div>
+
+  <!-- Section 2: Involved Persons & Description -->
+  <div class="section">
+    <div class="section-header">2. Involved Persons & Description</div>
+    <div class="field-grid">
+      <div class="field"><div class="field-label">Involved Person(s)</div><div class="field-value">${esc(d.involvedPersons)}</div></div>
+      <div class="field"><div class="field-label">Witnesses</div><div class="field-value">${esc(d.witnesses)}</div></div>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <div class="field-label" style="margin-bottom:6px;">How Did This Event Happen?</div>
+      <div class="narrative">${esc(d.eventDescription)}</div>
+    </div>
+    <div class="field">
+      <div class="field-label" style="margin-bottom:6px;">Contributing Factors</div>
+      <div class="narrative">${esc(d.contributingFactors)}</div>
+    </div>
+  </div>
+
+  <!-- Section 3: Risk Assessment -->
+  <div class="section">
+    <div class="section-header">3. Risk Assessment</div>
+
+    <div style="margin-bottom:16px;">
+      <div class="field-label" style="margin-bottom:8px;">Risk Matrix — Consequence of Event Occurring</div>
+      <table style="border-collapse:collapse;font-size:9pt;">
+        <thead>
+          <tr>
+            <th style="padding:6px;background:#374151;text-align:left;white-space:nowrap;width:130px;">Likelihood ↓ / Consequence →</th>
+            ${CONSEQUENCES.map(c => `<th style="padding:6px;background:#374151;text-align:center;min-width:70px;">${c}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>${matrixRows}</tbody>
+      </table>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:9pt;color:#6b7280;">Overall Risk:</span>
+        <span style="background:${riskColor(d.riskLevel)};color:${riskTextColor(d.riskLevel)};font-weight:bold;padding:4px 12px;border-radius:4px;font-size:10pt;">${esc(d.riskLevel)}</span>
+        ${d.likelihood && d.consequence ? `<span style="font-size:9pt;color:#6b7280;">(${esc(d.likelihood)} × ${esc(d.consequence)})</span>` : ''}
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div class="field-label" style="margin-bottom:8px;">Hazard Register</div>
+      <table>
+        <thead><tr>
+          <th>Hazard</th><th style="text-align:center;">Likelihood</th><th style="text-align:center;">Consequence</th><th style="text-align:center;">Risk</th><th>Control / Response</th>
+        </tr></thead>
+        <tbody>${hazardRows}</tbody>
+      </table>
+    </div>
+
+    <div class="field">
+      <div class="field-label" style="margin-bottom:6px;">Treatment Given</div>
+      <div class="narrative">${esc(d.treatmentGiven)}</div>
+    </div>
+  </div>
+
+  <!-- Section 4: Resulting Actions -->
+  <div class="section">
+    <div class="section-header">4. Resulting Actions</div>
+    <table>
+      <thead><tr>
+        <th>Action</th><th style="text-align:center;width:140px;">Assigned To</th><th style="text-align:center;width:80px;">Status</th>
+      </tr></thead>
+      <tbody>${actionRows}</tbody>
+    </table>
+  </div>
+
+  <!-- Director Sign-Off -->
+  <div class="section" style="break-before:avoid;">
+    <div class="section-header">Director Review &amp; Sign-Off</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="sig-block">
+        <div style="font-weight:bold;font-size:11pt;margin-bottom:4px;">${esc(d.directorName) || 'Director'}</div>
+        <div style="font-size:9pt;color:#6b7280;margin-bottom:8px;">Company Director</div>
+        ${d.directorSignature && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(d.directorSignature))
+          ? `<img src="${d.directorSignature}" style="max-height:60px;max-width:200px;display:block;margin:0 auto;border-bottom:2px solid #374151;" />`
+          : `<div class="sig-line"></div>`}
+        <div style="font-size:9pt;color:#374151;margin-top:6px;">Signed: <strong>${d.signedAt ? formatDate(d.signedAt) : '_______________'}</strong></div>
+      </div>
+      <div style="padding:16px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+        <div style="font-size:9pt;color:#374151;line-height:1.6;">
+          <strong>Investigation Summary</strong><br/>
+          Item: ${esc(d.itemTitle)}<br/>
+          Risk Level: <strong>${esc(d.riskLevel)}</strong><br/>
+          Event Date: ${formatDate(d.eventDate)}<br/>
+          Actions Required: ${resultingActions.length}<br/>
+          Actions Complete: ${resultingActions.filter((a: any) => a.completed).length}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:8pt;color:#9ca3af;margin-top:30px;border-top:1px solid #e5e7eb;padding-top:12px;">
+    Cranfield Glass Christchurch — Health & Safety Compliance Records — CONFIDENTIAL
+  </div>
+</body>
+</html>`;
+
+      res.json({ success: true, htmlContent });
+    } catch (error) {
+      console.error('Near miss report generation error:', error);
+      res.status(500).json({ success: false, error: 'Failed to generate report' });
     }
   });
 

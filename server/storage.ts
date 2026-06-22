@@ -19,6 +19,7 @@ import {
   moduleMaterials,
   staffModuleProgress,
   orderItems,
+  nearMissInvestigations,
   type User, 
   type InsertUser,
   type MeetingLock,
@@ -59,6 +60,8 @@ import {
   type InsertOrderItem,
   type ActionActivityLog,
   type InsertActionActivityLog,
+  type NearMissInvestigation,
+  type InsertNearMissInvestigation
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -215,6 +218,13 @@ export interface IStorage {
     completedDate: Date | null;
     expiryDate: Date | null;
   }>>;
+
+  // Near Miss Investigation methods
+  getNearMissInvestigation(nearMissItemId: string): Promise<NearMissInvestigation | undefined>;
+  getNearMissInvestigationById(id: number): Promise<NearMissInvestigation | undefined>;
+  getAllCompletedInvestigations(): Promise<NearMissInvestigation[]>;
+  createNearMissInvestigation(data: InsertNearMissInvestigation): Promise<NearMissInvestigation>;
+  updateNearMissInvestigation(id: number, data: Partial<InsertNearMissInvestigation>): Promise<NearMissInvestigation>;
 
   // Order Items methods
   getActiveOrderItems(): Promise<OrderItem[]>;
@@ -1092,6 +1102,34 @@ export class DatabaseStorage implements IStorage {
       expiryDate: row.expiryDate,
       ableToUse: row.ableToUse || false,
     }));
+  }
+
+  // Near Miss Investigation methods
+  async getNearMissInvestigation(nearMissItemId: string): Promise<NearMissInvestigation | undefined> {
+    const [inv] = await db.select().from(nearMissInvestigations).where(eq(nearMissInvestigations.nearMissItemId, nearMissItemId));
+    return inv || undefined;
+  }
+
+  async getNearMissInvestigationById(id: number): Promise<NearMissInvestigation | undefined> {
+    const [inv] = await db.select().from(nearMissInvestigations).where(eq(nearMissInvestigations.id, id));
+    return inv || undefined;
+  }
+
+  async getAllCompletedInvestigations(): Promise<NearMissInvestigation[]> {
+    return await db.select().from(nearMissInvestigations).where(eq(nearMissInvestigations.status, "Complete"));
+  }
+
+  async createNearMissInvestigation(data: InsertNearMissInvestigation): Promise<NearMissInvestigation> {
+    const [inv] = await db.insert(nearMissInvestigations).values(data).returning();
+    return inv;
+  }
+
+  async updateNearMissInvestigation(id: number, data: Partial<InsertNearMissInvestigation>): Promise<NearMissInvestigation> {
+    const [inv] = await db.update(nearMissInvestigations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(nearMissInvestigations.id, id))
+      .returning();
+    return inv;
   }
 
   // Order Items methods

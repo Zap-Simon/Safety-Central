@@ -5,8 +5,9 @@ import MeetingHeader from "@/components/meeting-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target } from "lucide-react";
+import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList } from "lucide-react";
 import { format } from "date-fns";
+import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 
 interface ActionableItem {
   id: string;
@@ -55,6 +56,7 @@ export default function Actions() {
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
   const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
   const [loadingActivity, setLoadingActivity] = useState<string>('');
+  const [investigationItem, setInvestigationItem] = useState<ActionableItem | null>(null);
 
   // Use the SharePoint-scoped token (same as meeting-history.tsx). The
   // /api/meeting-history endpoint talks to SharePoint, so it needs a SharePoint
@@ -700,7 +702,7 @@ export default function Actions() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setSelectedItem(item)}
+                  onClick={() => item.type === 'Near Miss' ? setInvestigationItem(item) : setSelectedItem(item)}
                   className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''} h-36 flex flex-col`}
                   data-testid={`card-action-${item.id}`}
                 >
@@ -708,9 +710,16 @@ export default function Actions() {
                     {/* Category + status row — always at top */}
                     <div className="flex items-center justify-between gap-1 mb-2">
                       {getTypeBadge(item.type)}
-                      <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
-                        {item.actionStatus || 'Not Started'}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        {item.type === 'Near Miss' && (
+                          <Badge className="h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium bg-orange-600 text-white flex items-center gap-0.5">
+                            <ClipboardList className="h-2.5 w-2.5" />Investigate
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
+                          {item.actionStatus || 'Not Started'}
+                        </Badge>
+                      </div>
                     </div>
 
                     {/* Title — takes up middle space */}
@@ -1054,6 +1063,24 @@ export default function Actions() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Near Miss Investigation Modal */}
+      {investigationItem && (
+        <NearMissInvestigationModal
+          open={!!investigationItem}
+          item={{
+            id: investigationItem.id,
+            title: investigationItem.title,
+            description: investigationItem.description || "",
+            secondaryDescription: investigationItem.secondaryDescription,
+            submittedBy: investigationItem.submittedBy || "",
+            meetingDate: investigationItem.meetingDate || "",
+            meetingNotes: investigationItem.meetingNotes,
+            actionNotes: investigationItem.actionNotes,
+          }}
+          onClose={() => setInvestigationItem(null)}
+        />
+      )}
     </div>
   );
 }

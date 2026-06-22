@@ -610,6 +610,44 @@ export type InsertStaffModuleProgress = z.infer<typeof insertStaffModuleProgress
 // CSC Workflow types
 export type CSCWorkflow = z.infer<typeof cscWorkflowSchema>;
 
+// ─── Near Miss Investigations ───────────────────────────────────────────────
+export const nearMissInvestigations = pgTable("near_miss_investigations", {
+  id: serial("id").primaryKey(),
+  nearMissItemId: text("near_miss_item_id").notNull(),
+  itemTitle: text("item_title").notNull().default(""),
+  meetingDate: text("meeting_date").notNull().default(""),
+  investigatorName: text("investigator_name").notNull().default(""),
+  siteJob: text("site_job").notNull().default(""),
+  eventDate: text("event_date").notNull().default(""),
+  eventTime: text("event_time").notNull().default(""),
+  eventType: text("event_type").notNull().default("Near Miss"),
+  involvedPersons: text("involved_persons").notNull().default(""),
+  witnesses: text("witnesses").notNull().default(""),
+  eventDescription: text("event_description").notNull().default(""),
+  contributingFactors: text("contributing_factors").notNull().default(""),
+  hazards: text("hazards").notNull().default("[]"),
+  likelihood: text("likelihood").notNull().default(""),
+  consequence: text("consequence").notNull().default(""),
+  riskLevel: text("risk_level").notNull().default(""),
+  treatmentGiven: text("treatment_given").notNull().default(""),
+  resultingActions: text("resulting_actions").notNull().default("[]"),
+  directorName: text("director_name"),
+  directorSignature: text("director_signature"),
+  signedAt: text("signed_at"),
+  status: text("status").notNull().default("Draft"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertNearMissInvestigationSchema = createInsertSchema(nearMissInvestigations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type NearMissInvestigation = typeof nearMissInvestigations.$inferSelect;
+export type InsertNearMissInvestigation = z.infer<typeof insertNearMissInvestigationSchema>;
+
 // ─── Order Items — Teams Whiteboard field ordering pad ───────────────────────
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),

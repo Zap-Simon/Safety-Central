@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
+import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
 import { predictiveText } from "@/lib/predictiveText";
 import { InlineTextarea } from "@/components/ui/inline-textarea";
@@ -41,6 +42,16 @@ interface MeetingItem {
   actionStartDate?: string;
   actionDueDate?: string;
   actionNotes?: string;
+
+  // Near Miss investigation summary (injected by /api/meeting-history from DB)
+  investigation?: {
+    investigationStatus: string;
+    investigatorName?: string;
+    riskLevel?: string;
+    resultingActions?: string;
+    directorName?: string;
+    signedAt?: string;
+  };
 }
 
 // Actions are separate items that link to existing records
@@ -125,6 +136,7 @@ export default function MeetingHistory() {
   const [showAddIdeaModal, setShowAddIdeaModal] = useState(false);
   const [selectedMeetingDate, setSelectedMeetingDate] = useState<string>('');
   const [showNotesModal, setShowNotesModal] = useState(false);
+  const [investigationItem, setInvestigationItem] = useState<MeetingItem | null>(null);
   const [editingMeetingNotes, setEditingMeetingNotes] = useState<string>('');
   const [editingNotesItem, setEditingNotesItem] = useState<MeetingItem | null>(null);
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
@@ -830,6 +842,9 @@ export default function MeetingHistory() {
     queryKey: ['/api/meeting-signatures'],
     queryFn: () => fetch('/api/meeting-signatures').then(res => res.json()),
   });
+
+  // Investigation summaries are now embedded in each MeetingItem returned by /api/meeting-history.
+  // No separate API call needed — the server injects `item.investigation` for Near Miss items.
 
   // Meeting locks will be fetched individually when needed
   // For now, we'll use local state combined with mutations to the API
@@ -3050,6 +3065,59 @@ export default function MeetingHistory() {
                                                     <div className="text-sm text-red-800 leading-relaxed">{highlightSearchTerm(item.secondaryDescription, searchQuery)}</div>
                                                   </div>
                                                 )}
+                                                {/* Investigation summary sub-row — data is embedded in item from /api/meeting-history */}
+                                                {item.investigation && (() => {
+                                                  const inv = item.investigation!;
+                                                  const riskColor =
+                                                    inv.riskLevel === 'Extreme' ? 'bg-black text-white' :
+                                                    inv.riskLevel === 'High' ? 'bg-red-500 text-white' :
+                                                    inv.riskLevel === 'Moderate' ? 'bg-yellow-400 text-gray-900' :
+                                                    inv.riskLevel === 'Low' ? 'bg-green-500 text-white' :
+                                                    'bg-gray-200 text-gray-700';
+                                                  let actions: string[] = [];
+                                                  try { actions = JSON.parse(inv.resultingActions || '[]').map((a: { description: string }) => a.description).filter(Boolean); } catch {}
+                                                  const isComplete = inv.investigationStatus === 'Complete';
+                                                  return (
+                                                    <div className="border border-orange-200 rounded-lg overflow-hidden">
+                                                      <div className={`flex items-center justify-between px-3 py-2 ${isComplete ? 'bg-green-50 border-b border-green-200' : 'bg-orange-50 border-b border-orange-200'}`}>
+                                                        <div className="flex items-center gap-2">
+                                                          <ClipboardList className={`h-3.5 w-3.5 ${isComplete ? 'text-green-600' : 'text-orange-500'}`} />
+                                                          <span className={`text-xs font-semibold ${isComplete ? 'text-green-800' : 'text-orange-800'}`}>
+                                                            {isComplete ? 'Investigated — Outcome' : 'Investigation In Progress'}
+                                                          </span>
+                                                          {inv.riskLevel && (
+                                                            <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${riskColor}`}>{inv.riskLevel} Risk</span>
+                                                          )}
+                                                        </div>
+                                                        {isComplete && inv.directorName && (
+                                                          <span className="text-[10px] text-green-700 flex items-center gap-1"><CheckCircle className="h-3 w-3" /> {inv.directorName}</span>
+                                                        )}
+                                                      </div>
+                                                      <div className="px-3 py-2 bg-white space-y-1">
+                                                        {inv.investigatorName && (
+                                                          <p className="text-xs text-gray-600"><span className="font-medium">Investigator:</span> {inv.investigatorName}</p>
+                                                        )}
+                                                        {actions.length > 0 && (
+                                                          <ul className="text-xs text-gray-700 space-y-0.5">
+                                                            {actions.slice(0, 3).map((a, i) => (
+                                                              <li key={i} className="flex items-start gap-1"><span className="text-orange-400 mt-0.5">•</span>{a}</li>
+                                                            ))}
+                                                            {actions.length > 3 && <li className="text-gray-400 text-[10px]">+{actions.length - 3} more actions…</li>}
+                                                          </ul>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })()}
+
+                                                {/* Investigation button */}
+                                                <button
+                                                  onClick={() => setInvestigationItem(item)}
+                                                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-lg shadow transition-all ${item.investigation ? 'bg-gray-700 hover:bg-gray-800' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'}`}
+                                                >
+                                                  <ClipboardList className="h-4 w-4" />
+                                                  {item.investigation ? 'View / Edit Investigation' : 'Open Investigation Report'}
+                                                </button>
                                               </div>
                                             ) : (
                                               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
@@ -4633,6 +4701,24 @@ export default function MeetingHistory() {
 
         </div>
       </div>
+
+      {/* Near Miss Investigation Modal */}
+      {investigationItem && (
+        <NearMissInvestigationModal
+          open={!!investigationItem}
+          item={{
+            id: investigationItem.id,
+            title: investigationItem.title,
+            description: investigationItem.description || "",
+            secondaryDescription: investigationItem.secondaryDescription,
+            submittedBy: investigationItem.submittedBy || "",
+            meetingDate: investigationItem.meetingDate || "",
+            meetingNotes: investigationItem.meetingNotes,
+            actionNotes: undefined,
+          }}
+          onClose={() => setInvestigationItem(null)}
+        />
+      )}
     </div>
   );
 }
