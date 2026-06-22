@@ -223,6 +223,7 @@ export interface IStorage {
   getNearMissInvestigation(nearMissItemId: string): Promise<NearMissInvestigation | undefined>;
   getNearMissInvestigationById(id: number): Promise<NearMissInvestigation | undefined>;
   getAllCompletedInvestigations(): Promise<NearMissInvestigation[]>;
+  getAllInvestigations(): Promise<NearMissInvestigation[]>;
   createNearMissInvestigation(data: InsertNearMissInvestigation): Promise<NearMissInvestigation>;
   updateNearMissInvestigation(id: number, data: Partial<InsertNearMissInvestigation>): Promise<NearMissInvestigation>;
 
@@ -1117,6 +1118,10 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCompletedInvestigations(): Promise<NearMissInvestigation[]> {
     return await db.select().from(nearMissInvestigations).where(eq(nearMissInvestigations.status, "Complete"));
+  }
+
+  async getAllInvestigations(): Promise<NearMissInvestigation[]> {
+    return await db.select().from(nearMissInvestigations);
   }
 
   async createNearMissInvestigation(data: InsertNearMissInvestigation): Promise<NearMissInvestigation> {

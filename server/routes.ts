@@ -1031,7 +1031,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         listsService.getSafetyIdeas(),
         listsService.getNearMiss(),
         storage.getAllActionItems(),
-        storage.getAllCompletedInvestigations().catch(() => [] as any[]),
+        storage.getAllInvestigations().catch(() => [] as any[]),
       ]);
       
       // Create a map of local action items by sharePointItemId for quick lookup
