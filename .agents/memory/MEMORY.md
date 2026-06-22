@@ -18,3 +18,4 @@
 - [Meeting date grouping consistency](meeting-date-grouping-consistency.md) — per-meeting counts/filters MUST use getDateGroupKey (UTC) not isSameDay (local), or items with calculated dates get miscounted (e.g. 17 vs 25).
 - [Teams SSO token staleness](teams-sso-token-staleness.md) — don't cache the init-time SSO token; fetch fresh via getToken() per request or idle tabs hit bogus "sign-in expired" until reload.
 - [Meeting re-surfacing aggregation](meeting-resurfacing-aggregation.md) — Ready-to-Close/On-Hold containers must target ONLY the nearest upcoming meeting (else dupes) and compare dates via getDateGroupKey (UTC); status stepper uses one atomic onChange to avoid update races.
+- [Actions page deep-link focus](actions-deeplink-focus.md) — deep-link into Actions must filter to the single item (focusedItemId), not open a detail modal (modal fetches trigger MSAL prompt); strike titles only when Completed, not Ready to Close.

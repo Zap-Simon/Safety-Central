@@ -60,6 +60,7 @@ export default function Actions() {
   const [loadingActivity, setLoadingActivity] = useState<string>('');
   const [investigationItem, setInvestigationItem] = useState<ActionableItem | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
   const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const deepLinkHandled = useRef(false);
 
@@ -165,6 +166,9 @@ export default function Actions() {
     status === 'Completed' || status === 'Ready to Close';
 
   const filteredItems = actionItems.filter(item => {
+    // Deep link from Minutes focuses a single action — show only that card.
+    if (focusedItemId) return item.id === focusedItemId;
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch = 
@@ -229,32 +233,16 @@ export default function Actions() {
 
     deepLinkHandled.current = true;
 
-    // Clear default filters/search so the targeted item is never filtered out.
+    // Show ONLY the targeted action by filtering the list down to it. This avoids
+    // opening a detail modal (which triggers an MSAL prompt) and the awkward
+    // scroll-into-view. Clear other filters/search so they can't interfere.
     setFilterStatus('all');
     setFilterPriority('all');
     setFilterType('all');
     setFilterAssignedTo('all');
     setSearchQuery('');
-
-    setHighlightedId(target.id);
-    if (target.type === 'Near Miss') {
-      setInvestigationItem(target);
-    } else {
-      setSelectedItem(target);
-    }
+    setFocusedItemId(target.id);
   }, [meetingItems]);
-
-  // Scroll the highlighted card into view once it actually renders (it may not be
-  // present on the first pass while the cleared filters take effect).
-  useEffect(() => {
-    if (!highlightedId) return;
-    const el = cardRefs.current[highlightedId];
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    const timer = setTimeout(() => setHighlightedId(null), 4000);
-    return () => clearTimeout(timer);
-  }, [highlightedId, sortedItems.length]);
 
   const getActionFieldValue = (item: ActionableItem, field: 'actionNotes' | 'actionAssignedTo') => {
     if (localActionEdits[item.id]?.[field] !== undefined) {
@@ -720,6 +708,24 @@ export default function Actions() {
           </div>
         </div>
 
+        {focusedItemId && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm text-amber-800 min-w-0">
+              <Target className="h-4 w-4 flex-shrink-0 text-amber-600" />
+              <span className="truncate">Showing a single action opened from Meeting Minutes.</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-shrink-0 bg-white"
+              onClick={() => setFocusedItemId(null)}
+              data-testid="button-show-all-actions"
+            >
+              Show all actions
+            </Button>
+          </div>
+        )}
+
         {sortedItems.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
             <Target className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -782,7 +788,7 @@ export default function Actions() {
                     </div>
 
                     {/* Title — takes up middle space */}
-                    <h3 className={`font-semibold text-sm leading-snug flex-1 overflow-hidden line-clamp-2 ${isCompleted ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+                    <h3 className={`font-semibold text-sm leading-snug flex-1 overflow-hidden line-clamp-2 ${isCompleted ? 'text-green-800' : 'text-gray-900'} ${item.actionStatus === 'Completed' ? 'line-through' : ''}`}>
                       {item.title || 'Untitled Action'}
                     </h3>
 
