@@ -71,6 +71,24 @@ export const actionItems = pgTable("action_items", {
   uniqueItem: uniqueIndex("unique_action_item").on(table.listType, table.sharePointItemId)
 }));
 
+export const actionActivityLog = pgTable("action_activity_log", {
+  id: serial("id").primaryKey(),
+  listType: text("list_type").notNull(),
+  sharePointItemId: text("sharepoint_item_id").notNull(),
+  entryType: text("entry_type").notNull(), // 'note' | 'status' | 'priority' | 'due_date' | 'assigned' | 'start_date'
+  content: text("content").notNull(),
+  author: text("author"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertActionActivityLogSchema = createInsertSchema(actionActivityLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ActionActivityLog = typeof actionActivityLog.$inferSelect;
+export type InsertActionActivityLog = z.infer<typeof insertActionActivityLogSchema>;
+
 export const meetingAttendance = pgTable("meeting_attendance", {
   id: serial("id").primaryKey(),
   meetingDate: text("meeting_date").notNull(),

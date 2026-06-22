@@ -1147,6 +1147,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Action Activity Log - get timeline for a specific item
+  app.get('/api/action-activity/:listType/:sharePointItemId', async (req, res) => {
+    try {
+      const { listType, sharePointItemId } = req.params;
+      const log = await storage.getActivityLog(listType, decodeURIComponent(sharePointItemId));
+      res.json({ success: true, data: log });
+    } catch (error) {
+      console.error('Error fetching activity log:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch activity log' });
+    }
+  });
+
+  // Action Activity Log - add a new entry
+  app.post('/api/action-activity', async (req, res) => {
+    try {
+      const { listType, sharePointItemId, entryType, content, author } = req.body;
+      if (!listType || !sharePointItemId || !entryType || !content) {
+        return res.status(400).json({ success: false, error: 'listType, sharePointItemId, entryType and content are required' });
+      }
+      const entry = await storage.addActivityEntry({
+        listType: String(listType),
+        sharePointItemId: String(sharePointItemId),
+        entryType: String(entryType),
+        content: String(content),
+        author: author ? String(author) : null,
+      });
+      res.json({ success: true, data: entry });
+    } catch (error) {
+      console.error('Error saving activity entry:', error);
+      res.status(500).json({ success: false, error: 'Failed to save activity entry' });
+    }
+  });
+
   // AI Title Status endpoint - checks both OpenAI and items needing titles
   app.get('/api/ai-title-status', async (req, res) => {
     try {

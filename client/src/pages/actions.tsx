@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/auth/authService";
 import MeetingHeader from "@/components/meeting-header";
@@ -29,6 +29,16 @@ interface ActionableItem {
   actionNotes?: string;
 }
 
+interface ActivityEntry {
+  id: number;
+  listType: string;
+  sharePointItemId: string;
+  entryType: string;
+  content: string;
+  author: string | null;
+  createdAt: string;
+}
+
 export default function Actions() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -43,6 +53,8 @@ export default function Actions() {
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
+  const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
+  const [loadingActivity, setLoadingActivity] = useState<string>('');
 
   // Use the SharePoint-scoped token (same as meeting-history.tsx). The
   // /api/meeting-history endpoint talks to SharePoint, so it needs a SharePoint
@@ -66,6 +78,41 @@ export default function Actions() {
       throw error;
     }
   };
+
+  const getListType = (item: ActionableItem) =>
+    item.type === 'Near Miss' ? 'NearMiss' : item.type.replace(' ', '');
+
+  const fetchActivityLog = async (item: ActionableItem) => {
+    setLoadingActivity(item.id);
+    try {
+      const listType = getListType(item);
+      const res = await authenticatedFetch(`/api/action-activity/${listType}/${encodeURIComponent(item.id)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setActivityLogs(prev => ({ ...prev, [item.id]: data.data || [] }));
+      }
+    } catch { /* silent */ } finally {
+      setLoadingActivity('');
+    }
+  };
+
+  const postActivityEntry = async (item: ActionableItem, entryType: string, content: string) => {
+    try {
+      await authenticatedFetch('/api/action-activity', {
+        method: 'POST',
+        body: JSON.stringify({ listType: getListType(item), sharePointItemId: item.id, entryType, content, author: null }),
+      }).then(async res => {
+        if (res.ok) {
+          const data = await res.json();
+          setActivityLogs(prev => ({ ...prev, [item.id]: [...(prev[item.id] || []), data.data] }));
+        }
+      });
+    } catch { /* silent */ }
+  };
+
+  useEffect(() => {
+    if (selectedItem) fetchActivityLog(selectedItem);
+  }, [selectedItem?.id]);
 
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/meeting-history'],
@@ -754,6 +801,7 @@ export default function Actions() {
                         }
                         updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
                         setSelectedItem({ ...item, actionPriority: priority, actionDueDate: dueDate });
+                        if (priority) postActivityEntry(item, 'priority', `Priority set to ${priority}`);
                       }}
                       className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
                     >
@@ -768,8 +816,10 @@ export default function Actions() {
                     <select
                       value={item.actionStatus || ''}
                       onChange={(e) => {
-                        updateActionFields(item, { actionStatus: e.target.value });
-                        setSelectedItem({ ...item, actionStatus: e.target.value });
+                        const newStatus = e.target.value;
+                        updateActionFields(item, { actionStatus: newStatus });
+                        setSelectedItem({ ...item, actionStatus: newStatus });
+                        if (newStatus) postActivityEntry(item, 'status', `Status changed to ${newStatus || 'Not Started'}`);
                       }}
                       className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
                     >
@@ -802,8 +852,12 @@ export default function Actions() {
                       type="date"
                       value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
                       onChange={(e) => {
-                        updateActionFields(item, { actionDueDate: e.target.value });
-                        setSelectedItem({ ...item, actionDueDate: e.target.value });
+                        const newDate = e.target.value;
+                        updateActionFields(item, { actionDueDate: newDate });
+                        setSelectedItem({ ...item, actionDueDate: newDate });
+                        if (newDate) {
+                          try { postActivityEntry(item, 'due_date', `Due date set to ${format(new Date(newDate), 'dd MMM yyyy')}`); } catch { /* silent */ }
+                        }
                       }}
                       className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
                     />
@@ -865,7 +919,11 @@ export default function Actions() {
                     <button
                       type="button"
                       disabled={localActionEdits[item.id]?.actionNotes === undefined || isUpdatingAction === item.id}
-                      onClick={() => updateActionFields(item, { actionNotes: localActionEdits[item.id]?.actionNotes ?? '' }, 'actionNotes')}
+                      onClick={() => {
+                        const notes = localActionEdits[item.id]?.actionNotes ?? '';
+                        updateActionFields(item, { actionNotes: notes }, 'actionNotes');
+                        if (notes.trim()) postActivityEntry(item, 'note', notes.trim());
+                      }}
                       className="text-xs bg-amber-600 hover:bg-amber-700 disabled:bg-gray-200 disabled:text-gray-400 text-white px-3 py-1 rounded flex items-center gap-1"
                     >
                       {isUpdatingAction === item.id
@@ -882,6 +940,64 @@ export default function Actions() {
                     <p className="text-sm text-gray-700">{item.meetingNotes}</p>
                   </div>
                 )}
+
+                {/* Activity timeline */}
+                <div>
+                  <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                    <i className="fas fa-history text-[10px]"></i> Activity
+                  </p>
+                  {loadingActivity === item.id ? (
+                    <p className="text-xs text-gray-400 italic">Loading activity…</p>
+                  ) : (activityLogs[item.id] || []).length === 0 ? (
+                    <p className="text-xs text-gray-400 italic">No activity yet. Changes and notes you save will appear here.</p>
+                  ) : (
+                    <ol className="relative border-l border-gray-200 ml-2 space-y-0">
+                      {[...(activityLogs[item.id] || [])].reverse().map((entry) => {
+                        const icons: Record<string, string> = {
+                          note: 'fas fa-comment text-amber-500',
+                          status: 'fas fa-arrow-right-arrow-left text-blue-500',
+                          priority: 'fas fa-flag text-red-500',
+                          due_date: 'fas fa-calendar-day text-purple-500',
+                          assigned: 'fas fa-user text-green-500',
+                          start_date: 'fas fa-play text-gray-500',
+                        };
+                        const iconClass = icons[entry.entryType] || 'fas fa-circle text-gray-400';
+                        const when = (() => {
+                          try {
+                            const d = new Date(entry.createdAt);
+                            const diff = Date.now() - d.getTime();
+                            if (diff < 60000) return 'just now';
+                            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+                            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+                            if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+                            return format(d, 'dd MMM yyyy');
+                          } catch { return ''; }
+                        })();
+                        const fullDate = (() => {
+                          try { return format(new Date(entry.createdAt), 'dd MMM yyyy, h:mm a'); } catch { return ''; }
+                        })();
+                        return (
+                          <li key={entry.id} className="ml-4 py-2 border-b border-gray-50 last:border-0">
+                            <span className="absolute -left-[9px] flex items-center justify-center w-4 h-4 bg-white border border-gray-200 rounded-full mt-0.5">
+                              <i className={`${iconClass} text-[8px]`}></i>
+                            </span>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm text-gray-800 ${entry.entryType === 'note' ? 'whitespace-pre-wrap' : 'italic text-gray-600'}`}>
+                                {entry.content}
+                              </p>
+                              <span title={fullDate} className="text-[10px] text-gray-400 whitespace-nowrap shrink-0 mt-0.5 cursor-default">
+                                {when}
+                              </span>
+                            </div>
+                            {entry.author && (
+                              <p className="text-[10px] text-gray-400 mt-0.5">{entry.author}</p>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  )}
+                </div>
 
                 {/* Metadata footer */}
                 <div className="flex flex-wrap gap-3 text-xs text-gray-400 pt-1 border-t border-gray-100">

@@ -3,6 +3,7 @@ import {
   meetingLocks, 
   meetingAttendance,
   actionItems,
+  actionActivityLog,
   staff,
   skills,
   trainingRecords,
@@ -55,7 +56,9 @@ import {
   type StaffModuleProgress,
   type InsertStaffModuleProgress,
   type OrderItem,
-  type InsertOrderItem
+  type InsertOrderItem,
+  type ActionActivityLog,
+  type InsertActionActivityLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -88,6 +91,10 @@ export interface IStorage {
   getAllActionItems(): Promise<ActionItem[]>;
   getActionItemsByListType(listType: string): Promise<ActionItem[]>;
   upsertActionItem(item: InsertActionItem): Promise<ActionItem>;
+
+  // Action Activity Log methods
+  addActivityEntry(entry: InsertActionActivityLog): Promise<ActionActivityLog>;
+  getActivityLog(listType: string, sharePointItemId: string): Promise<ActionActivityLog[]>;
   
   // Skills Matrix methods
   
@@ -452,6 +459,26 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  // Action Activity Log methods
+  async addActivityEntry(entry: InsertActionActivityLog): Promise<ActionActivityLog> {
+    const [created] = await db
+      .insert(actionActivityLog)
+      .values(entry)
+      .returning();
+    return created;
+  }
+
+  async getActivityLog(listType: string, sharePointItemId: string): Promise<ActionActivityLog[]> {
+    return await db
+      .select()
+      .from(actionActivityLog)
+      .where(and(
+        eq(actionActivityLog.listType, listType),
+        eq(actionActivityLog.sharePointItemId, sharePointItemId)
+      ))
+      .orderBy(actionActivityLog.createdAt);
   }
 
   // Skills Matrix Methods
