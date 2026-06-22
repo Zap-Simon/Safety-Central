@@ -22,7 +22,7 @@ export default function OverviewTab() {
   const queryClient = useQueryClient();
 
   // Load card ordering from the database
-  const { data: cardOrdering } = useQuery({
+  const { data: cardOrdering, isFetched: cardOrderingFetched } = useQuery({
     queryKey: ['/api/card-ordering']
   });
 
@@ -37,33 +37,37 @@ export default function OverviewTab() {
     }
   });
 
-  // Apply saved ordering when data is loaded (only once)
+  // Apply saved ordering once the query has settled, then reveal the grid.
+  // Both setCards and setHasLoadedFromDB are applied in the same effect so the
+  // first render of the grid already shows the final order (no visible shuffle).
   useEffect(() => {
-    if (cardOrdering && (cardOrdering as any)?.success && (cardOrdering as any).cardOrdering && !hasLoadedFromDB) {
-      const savedOrder = (cardOrdering as any).cardOrdering;
-      
-      if (savedOrder.length > 0) {
-        // Create ordered cards based on saved ordering
-        const orderedCards = [...defaultCardOrder].sort((a, b) => {
-          const aOrder = savedOrder.find((item: any) => item.cardId === a.id);
-          const bOrder = savedOrder.find((item: any) => item.cardId === b.id);
-          
-          if (!aOrder && !bOrder) return 0;
-          if (!aOrder) return 1;
-          if (!bOrder) return -1;
-          
-          return aOrder.position - bOrder.position;
-        });
-        
-        setCards(orderedCards);
-        setHasLoadedFromDB(true);
-      } else {
-        // No saved order, use default
-        setCards([...defaultCardOrder]);
-        setHasLoadedFromDB(true);
-      }
+    if (!cardOrderingFetched || hasLoadedFromDB) return;
+
+    const savedOrder = (cardOrdering as any)?.success
+      ? (cardOrdering as any).cardOrdering
+      : null;
+
+    if (savedOrder && savedOrder.length > 0) {
+      // Create ordered cards based on saved ordering
+      const orderedCards = [...defaultCardOrder].sort((a, b) => {
+        const aOrder = savedOrder.find((item: any) => item.cardId === a.id);
+        const bOrder = savedOrder.find((item: any) => item.cardId === b.id);
+
+        if (!aOrder && !bOrder) return 0;
+        if (!aOrder) return 1;
+        if (!bOrder) return -1;
+
+        return aOrder.position - bOrder.position;
+      });
+
+      setCards(orderedCards);
+    } else {
+      // No saved order, use default
+      setCards([...defaultCardOrder]);
     }
-  }, [cardOrdering, hasLoadedFromDB]);
+
+    setHasLoadedFromDB(true);
+  }, [cardOrdering, cardOrderingFetched, hasLoadedFromDB]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDragState(prev => ({ ...prev, draggedIndex: index }));
@@ -234,7 +238,18 @@ export default function OverviewTab() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cards.map((card, index) => renderCard(card, index))}
+          {hasLoadedFromDB
+            ? cards.map((card, index) => renderCard(card, index))
+            : defaultCardOrder.map((card) => (
+                <div
+                  key={card.id}
+                  className="bg-white border border-gray-200 rounded-xl p-4 h-32 animate-pulse"
+                >
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg mb-3" />
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                </div>
+              ))}
         </div>
       </div>
     </div>
