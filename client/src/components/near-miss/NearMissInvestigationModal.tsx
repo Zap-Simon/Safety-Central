@@ -57,6 +57,8 @@ interface InvestigationData {
   riskLevel: string;
   treatmentGiven: string;
   resultingActions: ResultingAction[];
+  investigatorSignature: string | null;
+  investigatorSignedAt: string;
   directorName: string;
   directorSignature: string | null;
   signedAt: string;
@@ -87,7 +89,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   const [isSaving, setIsSaving] = useState(false);
   const [isDrafting, setIsDrafting] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [showSignCanvas, setShowSignCanvas] = useState(false);
+  const [signingRole, setSigningRole] = useState<"investigator" | "approver" | null>(null);
   const [hasDrawn, setHasDrawn] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
@@ -114,6 +116,8 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
     riskLevel: "",
     treatmentGiven: "No treatment required",
     resultingActions: [],
+    investigatorSignature: null,
+    investigatorSignedAt: "",
     directorName: "Hoani Hunt",
     directorSignature: null,
     signedAt: "",
@@ -280,11 +284,11 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
     }
   };
 
-  const signDirector = async () => {
+  const signRole = async (role: "investigator" | "approver") => {
     const canvas = canvasRef.current;
     if (!canvas || !hasDrawn) return;
     const sig = canvas.toDataURL("image/png");
-    const signedAt = new Date().toISOString();
+    const when = new Date().toISOString();
 
     setIsSaving(true);
     try {
@@ -307,24 +311,120 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
       }
 
       if (invId) {
+        const name = role === "investigator" ? data.investigatorName : data.directorName;
         const completeRes = await authenticatedFetch(`/api/near-miss-investigations/${invId}/complete`, {
           method: "POST",
-          body: JSON.stringify({ directorName: data.directorName, directorSignature: sig, signedAt }),
+          body: JSON.stringify({ role, name, signature: sig, signedAt: when }),
         });
         if (completeRes.ok) {
-          setData(prev => ({ ...prev, id: invId, directorSignature: sig, signedAt, status: "Complete" }));
-          setShowSignCanvas(false);
-          setSaveMsg("Signed & Complete");
-          setTimeout(() => setSaveMsg(null), 3000);
+          const json = await completeRes.json().catch(() => ({}));
+          const nowComplete = !!json.complete;
+          setData(prev => ({
+            ...prev,
+            id: invId,
+            ...(role === "investigator"
+              ? { investigatorSignature: sig, investigatorSignedAt: when }
+              : { directorSignature: sig, signedAt: when }),
+            status: nowComplete ? "Complete" : "In Progress",
+          }));
+          setSigningRole(null);
+          setHasDrawn(false);
+          setSaveMsg(nowComplete ? "Signed & Complete — Action ready to close" : "Signature saved");
+          setTimeout(() => setSaveMsg(null), 3500);
           queryClient.invalidateQueries({ queryKey: ["/api/near-miss-investigations", item.id] });
           queryClient.invalidateQueries({ queryKey: ["/api/meeting-history"] });
+        } else {
+          const err = await completeRes.json().catch(() => ({}));
+          toast({ title: "Sign-off failed", description: err.error || "Could not save the signature.", variant: "destructive" });
         }
       }
     } catch (e) {
       console.error("Sign-off failed:", e);
+      toast({ title: "Sign-off failed", description: "Something went wrong saving the signature.", variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const renderSignatureBlock = (
+    role: "investigator" | "approver",
+    title: string,
+    nameField: "investigatorName" | "directorName",
+    signatureValue: string | null,
+    signedAtValue: string,
+  ) => {
+    const isSigning = signingRole === role;
+    const nameValue = data[nameField];
+    const roleLabel = role === "investigator" ? "Investigator" : "Approver / Manager";
+    return (
+      <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-3">
+        <h4 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
+          <PenLine className="h-4 w-4" /> {title}
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label-sm">{roleLabel} Name</label>
+            <input className="input-sm" value={nameValue} onChange={e => update(nameField, e.target.value)} disabled={!!signatureValue} />
+          </div>
+          <div>
+            <label className="label-sm">Date Signed</label>
+            <input className="input-sm" value={signedAtValue ? signedAtValue.substring(0, 10) : ""} readOnly />
+          </div>
+        </div>
+
+        {signatureValue ? (
+          <div className="space-y-2">
+            <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3.5 w-3.5" /> Signed off by {nameValue}</p>
+            <img src={signatureValue} alt={`${roleLabel} signature`} className="max-h-16 border-b-2 border-gray-400" />
+            {!isComplete && (
+              <Button variant="outline" size="sm" onClick={() => {
+                if (role === "investigator") { update("investigatorSignature", null); update("investigatorSignedAt", ""); }
+                else { update("directorSignature", null); update("signedAt", ""); }
+              }}>
+                Clear Signature
+              </Button>
+            )}
+          </div>
+        ) : isSigning ? (
+          <div className="space-y-2">
+            <div className="border-2 border-dashed border-blue-300 rounded-xl overflow-hidden bg-white touch-none relative">
+              <canvas
+                ref={canvasRef} width={480} height={160}
+                className="w-full cursor-crosshair block"
+                style={{ touchAction: "none", height: "160px" }}
+                onMouseDown={handleMouseDown} onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart} onTouchMove={handleTouchMove}
+                onTouchEnd={e => { e.preventDefault(); isDrawingRef.current = false; }}
+              />
+              {!hasDrawn && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-gray-300 text-sm">{roleLabel} signs here</span>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={clearCanvas} disabled={!hasDrawn} className="flex-1 text-xs">
+                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Clear
+              </Button>
+              <Button onClick={() => signRole(role)} disabled={!hasDrawn || isSaving} className="flex-[2] bg-green-600 hover:bg-green-700 text-white text-xs">
+                <CheckCircle className="h-3.5 w-3.5 mr-1" /> Confirm Signature
+              </Button>
+              <Button variant="ghost" onClick={() => { setSigningRole(null); setHasDrawn(false); }} className="text-xs">Cancel</Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            onClick={() => { setSigningRole(role); setHasDrawn(false); }}
+            disabled={signingRole !== null}
+            variant="outline"
+            className="border-blue-300 text-blue-700 hover:bg-blue-50 text-sm"
+          >
+            <PenLine className="h-4 w-4 mr-2" /> {roleLabel} Sign-Off
+          </Button>
+        )}
+      </div>
+    );
   };
 
   const exportReport = async () => {
@@ -630,7 +730,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
           {/* Section 3: Resulting Actions & Sign-Off */}
           {section === 3 && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-800 text-sm border-b pb-2">4. Resulting Actions & Director Sign-Off</h3>
+              <h3 className="font-semibold text-gray-800 text-sm border-b pb-2">4. Resulting Actions & Sign-Off</h3>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -688,68 +788,20 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
                 </div>
               </div>
 
-              {/* Director sign-off */}
-              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-3">
-                <h4 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
-                  <PenLine className="h-4 w-4" /> Director Review & Sign-Off
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="label-sm">Director Name</label>
-                    <input className="input-sm" value={data.directorName} onChange={e => update("directorName", e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="label-sm">Date Signed</label>
-                    <input className="input-sm" value={data.signedAt ? data.signedAt.substring(0, 10) : ""} readOnly />
-                  </div>
-                </div>
+              {/* Dual sign-off — both signatures required before the investigation can be completed */}
+              <div className="space-y-3">
+                {renderSignatureBlock("investigator", "Investigator Review & Sign-Off", "investigatorName", data.investigatorSignature, data.investigatorSignedAt)}
+                {renderSignatureBlock("approver", "Approver / Manager Review & Sign-Off", "directorName", data.directorSignature, data.signedAt)}
 
-                {data.directorSignature ? (
-                  <div className="space-y-2">
-                    <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3.5 w-3.5" /> Signed off by {data.directorName}</p>
-                    <img src={data.directorSignature} alt="Director signature" className="max-h-16 border-b-2 border-gray-400" />
-                    {!isComplete && (
-                      <Button variant="outline" size="sm" onClick={() => { update("directorSignature", null); update("signedAt", ""); update("status", "Draft"); }}>
-                        Clear Signature
-                      </Button>
-                    )}
-                  </div>
-                ) : showSignCanvas ? (
-                  <div className="space-y-2">
-                    <div className="border-2 border-dashed border-blue-300 rounded-xl overflow-hidden bg-white touch-none relative">
-                      <canvas
-                        ref={canvasRef} width={480} height={160}
-                        className="w-full cursor-crosshair block"
-                        style={{ touchAction: "none", height: "160px" }}
-                        onMouseDown={handleMouseDown} onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
-                        onTouchStart={handleTouchStart} onTouchMove={handleTouchMove}
-                        onTouchEnd={e => { e.preventDefault(); isDrawingRef.current = false; }}
-                      />
-                      {!hasDrawn && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <span className="text-gray-300 text-sm">Director signs here</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" onClick={clearCanvas} disabled={!hasDrawn} className="flex-1 text-xs">
-                        <RotateCcw className="h-3.5 w-3.5 mr-1" /> Clear
-                      </Button>
-                      <Button onClick={signDirector} disabled={!hasDrawn} className="flex-[2] bg-green-600 hover:bg-green-700 text-white text-xs">
-                        <CheckCircle className="h-3.5 w-3.5 mr-1" /> Confirm Sign-Off & Mark Complete
-                      </Button>
-                      <Button variant="ghost" onClick={() => setShowSignCanvas(false)} className="text-xs">Cancel</Button>
-                    </div>
+                {isComplete ? (
+                  <div className="flex items-start gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">
+                    <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>Investigation complete — both signatures captured. The linked Action has been moved to <strong>Ready to Close</strong>.</span>
                   </div>
                 ) : (
-                  <Button
-                    onClick={() => setShowSignCanvas(true)}
-                    variant="outline"
-                    className="border-blue-300 text-blue-700 hover:bg-blue-50 text-sm"
-                  >
-                    <PenLine className="h-4 w-4 mr-2" /> Director Sign-Off
-                  </Button>
+                  <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    Both the <strong>Investigator</strong> and the <strong>Approver / Manager</strong> must sign before this investigation is complete. Completing it moves the linked Action to <strong>Ready to Close</strong>.
+                  </p>
                 )}
               </div>
             </div>

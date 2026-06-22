@@ -18,7 +18,8 @@ import {
   insertModuleMaterialSchema,
   insertStaffModuleProgressSchema,
   COMPETENCY_LEVELS,
-  isAbleToUse
+  isAbleToUse,
+  type InsertNearMissInvestigation
 } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { getExcelData, listExcelFiles } from "./sharepoint-excel-service.js";
@@ -6182,7 +6183,10 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
       if (existing && existing.status === 'Complete') {
         return res.status(403).json({ success: false, error: 'This investigation is complete and cannot be edited.' });
       }
-      const inv = await storage.updateNearMissInvestigation(id, req.body);
+      // Completion is only allowed through the dual-signature /complete endpoint.
+      const body = { ...req.body };
+      if (body.status === 'Complete') delete body.status;
+      const inv = await storage.updateNearMissInvestigation(id, body);
       res.json({ success: true, data: inv });
     } catch (error) {
       console.error('Update investigation error:', error);
@@ -6191,15 +6195,65 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   });
 
   // POST /api/near-miss-investigations/:id/complete
+  // Dual sign-off: an investigation needs BOTH an Investigator signature and an
+  // Approver/Manager signature before it is marked Complete. Each call signs one
+  // role. Once both are present the investigation becomes Complete and the linked
+  // Action is auto-advanced to "Ready to Close" (Action lifecycle = source of truth).
   app.post('/api/near-miss-investigations/:id/complete', async (req, res) => {
     if (!await requireNearMissAuth(req, res)) return;
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
-      const { directorName, directorSignature, signedAt } = req.body;
-      const inv = await storage.updateNearMissInvestigation(id, { status: 'Complete', directorName, directorSignature, signedAt });
-      res.json({ success: true, data: inv });
+
+      const existing = await storage.getNearMissInvestigationById(id);
+      if (!existing) return res.status(404).json({ success: false, error: 'Investigation not found' });
+      if (existing.status === 'Complete') {
+        return res.status(403).json({ success: false, error: 'This investigation is already complete and cannot be changed.' });
+      }
+
+      const { role, name, signature, signedAt } = req.body as {
+        role?: string; name?: string; signature?: string; signedAt?: string;
+      };
+      if (!signature || (role !== 'investigator' && role !== 'approver')) {
+        return res.status(400).json({ success: false, error: 'A role (investigator|approver) and signature are required.' });
+      }
+      const when = signedAt || new Date().toISOString();
+
+      const updates: Partial<InsertNearMissInvestigation> = {};
+      if (role === 'investigator') {
+        updates.investigatorSignature = signature;
+        updates.investigatorSignedAt = when;
+        if (name) updates.investigatorName = name;
+      } else {
+        updates.directorSignature = signature;
+        updates.signedAt = when;
+        if (name) updates.directorName = name;
+      }
+
+      // Both signatures present after applying this update?
+      const investigatorSigned = role === 'investigator' ? signature : existing.investigatorSignature;
+      const approverSigned = role === 'approver' ? signature : existing.directorSignature;
+      const bothSigned = !!investigatorSigned && !!approverSigned;
+      updates.status = bothSigned ? 'Complete' : 'In Progress';
+
+      // Action lifecycle = source of truth. When both signatures are in, the linked
+      // Action MUST advance to "Ready to Close". Do this BEFORE marking the
+      // investigation complete so a failure here fails the whole request rather than
+      // leaving a completed investigation whose Action never moved. The upsert is
+      // idempotent, so a retry safely re-applies it.
+      if (bothSigned && existing.nearMissItemId) {
+        await storage.upsertActionItem({
+          listType: 'NearMiss',
+          sharePointItemId: existing.nearMissItemId,
+          actionStatus: 'Ready to Close',
+        });
+      }
+
+      const inv = await storage.updateNearMissInvestigation(id, updates);
+
+      res.json({ success: true, data: inv, complete: bothSigned });
     } catch (error) {
+      console.error('Complete investigation error:', error);
       res.status(500).json({ success: false, error: 'Failed to complete investigation' });
     }
   });
@@ -6480,27 +6534,35 @@ Existing actions: ${context.existing || ''}`;
     </table>
   </div>
 
-  <!-- Director Sign-Off -->
+  <!-- Sign-Off (dual: Investigator + Approver/Manager) -->
   <div class="section" style="break-before:avoid;">
-    <div class="section-header">Director Review &amp; Sign-Off</div>
+    <div class="section-header">Investigation Sign-Off</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
       <div class="sig-block">
-        <div style="font-weight:bold;font-size:11pt;margin-bottom:4px;">${esc(d.directorName) || 'Director'}</div>
-        <div style="font-size:9pt;color:#6b7280;margin-bottom:8px;">Company Director</div>
+        <div style="font-weight:bold;font-size:11pt;margin-bottom:4px;">${esc(d.investigatorName) || 'Investigator'}</div>
+        <div style="font-size:9pt;color:#6b7280;margin-bottom:8px;">Investigator</div>
+        ${d.investigatorSignature && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(d.investigatorSignature))
+          ? `<img src="${d.investigatorSignature}" style="max-height:60px;max-width:200px;display:block;margin:0 auto;border-bottom:2px solid #374151;" />`
+          : `<div class="sig-line"></div>`}
+        <div style="font-size:9pt;color:#374151;margin-top:6px;">Signed: <strong>${d.investigatorSignedAt ? formatDate(d.investigatorSignedAt) : '_______________'}</strong></div>
+      </div>
+      <div class="sig-block">
+        <div style="font-weight:bold;font-size:11pt;margin-bottom:4px;">${esc(d.directorName) || 'Approver / Manager'}</div>
+        <div style="font-size:9pt;color:#6b7280;margin-bottom:8px;">Approver / Manager</div>
         ${d.directorSignature && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(d.directorSignature))
           ? `<img src="${d.directorSignature}" style="max-height:60px;max-width:200px;display:block;margin:0 auto;border-bottom:2px solid #374151;" />`
           : `<div class="sig-line"></div>`}
         <div style="font-size:9pt;color:#374151;margin-top:6px;">Signed: <strong>${d.signedAt ? formatDate(d.signedAt) : '_______________'}</strong></div>
       </div>
-      <div style="padding:16px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
-        <div style="font-size:9pt;color:#374151;line-height:1.6;">
-          <strong>Investigation Summary</strong><br/>
-          Item: ${esc(d.itemTitle)}<br/>
-          Risk Level: <strong>${esc(d.riskLevel)}</strong><br/>
-          Event Date: ${formatDate(d.eventDate)}<br/>
-          Actions Required: ${resultingActions.length}<br/>
-          Actions Complete: ${resultingActions.filter((a: any) => a.completed).length}
-        </div>
+    </div>
+    <div style="margin-top:16px;padding:16px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+      <div style="font-size:9pt;color:#374151;line-height:1.6;">
+        <strong>Investigation Summary</strong><br/>
+        Item: ${esc(d.itemTitle)}<br/>
+        Risk Level: <strong>${esc(d.riskLevel)}</strong><br/>
+        Event Date: ${formatDate(d.eventDate)}<br/>
+        Actions Required: ${resultingActions.length}<br/>
+        Actions Complete: ${resultingActions.filter((a: any) => a.completed).length}
       </div>
     </div>
   </div>

@@ -632,6 +632,10 @@ export const nearMissInvestigations = pgTable("near_miss_investigations", {
   riskLevel: text("risk_level").notNull().default(""),
   treatmentGiven: text("treatment_given").notNull().default(""),
   resultingActions: text("resulting_actions").notNull().default("[]"),
+  // Investigator sign-off
+  investigatorSignature: text("investigator_signature"),
+  investigatorSignedAt: text("investigator_signed_at"),
+  // Approver / Manager sign-off (legacy column names kept to preserve existing data)
   directorName: text("director_name"),
   directorSignature: text("director_signature"),
   signedAt: text("signed_at"),
