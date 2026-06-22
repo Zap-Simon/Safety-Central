@@ -1,45 +1,21 @@
 ---
-name: MSAL stale token 401 after deploy
-description: Why authenticated fetches return 401 after code changes/deploys, and the fix pattern.
+name: SharePoint endpoints need getSharePointToken, not getAccessToken
+description: 401s on SharePoint-backed API endpoints come from sending the wrong MSAL token scope; and why forceRefresh popups are a trap.
 ---
 
 ## The rule
-Any `authenticatedFetch` wrapper that calls `authService.getAccessToken()` must include a **forceRefresh retry** on 401. Without it, stale MSAL cache tokens cause blank pages after every deploy.
+Any client fetch to a SharePoint-backed endpoint (e.g. `/api/meeting-history`, `/api/sharepoint/*`) MUST use `authService.getSharePointToken()`, NOT `authService.getAccessToken()`.
 
-**Why:** After a server restart MSAL's browser-side cache still holds the previous access token. `acquireTokenSilent` returns that cached token silently — no network call to Microsoft. SharePoint/server rejects it with 401. Retrying with the same token (even multiple times) always fails.
+**Why:** `getAccessToken()` requests `loginRequest.scopes` (login/Graph). `getSharePointToken()` requests `sharePointRequest.scopes` (SharePoint resource). The server validates the token audience against SharePoint, so a login/Graph token is rejected with 401 even though the user is fully signed in. The reference implementation that works is `meeting-history.tsx`; mirror its `authenticatedFetch` exactly when adding a new SharePoint-backed page.
 
-**How to apply:** Two-step pattern in every `authenticatedFetch`:
-1. Try with normal token.
-2. If response is 401, call `getAccessToken(forceRefresh: true)` and retry once.
-
-Also: `authService.getAccessToken(forceRefresh = false)` must pass `forceRefresh` into the MSAL `SilentRequest` — `{ scopes, account, forceRefresh }`.
-
+**How to apply:** copy this shape (no forceRefresh, no popup path):
 ```ts
-// authService.ts
-async getAccessToken(forceRefresh = false): Promise<string> {
-  const silentRequest: SilentRequest = { scopes: loginRequest.scopes, account: accounts[0], forceRefresh };
-  ...
-}
-
-// page component
 const authenticatedFetch = async (url, options = {}) => {
-  const makeRequest = async (forceRefresh: boolean) => {
-    const token = await authService.getAccessToken(forceRefresh);
-    return fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
-  };
-  const response = await makeRequest(false);
-  if (response.status === 401) return makeRequest(true);
-  return response;
+  const token = await authService.getSharePointToken();
+  return fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });
 };
 ```
+Query: check `res.ok` before `.json()` (401 returns a benign `{data:[]}` body that would silently empty the list); retry transient faults a few times but NOT `interaction|popup|cancel|No authenticated accounts`.
 
-**TanStack Query retry:** Once 401 is handled at the fetch level, stop the query from also retrying on 401 — add `401` to the no-retry pattern:
-```ts
-retry: (failureCount, error) => {
-  const msg = error instanceof Error ? error.message : String(error);
-  if (/401|interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
-  return failureCount < 2;
-}
-```
-
-**Fallback UX:** If the forced refresh still fails (genuine auth expiry), show a visible "Retry" button — never leave the user looking at an empty page with no way to recover without a full reload.
+## The forceRefresh popup trap (do NOT repeat)
+Do not "fix" a 401 by calling `getAccessToken(forceRefresh: true)` and retrying. `forceRefresh` makes `acquireTokenSilent` fail more readily, which falls through to `acquireTokenPopup`. In production the security headers block the popup, producing an endless flood of `Cross-Origin-Opener-Policy policy would block the window.closed call` and the 401 never clears. The 401 was never a stale-token problem — it was the wrong token scope. Fix the scope, never force interactive popups inside a background data fetch.

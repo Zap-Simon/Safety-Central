@@ -44,25 +44,27 @@ export default function Actions() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
 
+  // Use the SharePoint-scoped token (same as meeting-history.tsx). The
+  // /api/meeting-history endpoint talks to SharePoint, so it needs a SharePoint
+  // token — NOT the login/Graph token from getAccessToken(). Using the wrong
+  // token type is what caused the 401s. getSharePointToken acquires silently
+  // (it only falls back to a popup on a genuine InteractionRequiredAuthError),
+  // so the normal data-load path won't hit the Cross-Origin-Opener-Policy block.
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
-    const makeRequest = async (forceRefresh: boolean) => {
-      const token = await authService.getAccessToken(forceRefresh);
+    try {
+      const token = await authService.getSharePointToken();
       return fetch(url, {
         ...options,
         headers: {
           ...options.headers,
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
-    };
-
-    const response = await makeRequest(false);
-    // On 401 the token may be stale in MSAL's cache; force a fresh one and retry once.
-    if (response.status === 401) {
-      return makeRequest(true);
+    } catch (error) {
+      console.error('Error getting SharePoint token:', error);
+      throw error;
     }
-    return response;
   };
 
   const { data: apiResponse, isLoading, isError, refetch } = useQuery({
@@ -72,14 +74,15 @@ export default function Actions() {
       return res.json();
     }),
     staleTime: 5 * 60 * 1000,
-    // 401s are handled inside authenticatedFetch (forceRefresh + retry).
-    // Only retry genuine transient network faults here, not auth errors.
+    // Retry transient faults (e.g. token not ready for a beat right after a deploy
+    // reload) so the request self-heals. Do NOT retry when the user genuinely needs
+    // to sign in again — that would just re-trigger sign-in popups over and over.
     retry: (failureCount, error) => {
       const msg = error instanceof Error ? error.message : String(error);
-      if (/401|interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
-      return failureCount < 2;
+      if (/interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
+      return failureCount < 3;
     },
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
 
   const meetingItems: ActionableItem[] = (apiResponse as any)?.data || [];

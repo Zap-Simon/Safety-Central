@@ -69,7 +69,7 @@ export class AuthService {
     }
   }
 
-  async getAccessToken(forceRefresh = false): Promise<string> {
+  async getAccessToken(): Promise<string> {
     // Ensure MSAL is initialized
     if (!msalInstance.getConfiguration()) {
       await msalInstance.initialize();
@@ -80,7 +80,7 @@ export class AuthService {
       throw new Error('No authenticated accounts found');
     }
 
-    // Force refresh token to get SharePoint permissions - clear cached token
+    // Clear cached token so MSAL returns a current one
     this.accessToken = null;
     this.tokenExpiry = 0;
 
@@ -88,7 +88,6 @@ export class AuthService {
       const silentRequest: SilentRequest = {
         scopes: loginRequest.scopes,
         account: accounts[0],
-        forceRefresh,
       };
 
       const response = await msalInstance.acquireTokenSilent(silentRequest);
