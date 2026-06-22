@@ -1,0 +1,138 @@
+Version	2	 	 	 	 	 	 	 	 	 
+ 	 
+Modified	30/11/2021	Review	30/11/2025	 	 	 	 	 
+Accident, Near Miss Report Form
+INSTRUCTIONS: Complete this form for all Near Misses, Accidents, and Hazards. Please be as specific as possible when filling this out as it will greatly help us minimizing the risk of the same thing from happening again.
+1.	Event Details
+
+NAME OF INVESTIGATOR: Simon Hubbard 
+Site / Job: Unit 11 – Dover Courts WOA-0073162 (36296)
+Date of Event	Time	Date First Reported	Date of this Report
+15/04/2025	6:40PM	16/04/2025	16/04/2025
+
+	Event Type	COMPLETE SECTIONS
+	Hazard Report (no incident reported, complete report follow-up)	1,4
+	Near Miss (any event/observation that could have resulted in injury or property damage)	1,2,4
+	Minor Harm Accident (Onsite First Aid treatment / potential future harm)	1,2,3,4
+	Harm Accident (Off site medical treatment and rehabilitation/ rest for not serious or permanent injury)	1,2,3,4
+	Serious Harm Injury (as defined by the act – refer to your policy before ticking)	1,2,3,4
+	Property Damage	1,2,3,4
+2.	Involved Persons
+Names of injured/ near miss person(s) 
+
+
+
+
+	Employer
+
+Cranfield Glass  Contractor     Public/Visitor 
+
+(Specify) __________________________________
+Names of any witness(ess) N/A
+Contact phone number(s) 03 353 5550
+
+How did this event happen? (Describe the events that led to this incident/near miss occuring
+On Tuesday 15th April, our glazier was securing a window at Unit 14 Dover Court as scheduled. The booking was made following an email received from OCHT: “The incident has been reviewed and our H&S team have advised trade can attend Dover Courts but need to apply caution around number 11. Please can you book this job back in, and if any issues arise, please let me know.”
+While on site attending to Unit 14, our glazier was approached by someone inquiring about Unit 11, asking if we would be boarding it up. Concerned, the glazier contacted our office, aware of the warning about Unit 11, which was communicated internally through Teams and also noted on the task details for Unit 14, immediately available to the glazier.
+Our office advised the glazier not to attend Unit 11
+15/04- 3:27 PM – Glazier (Caller) and our office (from Transcript #1):
+•	Glazier: “Hey, there’s a guy here… and he’s wondering if we’re going to board it up…”
+•	Office: “That’s the one that got the police thing… That’s the one that got the warning.”
+•	Glazier: “Should I tell him that?”
+•	Office: “Yeah… his property adviser.”
+
+The glazier then left Dover Court and moved on to his next scheduled job. He did not enter or approach Unit 11.
+15/04- 3:28 PM:
+Our office attempted to call Caitlin shortly after but was unable to get through.
+15/04 - 3:42 PM:
+OCHT Dispatch phoned our office to discuss the situation, unaware that the glazier had already departed.
+
+Call Between OCHT (caller) and our officer from Transcript #2:
+•	Office: “Yeah, so he's already done the other job and he's gone to another job because that was already booked in. But he then walked up to him and asked him about it and he's like, do we have a job for Unit 11? They said no, that's the one that had the…”
+•	Office: “No access because the police were there.”
+•	OCHT: “Yeah, that was yesterday.”
+•	Office: “It was yesterday, but we never got a job for unit 11.”
+•	OCHT: “OK, so if I get one put through, can your guy do that while he’s there?”
+•	Office: “Yep.”
+•	Office: “He’s gone now, but he can…”
+•	Office: “Once he goes back.”
+•	OCHT: “We can go back. OK, I’ll get that through now… I’ll shoot that through to you like ASAP.”
+________________________________________
+15/04 - 3:45 PM:
+The job was formally dispatched by OCHT, and our glazier returned to site to complete the work at Unit 11. At this point, this was not treated as a near miss due to perceived appropriate handling.
+________________________________________
+16/04 - 12:05 PM:
+We received a call from OCHT advising that we should not have attended Unit 11:
+Call from OCHT from Transript #3:
+“No, all good. I am just going to flag that because I believe there's still a do-not-attend on 11 Dover. So, I will have to have a quick chat with the health and safety team and just say I probably should never have been assigned to you guys in the first place. I will follow up and see.”
+________________________________________
+16/04 - Follow-Up Email from OCHT:
+Subject: Incident Report Request
+Thank you for speaking to me on the phone regarding this job. Just to advise again, if your staff ever feel uncomfortable on site, they need to leave; their safety comes first.
+After talking with the team, we will need an incident report sent through for this job, outlining how it came about that your team attended, and what happened while onsite. If you can get that through to us today, it would be great so we can review.
+________________________________________
+16/04 - After speaking with our glazier, he noted hightened activity at the complex, however felt safe and “welcomed” to secure the windows at Unit-11. 
+
+
+
+
+
+How was this allowed to happen within our company? (what processes were broken, safeguards non-existant, etc that allowed this to happen on our watch? List all that apply)
+1.	The glazier did not sign in via Loc8 on arrival at site.
+(He was unable to find the assigned WOA job in Loc8) However, he was aware of the warning through multiple internal channels:
+•	Microsoft Teams (internal communication),
+•	The job card for Unit 14 (which included notes regarding Unit 11),
+•	A phone call with our office prior to any action.
+2.	Our Health & Safety policy outlines that two glaziers should attend any jobs with warnings, or that a second person must be present on-site. However, our current policy for OCHT was created under the former “A and B category” warning system. OCHT has since changed their alert structure, and our policy has not yet been updated to reflect this.
+
+3.	There is currently no thorough documentation in our Health & Safety policy outlining how site warnings are lifted, or under what conditions attendance is permitted with a active high priority warning in place. This includes the absence of a defined process for verifying clearance with OCHT if a site vist is permitted with an active warning in place.
+
+
+How Serious could this have been? 
+The likelihood of such an event reoccuring: Rare
+If the event did reoccur, the likely consequence would be: Moderate
+The risk score is therefore: Low (Short Report Required)
+
+ 
+3.	Treatment and Follow-up
+What was the resulting injury?
+
+
+
+
+
+What treatment was given to immediately address the issue?
+ No treatment given      Doctor / Hospital – Attach doctors/hospital report         Onsite first aid – Items used?
+
+4.	Resulting Actions
+What can we do better to eliminate/minimise such an event reoccurring?	
+•	Tick items already actioned (use space overleaf if required)
+•	Include training and consider feedback from the investigation process in planning actions
+•	Refer to your policy to check if incident needs to be reported to Worksafe.	Completed
+          X	By whom (signed)	When
+(Time and date)
+			
+
+Remind glaziers to log into loc8 and that this is a non-conformity if loc8 is not signed into or OCHT called to advise of technical issues if after hours or during business hours call our office.
+			
+We’ll work with OCHT to document clear steps for attending sites with alerts (If they are permitted) and update our H&S policy. 
+
+This includes getting the current alert levels from Loc8 and confirming what’s needed to safely sign off and attend a property with a warning in place, 
+
+Define; in loc8 warning system
+
+ “if urgent ring OCHT 0800” 
+
+“Alert Type: Property Alert Level: High Alert Description: Tenant has been involved in a serious incident on the 14/04/2025 Alert Instructions: Do not attend”
+
+previously it said:
+
+“A = Potential active risk- Contact Tenancy Operations, team prior to visiting property (On call Manager -After hours)
+			
+Discussion at our next H&S management meeting			
+Administration training once new processes are defined			
+Discussion at the next staff H&S meeting			
+
+Director Review and Sign Off
+
+NAME: _____________________________ SIGNED __________________________ DATE __________________
