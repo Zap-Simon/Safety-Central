@@ -844,6 +844,7 @@ export default function Actions() {
                   <ActionStatusWorkflow
                     status={item.actionStatus || ''}
                     reconsiderDate={item.reconsiderDate}
+                    allowComplete={item.type !== 'Near Miss'}
                     onChange={(updates) => {
                       updateActionFields(item, updates);
                       setSelectedItem({ ...item, ...updates });

@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { printSetupInstructions } from "./secrets-helper";
+import { runStartupMigrations } from "./migrations";
 
 // Production logger
 const logger = pino({
@@ -120,6 +121,9 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Apply one-time data migrations (idempotent, recorded per database).
+  await runStartupMigrations();
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

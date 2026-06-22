@@ -1143,7 +1143,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const strValue = String(value).trim();
         return strValue === '' ? null : strValue;
       };
-      
+
+      // Workflow guard: a Near Miss item can only be Completed once it has reached
+      // "Ready to Close" (i.e. its investigation form is done and it has been
+      // surfaced in the meeting minutes for group sign-off). This enforces the
+      // single completion path on the server so it can't be bypassed by clients.
+      if (listType.trim() === 'NearMiss' && normalizeField(actionStatus) === 'Completed') {
+        const current = await storage.getActionItem('NearMiss', sharePointItemId.trim());
+        // Allow the valid transition (Ready to Close -> Completed) and idempotent
+        // re-saves of an already-Completed item (e.g. editing its notes), but block
+        // jumping straight to Completed from any earlier stage.
+        const currentStatus = current?.actionStatus;
+        if (currentStatus !== 'Ready to Close' && currentStatus !== 'Completed') {
+          return res.status(409).json({
+            success: false,
+            error: 'A Near Miss item can only be completed from the meeting minutes once its investigation is finished and it is Ready to Close.',
+          });
+        }
+      }
+
       const actionItem = await storage.upsertActionItem({
         listType: listType.trim(),
         sharePointItemId: sharePointItemId.trim(),

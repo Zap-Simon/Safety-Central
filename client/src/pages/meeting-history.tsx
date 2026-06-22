@@ -2943,8 +2943,17 @@ export default function MeetingHistory() {
                                                 >
                                                   {statusOptions
                                                     .filter(option => {
+                                                      // Near Miss items only move Submitted -> Actioned in a meeting.
+                                                      // They are completed later via group sign-off in the minutes,
+                                                      // never closed directly from here.
+                                                      if (item.type === 'Near Miss') {
+                                                        if (option === 'Submitted' || option === 'Actioned') return true;
+                                                        // Keep the current value selectable so the dropdown still
+                                                        // displays correctly for any legacy item in another state.
+                                                        return option === item.status;
+                                                      }
                                                       if (option === 'Closed') {
-                                                        return item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss';
+                                                        return item.type === 'Business Ideas' || item.type === 'Safety Ideas';
                                                       }
                                                       return true;
                                                     })
@@ -3300,15 +3309,27 @@ export default function MeetingHistory() {
                                       <i className="fas fa-users text-amber-500"></i>
                                       <span>Group to discuss, confirm outcome and close off this item.</span>
                                     </div>
-                                    <button
-                                      onClick={() => window.open(`/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`, '_blank', 'noopener,noreferrer')}
-                                      className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 flex-shrink-0 whitespace-nowrap"
-                                      title="Open this action in the Actions page"
-                                      data-testid={`button-open-actions-${item.id}`}
-                                    >
-                                      <ExternalLink className="h-3 w-3" />
-                                      <span>Open in Actions</span>
-                                    </button>
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                      <button
+                                        onClick={() => updateActionFields(item, { actionStatus: 'Completed' })}
+                                        disabled={isUpdatingAction === item.id}
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                                        title="Sign off and mark this item completed"
+                                        data-testid={`button-complete-${item.id}`}
+                                      >
+                                        <CheckCircle className="h-3 w-3" />
+                                        <span>{isUpdatingAction === item.id ? 'Saving…' : 'Mark Completed'}</span>
+                                      </button>
+                                      <button
+                                        onClick={() => window.open(`/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`, '_blank', 'noopener,noreferrer')}
+                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 whitespace-nowrap"
+                                        title="Open this action in the Actions page"
+                                        data-testid={`button-open-actions-${item.id}`}
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                        <span>Open in Actions</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               ))}

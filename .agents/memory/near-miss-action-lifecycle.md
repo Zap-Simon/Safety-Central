@@ -21,3 +21,10 @@ The `POST /complete` endpoint signs ONE role per call (`{role:'investigator'|'ap
 - Completion only goes through `/complete`; the generic PUT strips an incoming `status:'Complete'` so it can't bypass the gate.
 - Never add code that sets an Action to `Completed` just from viewing/opening an investigation — only the meeting closure flow finalises it.
 - `upsertActionItem` spreads `...item` into both insert and update; Drizzle skips `undefined` keys in `.set`, so passing only `{listType, sharePointItemId, actionStatus}` updates just that column without clobbering others.
+
+# Near Miss single completion path (the only way through the workflow)
+A Near Miss moves: Submitted →(meeting)→ Actioned →(investigation form signed off)→ actionStatus `Ready to Close` →(group sign-off in meeting minutes)→ `Completed`. That is the ONLY sanctioned route.
+- **Meetings:** the per-item status dropdown only offers Submitted/Actioned for Near Miss (Closed removed); legacy current status stays selectable just for display.
+- **Actions page:** `ActionStatusWorkflow` takes `allowComplete` (default true); pass `allowComplete={type !== 'Near Miss'}` so the Completed step is locked there.
+- **Completing happens in the meeting-minutes "Ready to Close" group-review container** via a "Mark Completed" button → `updateActionFields(item,{actionStatus:'Completed'})`.
+- **Server guard (don't remove):** `POST /api/action-items` rejects (409) a NearMiss→Completed unless the stored row is already `Ready to Close` (or already `Completed`, to allow idempotent re-saves — the meeting-history payload always re-sends `actionStatus` so blocking equal-state edits would break note edits). **Why:** UI-only restrictions are bypassable; the server is the real gate.

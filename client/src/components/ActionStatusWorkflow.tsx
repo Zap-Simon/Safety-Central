@@ -10,6 +10,9 @@ export interface ActionStatusWorkflowProps {
   reconsiderDate?: string;
   onChange: (updates: ActionStatusUpdate) => void;
   compact?: boolean;
+  // When false, the "Completed" step can't be selected here (e.g. Near Miss items
+  // are only signed off in the meeting minutes once the investigation is done).
+  allowComplete?: boolean;
 }
 
 const STAGES = [
@@ -53,6 +56,7 @@ export default function ActionStatusWorkflow({
   reconsiderDate,
   onChange,
   compact = false,
+  allowComplete = true,
 }: ActionStatusWorkflowProps) {
   const normalized = status || "";
   const onHold = normalized === "On Hold";
@@ -60,8 +64,12 @@ export default function ActionStatusWorkflow({
   const activeStage = onHold ? null : STAGES[currentIdx];
 
   // Moving to any normal stage clears a leftover reconsider date so it can't
-  // silently resurface the item later.
-  const goToStage = (value: string) => onChange({ actionStatus: value, reconsiderDate: "" });
+  // silently resurface the item later. Completing is blocked when allowComplete
+  // is false (the item is finished elsewhere, e.g. in the meeting minutes).
+  const goToStage = (value: string) => {
+    if (value === "Completed" && !allowComplete) return;
+    onChange({ actionStatus: value, reconsiderDate: "" });
+  };
 
   return (
     <div className="space-y-2.5">
@@ -71,6 +79,7 @@ export default function ActionStatusWorkflow({
           const Icon = stage.icon;
           const isDone = !onHold && i < currentIdx;
           const isCurrent = !onHold && i === currentIdx;
+          const isLocked = stage.value === "Completed" && !allowComplete;
 
           const circleClasses = isCurrent
             ? "bg-amber-500 text-white ring-4 ring-amber-200 border-amber-500"
@@ -91,10 +100,11 @@ export default function ActionStatusWorkflow({
               <button
                 type="button"
                 onClick={() => goToStage(stage.value)}
+                disabled={isLocked}
                 className={`relative z-10 flex items-center justify-center rounded-full border-2 transition-all ${circleClasses} ${
                   compact ? "h-7 w-7" : "h-8 w-8"
-                } hover:scale-105`}
-                title={stage.desc}
+                } ${isLocked ? "cursor-not-allowed opacity-50" : "hover:scale-105"}`}
+                title={isLocked ? "Near Miss items are signed off in the meeting minutes once the investigation is complete." : stage.desc}
                 data-testid={`status-step-${stage.value || "not-started"}`}
               >
                 <Icon className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} ${isCurrent && stage.value === "In Progress" ? "animate-spin" : ""}`} />
@@ -117,6 +127,13 @@ export default function ActionStatusWorkflow({
           <activeStage.icon className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-amber-900 leading-snug">{activeStage.desc}</p>
         </div>
+      )}
+
+      {/* Completion is handled in the meeting minutes for these items */}
+      {!allowComplete && (
+        <p className="text-[10px] text-gray-500 leading-snug px-0.5">
+          This item is signed off and completed in the meeting minutes once the investigation form is finished.
+        </p>
       )}
 
       {/* On Hold branch */}

@@ -108,6 +108,14 @@ export const cardOrdering = pgTable("card_ordering", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Tracks one-time data migrations that run on server startup so each runs once
+// per database (dev and production each apply it the first time they boot).
+export const appMigrations = pgTable("app_migrations", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  appliedAt: timestamp("applied_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
