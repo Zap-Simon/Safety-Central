@@ -746,6 +746,9 @@ export class SharePointListsService {
       
       if (!createResponse.ok) {
         const errorText = await createResponse.text();
+        if (createResponse.status === 403) {
+          throw new Error(`You don't have permission to submit to this list. Please ask your administrator to grant you Contribute access to the Cranfield Glass SharePoint site.`);
+        }
         throw new Error(`SharePoint create failed: ${createResponse.status} - ${errorText}`);
       }
       
