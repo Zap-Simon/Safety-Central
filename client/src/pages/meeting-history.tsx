@@ -3469,7 +3469,7 @@ export default function MeetingHistory() {
                     const containerKey = `${meetingDate}-ready-to-close`;
                     const isExpanded = expandedCategories.has(containerKey);
                     return (
-                      <div className="mt-2">
+                      <div className="mt-2 px-3 sm:px-6">
                         <Collapsible open={isExpanded} onOpenChange={(open) => {
                           if (open) {
                             setExpandedCategories(prev => new Set([...prev, containerKey]));
@@ -3480,12 +3480,12 @@ export default function MeetingHistory() {
                           <CollapsibleTrigger asChild>
                             <Button
                               variant="ghost"
-                              className="w-full justify-between p-3 sm:p-4 h-auto bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-lg hover:bg-emerald-100 mb-2 touch-manipulation min-h-[48px] sm:min-h-[44px]"
+                              className="w-full justify-between p-3 sm:p-4 h-auto bg-amber-50 text-amber-900 border border-amber-300 rounded-lg hover:bg-amber-100 mb-2 touch-manipulation min-h-[48px] sm:min-h-[44px]"
                             >
                               <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-emerald-600" />
+                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-amber-600" />
                                 <div className="text-left min-w-0 flex-1">
-                                  <div className="font-semibold text-sm sm:text-base leading-tight">Completed Actions – Group Review</div>
+                                  <div className="font-semibold text-sm sm:text-base leading-tight">Actions</div>
                                   <div className="text-xs opacity-75 mt-0.5">{readyToCloseItems.length} item{readyToCloseItems.length !== 1 ? 's' : ''} ready for sign-off</div>
                                 </div>
                               </div>
@@ -3495,7 +3495,7 @@ export default function MeetingHistory() {
                           <CollapsibleContent>
                             <div className="space-y-3 pl-1 sm:pl-2">
                               {readyToCloseItems.map((item: MeetingItem) => (
-                                <div key={`rtc-${item.id}`} className="bg-white rounded-lg border border-emerald-200 shadow-sm p-3 sm:p-4">
+                                <div key={`rtc-${item.id}`} className="bg-white rounded-lg border border-amber-200 shadow-sm p-3 sm:p-4">
                                   {/* Header row */}
                                   <div className="flex items-start justify-between gap-2 mb-3">
                                     <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2 line-clamp-2">
@@ -3509,7 +3509,7 @@ export default function MeetingHistory() {
                                       }`}>
                                         {item.type}
                                       </Badge>
-                                      <Badge className="text-xs whitespace-nowrap bg-emerald-100 text-emerald-800 border-emerald-300">
+                                      <Badge className="text-xs whitespace-nowrap bg-amber-100 text-amber-800 border-amber-300">
                                         Ready to Close
                                       </Badge>
                                     </div>
@@ -3518,13 +3518,13 @@ export default function MeetingHistory() {
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
                                     {item.actionAssignedTo && (
                                       <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-user text-emerald-600 w-3"></i>
+                                        <i className="fas fa-user text-amber-600 w-3"></i>
                                         <span><span className="font-medium">Actioned by:</span> {item.actionAssignedTo}</span>
                                       </div>
                                     )}
                                     {item.actionDueDate && (
                                       <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-calendar-check text-emerald-600 w-3"></i>
+                                        <i className="fas fa-calendar-check text-amber-600 w-3"></i>
                                         <span><span className="font-medium">Due:</span> {formatDate(item.actionDueDate.split('T')[0])}</span>
                                       </div>
                                     )}
@@ -3549,12 +3549,12 @@ export default function MeetingHistory() {
                                   </div>
                                   {/* Action notes */}
                                   {item.actionNotes && (
-                                    <div className="bg-emerald-50 border border-emerald-100 rounded p-2 mb-2">
+                                    <div className="bg-amber-50 border border-amber-100 rounded p-2 mb-2">
                                       <div className="flex items-start gap-2">
-                                        <i className="fas fa-clipboard-check text-emerald-600 text-xs mt-0.5"></i>
+                                        <i className="fas fa-clipboard-check text-amber-600 text-xs mt-0.5"></i>
                                         <div>
-                                          <span className="text-xs font-medium text-emerald-800">What was done: </span>
-                                          <span className="text-xs text-emerald-900">{item.actionNotes}</span>
+                                          <span className="text-xs font-medium text-amber-800">What was done: </span>
+                                          <span className="text-xs text-amber-900">{item.actionNotes}</span>
                                         </div>
                                       </div>
                                     </div>
@@ -3572,8 +3572,8 @@ export default function MeetingHistory() {
                                     </div>
                                   )}
                                   {/* Call to action */}
-                                  <div className="mt-3 pt-2 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-700">
-                                    <i className="fas fa-users text-emerald-500"></i>
+                                  <div className="mt-3 pt-2 border-t border-amber-100 flex items-center gap-2 text-xs text-amber-700">
+                                    <i className="fas fa-users text-amber-500"></i>
                                     <span>Group to discuss, confirm outcome and close off this item.</span>
                                   </div>
                                 </div>
