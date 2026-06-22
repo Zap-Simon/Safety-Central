@@ -283,18 +283,16 @@ export default function Actions() {
     }
   };
 
-  const getTypeBadge = (type: string, size: 'sm' | 'md' = 'sm') => {
-    const iconCls = size === 'md' ? 'h-3.5 w-3.5' : 'h-3 w-3';
-    const configs: Record<string, { icon: React.ReactNode; label: string; classes: string }> = {
-      'Safety Ideas':   { icon: <Shield        className={iconCls} />, label: 'Safety',   classes: 'bg-green-50  text-green-700  border-green-200'  },
-      'Business Ideas': { icon: <Lightbulb     className={iconCls} />, label: 'Business',  classes: 'bg-blue-50   text-blue-700   border-blue-200'   },
-      'Near Miss':      { icon: <AlertTriangle className={iconCls} />, label: 'Near Miss', classes: 'bg-orange-50 text-orange-700 border-orange-200' },
-    };
-    const cfg = configs[type] ?? { icon: <FileText className={iconCls} />, label: type || 'Unknown', classes: 'bg-gray-50 text-gray-600 border-gray-200' };
+  const getTypeBadge = (type: string) => {
+    const colorClass =
+      type === 'Safety Ideas'   ? 'bg-red-100    text-red-800    border-red-200'    :
+      type === 'Business Ideas' ? 'bg-blue-100   text-blue-800   border-blue-200'   :
+      type === 'Near Miss'      ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                  'bg-gray-100   text-gray-800   border-gray-200';
     return (
-      <span className={`inline-flex items-center gap-1 ${size === 'md' ? 'px-2 py-0.5 text-xs' : 'px-1.5 py-0 text-[10px]'} rounded-full border font-medium ${cfg.classes}`}>
-        {cfg.icon}{cfg.label}
-      </span>
+      <Badge variant="outline" className={`text-[10px] font-medium px-1.5 py-0 h-5 leading-none rounded-full ${colorClass}`}>
+        {type || 'Unknown'}
+      </Badge>
     );
   };
 
@@ -659,7 +657,7 @@ export default function Actions() {
                   <div className="p-3 flex flex-col flex-1 min-h-0">
                     {/* Category + status row — always at top */}
                     <div className="flex items-center justify-between gap-1 mb-2">
-                      {getTypeBadge(item.type, 'sm')}
+                      {getTypeBadge(item.type)}
                       <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
                         {item.actionStatus || 'Not Started'}
                       </Badge>
@@ -705,7 +703,7 @@ export default function Actions() {
           <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
             <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <div className="mb-1">{getTypeBadge(item.type, 'md')}</div>
+                <div className="mb-1">{getTypeBadge(item.type)}</div>
                 <DialogTitle className="leading-snug pr-6">
                   {item.title || 'Untitled Action'}
                 </DialogTitle>
