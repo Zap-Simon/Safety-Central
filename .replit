@@ -8,7 +8,7 @@ packages = ["chromium", "jq", "gh"]
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
+build = ["bash", "-c", "npm run db:push -- --force && npm run build"]
 run = ["npm", "run", "start"]
 
 [[ports]]
