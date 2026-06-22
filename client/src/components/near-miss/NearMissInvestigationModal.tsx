@@ -8,6 +8,7 @@ import RiskMatrix from "./RiskMatrix";
 import HazardTable, { type HazardRow } from "./HazardTable";
 import { getRiskLevelForCell } from "./riskUtils";
 import { authService } from "@/auth/authService";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface NearMissItem {
@@ -81,6 +82,7 @@ interface Props {
 
 export default function NearMissInvestigationModal({ item, open, onClose }: Props) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [section, setSection] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isDrafting, setIsDrafting] = useState<string | null>(null);
@@ -326,6 +328,15 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   };
 
   const exportReport = async () => {
+    // Open the tab synchronously inside the click handler. If we call window.open
+    // AFTER the await, browsers treat it as a non-user-initiated popup and block
+    // it silently — which is why the button previously appeared to "do nothing".
+    const reportWindow = window.open("", "_blank");
+    if (reportWindow) {
+      reportWindow.document.write(
+        '<!doctype html><title>Generating report…</title><body style="font-family:system-ui,sans-serif;padding:2rem;color:#374151">Generating report…</body>'
+      );
+    }
     setIsExporting(true);
     try {
       const payload = {
@@ -337,13 +348,46 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
         method: "POST",
         body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        const json = await res.json();
+      if (!res.ok) {
+        reportWindow?.close();
+        toast({
+          title: "Export failed",
+          description: "Could not generate the report. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const json = await res.json();
+      if (!json?.htmlContent) {
+        reportWindow?.close();
+        toast({
+          title: "Export failed",
+          description: "The report came back empty. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (reportWindow) {
+        reportWindow.document.open();
+        reportWindow.document.write(json.htmlContent);
+        reportWindow.document.close();
+      } else {
+        // Popup was blocked — fall back to downloading the report as a file.
         const blob = new Blob([json.htmlContent], { type: "text/html;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `near-miss-report-${item.id}.html`;
+        a.click();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
       }
+    } catch (err) {
+      reportWindow?.close();
+      toast({
+        title: "Export failed",
+        description: "Could not generate the report. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsExporting(false);
     }
