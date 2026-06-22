@@ -3219,70 +3219,145 @@ export default function MeetingHistory() {
                                             </div>
                                           </div>
                                           
-                                          {/* Action Content */}
-                                          <div className="p-3 flex flex-col gap-2">
-                                            {/* Compact summary row + Edit toggle */}
-                                            <div className="flex items-center justify-between gap-2">
-                                              <div className="flex flex-wrap gap-1 items-center flex-1 min-w-0">
-                                                {item.actionPriority ? (
-                                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${item.actionPriority === 'High' ? 'bg-red-200 text-red-800' : item.actionPriority === 'Medium' ? 'bg-amber-200 text-amber-900' : 'bg-green-200 text-green-800'}`}>{item.actionPriority}</span>
-                                                ) : null}
-                                                {item.actionStatus ? (
-                                                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-white/70 text-amber-900 border border-amber-300">{item.actionStatus || 'Not Started'}</span>
-                                                ) : null}
-                                                {item.actionAssignedTo ? (
-                                                  <span className="text-xs text-amber-800 truncate max-w-[100px]">→ {item.actionAssignedTo}</span>
-                                                ) : null}
-                                                {item.actionDueDate ? (
-                                                  <span className="text-xs text-amber-700">Due: {formatDate(item.actionDueDate.split('T')[0])}</span>
-                                                ) : null}
-                                                {!item.actionPriority && !item.actionStatus && !item.actionAssignedTo && !item.actionDueDate && (
-                                                  <span className="text-xs text-amber-600 italic">No action details yet</span>
-                                                )}
+                                          {/* Action Content - Redesigned */}
+                                          <div className="p-3 flex flex-col gap-3">
+
+                                            {/* Completeness banner */}
+                                            {(() => {
+                                              const missing: string[] = [];
+                                              if (!item.actionPriority) missing.push('Priority');
+                                              if (!item.actionDueDate) missing.push('Due Date');
+                                              if (!getActionFieldValue(item, 'actionAssignedTo')) missing.push('Assigned To');
+                                              return missing.length > 0 ? (
+                                                <div className="flex items-start gap-2 bg-orange-50 border border-orange-300 rounded-lg px-3 py-2">
+                                                  <i className="fas fa-exclamation-triangle text-orange-500 text-xs mt-0.5 flex-shrink-0"></i>
+                                                  <span className="text-xs text-orange-800 leading-tight">
+                                                    <span className="font-semibold">Fill in before saving: </span>
+                                                    {missing.join(' · ')}
+                                                  </span>
+                                                </div>
+                                              ) : (
+                                                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                                  <i className="fas fa-check-circle text-green-500 text-xs flex-shrink-0"></i>
+                                                  <span className="text-xs text-green-800 font-medium">Action details complete</span>
+                                                </div>
+                                              );
+                                            })()}
+
+                                            {/* Row 1: Priority + Status */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                              <div>
+                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                                                  Priority
+                                                  {!item.actionPriority && <span className="text-red-500 font-bold">*</span>}
+                                                </label>
+                                                <select
+                                                  value={item.actionPriority || ''}
+                                                  onChange={(e) => {
+                                                    const priority = e.target.value;
+                                                    let dueDate = item.actionDueDate || '';
+                                                    if (priority && !item.actionDueDate) {
+                                                      const today = new Date();
+                                                      const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
+                                                      today.setDate(today.getDate() + daysToAdd);
+                                                      dueDate = today.toISOString().split('T')[0];
+                                                    }
+                                                    updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
+                                                  }}
+                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
+                                                    !item.actionPriority
+                                                      ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
+                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
+                                                  }`}
+                                                  data-testid={`select-action-priority-${item.id}`}
+                                                >
+                                                  <option value="">— Select priority —</option>
+                                                  <option value="High">🔴 High (7 days)</option>
+                                                  <option value="Medium">🟡 Medium (14 days)</option>
+                                                  <option value="Low">🟢 Low (30 days)</option>
+                                                </select>
                                               </div>
-                                              <button
-                                                onClick={() => setExpandedActionEditors(prev => {
-                                                  const next = new Set(prev);
-                                                  next.has(item.id) ? next.delete(item.id) : next.add(item.id);
-                                                  return next;
-                                                })}
-                                                className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 text-xs text-amber-800 bg-white/80 hover:bg-white border border-amber-300 rounded-md transition-colors"
-                                              >
-                                                <i className={`fas fa-${expandedActionEditors.has(item.id) ? 'chevron-up' : 'pencil-alt'} text-[10px]`}></i>
-                                                <span>{expandedActionEditors.has(item.id) ? 'Collapse' : 'Edit'}</span>
-                                              </button>
+                                              <div>
+                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide">Status</label>
+                                                <select
+                                                  value={item.actionStatus || ''}
+                                                  onChange={(e) => updateActionFields(item, { actionStatus: e.target.value })}
+                                                  className="w-full mt-1 text-xs border-2 border-amber-300 bg-white rounded-md px-2 py-1.5 focus:border-amber-500 focus:outline-none transition-colors"
+                                                  data-testid={`select-action-status-${item.id}`}
+                                                >
+                                                  <option value="">Not Started</option>
+                                                  <option value="In Progress">In Progress</option>
+                                                  <option value="On Hold">On Hold</option>
+                                                  <option value="Completed">Completed</option>
+                                                  <option value="Ready to Close">Ready to Close</option>
+                                                </select>
+                                              </div>
                                             </div>
 
-                                            {/* Action Notes - visible when collapsed */}
-                                            {!expandedActionEditors.has(item.id) && (
-                                            <div>
-                                              <div className="flex items-center justify-between">
-                                                <label className="text-xs font-medium text-amber-800 uppercase tracking-wide flex items-center gap-1">
-                                                  Action Notes
-                                                  <i className="fas fa-robot text-green-500 text-[10px] opacity-70"></i>
+                                            {/* Row 2: Assigned To + Due Date */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                              <div>
+                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                                                  Assigned To
+                                                  {!getActionFieldValue(item, 'actionAssignedTo') && <span className="text-red-500 font-bold">*</span>}
                                                 </label>
-                                                <div className="flex items-center gap-2">
-                                                  {localActionEdits[item.id] && (
-                                                    <span className="text-xs text-amber-600 italic flex items-center gap-1">
-                                                      <i className="fas fa-pencil-alt text-[10px]"></i>Editing...
-                                                    </span>
-                                                  )}
-                                                  {recentlySavedActions.has(item.id) && !localActionEdits[item.id] && (
-                                                    <span className="text-xs text-green-600 flex items-center gap-1">
-                                                      <i className="fas fa-check text-[10px]"></i>Saved
-                                                    </span>
-                                                  )}
-                                                </div>
+                                                <input
+                                                  type="text"
+                                                  value={getActionFieldValue(item, 'actionAssignedTo')}
+                                                  onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
+                                                  placeholder="Enter name…"
+                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
+                                                    !getActionFieldValue(item, 'actionAssignedTo')
+                                                      ? 'border-orange-400 bg-orange-50 placeholder-orange-400 focus:border-orange-500 focus:outline-none'
+                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
+                                                  }`}
+                                                  data-testid={`input-action-assigned-${item.id}`}
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                                                  Due Date
+                                                  {!item.actionDueDate && <span className="text-red-500 font-bold">*</span>}
+                                                </label>
+                                                <input
+                                                  type="date"
+                                                  value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
+                                                  onChange={(e) => updateActionFields(item, { actionDueDate: e.target.value })}
+                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
+                                                    !item.actionDueDate
+                                                      ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
+                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
+                                                  }`}
+                                                  data-testid={`input-action-due-date-${item.id}`}
+                                                />
+                                              </div>
+                                            </div>
+
+                                            {/* Divider */}
+                                            <div className="border-t border-amber-300/60"></div>
+
+                                            {/* Action Notes */}
+                                            <div>
+                                              <div className="flex items-center justify-between mb-1">
+                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                                                  Action Notes
+                                                  <i className="fas fa-robot text-green-500 text-[10px] opacity-80"></i>
+                                                </label>
+                                                {recentlySavedActions.has(item.id) && !localActionEdits[item.id] && (
+                                                  <span className="text-xs text-green-600 flex items-center gap-1 font-medium">
+                                                    <i className="fas fa-check-circle text-[10px]"></i>Saved
+                                                  </span>
+                                                )}
                                               </div>
                                               <textarea
                                                 value={getActionFieldValue(item, 'actionNotes')}
                                                 onChange={(e) => handleActionTextChange(item, 'actionNotes', e.target.value)}
-                                                placeholder="Add action notes..."
+                                                placeholder="Add action notes…"
                                                 rows={2}
-                                                className="w-full mt-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 transition-colors resize-none"
+                                                className="w-full text-xs border-2 border-amber-300 rounded-md px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 focus:outline-none transition-colors resize-none"
                                                 data-testid={`textarea-action-notes-${item.id}`}
                                               />
-                                              <div className="flex items-center justify-end mt-1">
+                                              <div className="flex items-center justify-between mt-1.5 gap-2">
                                                 <button
                                                   type="button"
                                                   onClick={async () => {
@@ -3310,99 +3385,46 @@ export default function MeetingHistory() {
                                                     }
                                                   }}
                                                   disabled={!getActionFieldValue(item, 'actionNotes').trim() || isEnhancingActionNotes === item.id}
-                                                  className="text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white px-2 py-1 rounded flex items-center gap-1"
+                                                  className="text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-2 py-1 rounded-md flex items-center gap-1 transition-colors"
                                                 >
                                                   {isEnhancingActionNotes === item.id ? (
-                                                    <><i className="fas fa-spinner fa-spin text-[10px]"></i>Enhancing...</>
+                                                    <><i className="fas fa-spinner fa-spin text-[10px]"></i><span>Enhancing…</span></>
                                                   ) : (
-                                                    <><i className="fas fa-wand-magic-sparkles text-[10px]"></i>Finish Text</>
+                                                    <><i className="fas fa-wand-magic-sparkles text-[10px]"></i><span>Improve Writing</span></>
                                                   )}
                                                 </button>
-                                              </div>
-                                            </div>
-                                            )}
-
-                                            {/* Expandable fields */}
-                                            {expandedActionEditors.has(item.id) && (
-                                              <div className="space-y-2 border-t border-amber-300 pt-2">
-                                              {/* Row 1: Priority + Due Date */}
-                                              <div className="grid grid-cols-2 gap-2">
-                                                <div>
-                                                  <label className="text-xs font-medium text-amber-800 uppercase tracking-wide">Priority</label>
-                                                  <select
-                                                    value={item.actionPriority || ''}
-                                                    onChange={(e) => {
-                                                      const priority = e.target.value;
-                                                      let dueDate = '';
-                                                      if (priority) {
-                                                        const today = new Date();
-                                                        const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
-                                                        today.setDate(today.getDate() + daysToAdd);
-                                                        dueDate = today.toISOString().split('T')[0];
+                                                {localActionEdits[item.id] && (
+                                                  <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                      const edits = localActionEdits[item.id] || {};
+                                                      const updates: Record<string, string> = {};
+                                                      if (edits.actionNotes !== undefined) updates.actionNotes = edits.actionNotes;
+                                                      if (edits.actionAssignedTo !== undefined) updates.actionAssignedTo = edits.actionAssignedTo;
+                                                      if (Object.keys(updates).length > 0) {
+                                                        await updateActionFields(item, updates);
+                                                        setLocalActionEdits(prev => {
+                                                          const next = { ...prev };
+                                                          delete next[item.id];
+                                                          return next;
+                                                        });
                                                       }
-                                                      updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
                                                     }}
-                                                    className="w-full mt-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 transition-colors"
-                                                    data-testid={`select-action-priority-${item.id}`}
+                                                    className="text-xs bg-amber-700 hover:bg-amber-800 text-white px-3 py-1 rounded-md font-semibold flex items-center gap-1 shadow-sm transition-colors"
                                                   >
-                                                    <option value="">Select...</option>
-                                                    <option value="High">High (7 days)</option>
-                                                    <option value="Medium">Medium (14 days)</option>
-                                                    <option value="Low">Low (30 days)</option>
-                                                  </select>
-                                                </div>
-                                                <div>
-                                                  <label className="text-xs font-medium text-amber-800 uppercase tracking-wide">Due Date</label>
-                                                  <input
-                                                    type="date"
-                                                    value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
-                                                    onChange={(e) => updateActionFields(item, { actionDueDate: e.target.value })}
-                                                    className="w-full mt-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 transition-colors"
-                                                    data-testid={`input-action-due-date-${item.id}`}
-                                                  />
-                                                </div>
+                                                    <i className="fas fa-save text-[10px]"></i>Save
+                                                  </button>
+                                                )}
                                               </div>
-                                              
-                                              {/* Row 2: Status + Assigned To */}
-                                              <div className="grid grid-cols-2 gap-2">
-                                                <div>
-                                                  <label className="text-xs font-medium text-amber-800 uppercase tracking-wide">Status</label>
-                                                  <select
-                                                    value={item.actionStatus || ''}
-                                                    onChange={(e) => updateActionFields(item, { actionStatus: e.target.value })}
-                                                    className="w-full mt-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 transition-colors"
-                                                    data-testid={`select-action-status-${item.id}`}
-                                                  >
-                                                    <option value="">Not Started</option>
-                                                    <option value="In Progress">In Progress</option>
-                                                    <option value="On Hold">On Hold</option>
-                                                    <option value="Completed">Completed</option>
-                                                    <option value="Ready to Close">Ready to Close</option>
-                                                  </select>
-                                                </div>
-                                                <div>
-                                                  <label className="text-xs font-medium text-amber-800 uppercase tracking-wide">Assigned To</label>
-                                                  <input
-                                                    type="text"
-                                                    value={getActionFieldValue(item, 'actionAssignedTo')}
-                                                    onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
-                                                    placeholder="Enter name..."
-                                                    className="w-full mt-1 text-xs border border-amber-300 rounded px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 transition-colors"
-                                                    data-testid={`input-action-assigned-${item.id}`}
-                                                  />
-                                                </div>
-                                              </div>
-                                              
                                             </div>
-                                            )}
 
-                                            {/* Meeting Discussion - visible when collapsed */}
-                                            {!expandedActionEditors.has(item.id) && item.meetingNotes && item.meetingNotes.trim() && (
-                                              <div className="bg-white/60 rounded-lg border border-amber-200 p-2">
+                                            {/* Meeting Discussion */}
+                                            {item.meetingNotes && item.meetingNotes.trim() && (
+                                              <div className="bg-white/60 rounded-lg border border-amber-200 p-2.5">
                                                 <div className="flex items-start gap-2">
-                                                  <i className="fas fa-comment-dots text-amber-600 text-xs mt-0.5"></i>
+                                                  <i className="fas fa-comment-dots text-amber-600 text-xs mt-0.5 flex-shrink-0"></i>
                                                   <div className="flex-1 min-w-0">
-                                                    <span className="text-xs font-medium text-amber-700">Meeting Discussion: </span>
+                                                    <div className="text-xs font-semibold text-amber-700 mb-0.5">Meeting Discussion</div>
                                                     <span className="text-xs text-amber-800">{item.meetingNotes}</span>
                                                   </div>
                                                 </div>
