@@ -638,40 +638,43 @@ export default function Actions() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''}`}
+                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''} h-36 flex flex-col`}
                   data-testid={`card-action-${item.id}`}
                 >
-                  <div className="p-3 space-y-2">
-                    {/* Status + type row */}
-                    <div className="flex items-center justify-between gap-2">
+                  <div className="p-3 flex flex-col flex-1 min-h-0">
+                    {/* Status + type row — always at top */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
                       <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
                         {item.actionStatus || 'Not Started'}
                       </Badge>
                       <span className="text-gray-300 text-[10px]">{getTypeIcon(item.type)}</span>
                     </div>
 
-                    {/* Title */}
-                    <h3 className={`font-semibold text-sm leading-snug ${isCompleted ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+                    {/* Title — takes up middle space */}
+                    <h3 className={`font-semibold text-sm leading-snug flex-1 overflow-hidden line-clamp-2 ${isCompleted ? 'text-green-800 line-through' : 'text-gray-900'}`}>
                       {item.title || 'Untitled Action'}
                     </h3>
 
-                    {/* Assigned + due date */}
-                    <div className="flex flex-col gap-0.5 pt-1 border-t border-gray-100">
-                      {item.actionAssignedTo && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
-                          <User className="h-3 w-3 shrink-0 text-gray-400" />
-                          <span className="truncate">{item.actionAssignedTo}</span>
-                        </span>
-                      )}
-                      {dueDateStatus && !isCompleted ? (
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${dueDateStatus.color}`}>
-                          <Clock className="h-3 w-3 shrink-0" />{dueDateStatus.label}
-                        </span>
-                      ) : item.actionDueDate ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
-                          <Clock className="h-3 w-3 shrink-0" />{formatDate(item.actionDueDate)}
-                        </span>
-                      ) : null}
+                    {/* Assigned + due date — always pinned to bottom */}
+                    <div className="flex flex-col gap-0.5 pt-2 border-t border-gray-100 mt-2">
+                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-500 h-4">
+                        {item.actionAssignedTo ? (
+                          <>
+                            <User className="h-3 w-3 shrink-0 text-gray-400" />
+                            <span className="truncate">{item.actionAssignedTo}</span>
+                          </>
+                        ) : (
+                          <span className="text-gray-300">Unassigned</span>
+                        )}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 text-[11px] h-4 ${dueDateStatus && !isCompleted ? `font-medium ${dueDateStatus.color}` : 'text-gray-400'}`}>
+                        <Clock className="h-3 w-3 shrink-0" />
+                        {dueDateStatus && !isCompleted
+                          ? dueDateStatus.label
+                          : item.actionDueDate
+                            ? formatDate(item.actionDueDate)
+                            : <span className="text-gray-300">No due date</span>}
+                      </span>
                     </div>
                   </div>
                 </button>
