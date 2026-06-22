@@ -513,52 +513,6 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
             </div>
           )}
 
-          {/* Progress history — time-stamped notes added over the life of the investigation */}
-          <div className="border border-amber-200 rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200">
-              <ClipboardList className="h-3.5 w-3.5 text-amber-600" />
-              <span className="text-xs font-semibold text-amber-800">Progress History</span>
-              <span className="text-[10px] text-amber-600">{progressNotes.length} {progressNotes.length === 1 ? "entry" : "entries"}</span>
-            </div>
-            <div className="px-3 py-2 bg-white space-y-2">
-              {progressNotes.length === 0 ? (
-                <p className="text-xs text-gray-400 italic">No progress notes yet. Add updates and findings as the investigation continues.</p>
-              ) : (
-                <ul className="space-y-2 max-h-40 overflow-y-auto">
-                  {progressNotes.map(note => (
-                    <li key={note.id} className="text-xs border-l-2 border-amber-300 pl-2 py-0.5">
-                      <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                        <span>{format(new Date(note.createdAt), "d MMM yyyy, h:mm a")}</span>
-                        {note.author && <span className="text-gray-500">• {note.author}</span>}
-                      </div>
-                      <p className="text-gray-700 whitespace-pre-wrap">{note.content}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {!isComplete && (
-                <div className="flex items-start gap-2 pt-1">
-                  <textarea
-                    rows={2}
-                    className="input-sm resize-none flex-1"
-                    value={newNote}
-                    onChange={e => setNewNote(e.target.value)}
-                    placeholder="Add a progress note, update, or finding…"
-                  />
-                  <Button
-                    size="sm"
-                    type="button"
-                    onClick={addNote}
-                    disabled={isAddingNote || !newNote.trim()}
-                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs shrink-0"
-                  >
-                    {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
           <fieldset disabled={isComplete} className="contents">
           {/* Section 0: Event Details */}
           {section === 0 && (
@@ -801,6 +755,53 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
             </div>
           )}
           </fieldset>
+
+          {/* Progress history — time-stamped notes added over the life of the investigation.
+              Kept at the bottom so it reads as a running log beneath the current step. */}
+          <div className="border border-amber-200 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200">
+              <ClipboardList className="h-3.5 w-3.5 text-amber-600" />
+              <span className="text-xs font-semibold text-amber-800">Progress History</span>
+              <span className="text-[10px] text-amber-600">{progressNotes.length} {progressNotes.length === 1 ? "entry" : "entries"}</span>
+            </div>
+            <div className="px-3 py-2 bg-white space-y-2">
+              {progressNotes.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No progress notes yet. Add updates and findings as the investigation continues.</p>
+              ) : (
+                <ul className="space-y-2 max-h-40 overflow-y-auto">
+                  {progressNotes.map(note => (
+                    <li key={note.id} className="text-xs border-l-2 border-amber-300 pl-2 py-0.5">
+                      <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                        <span>{format(new Date(note.createdAt), "d MMM yyyy, h:mm a")}</span>
+                        {note.author && <span className="text-gray-500">• {note.author}</span>}
+                      </div>
+                      <p className="text-gray-700 whitespace-pre-wrap">{note.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isComplete && (
+                <div className="flex items-start gap-2 pt-1">
+                  <textarea
+                    rows={2}
+                    className="input-sm resize-none flex-1"
+                    value={newNote}
+                    onChange={e => setNewNote(e.target.value)}
+                    placeholder="Add a progress note, update, or finding…"
+                  />
+                  <Button
+                    size="sm"
+                    type="button"
+                    onClick={addNote}
+                    disabled={isAddingNote || !newNote.trim()}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs shrink-0"
+                  >
+                    {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
