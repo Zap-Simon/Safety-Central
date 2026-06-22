@@ -626,45 +626,40 @@ export default function Actions() {
             {sortedItems.map((item) => {
               const dueDateStatus = getDueDateStatus(item.actionDueDate);
               const isCompleted = item.actionStatus === 'Completed' || item.actionStatus === 'Ready to Close';
-              const cardTop =
-                isCompleted ? 'bg-green-500' :
-                item.actionPriority === 'High' ? 'bg-red-500' :
-                item.actionPriority === 'Medium' ? 'bg-amber-400' :
-                item.actionPriority === 'Low' ? 'bg-green-400' : 'bg-gray-300';
+
+              // Full class names written out so Tailwind JIT includes them
+              const borderColor =
+                isCompleted           ? 'border-l-green-500' :
+                item.actionPriority === 'High'   ? 'border-l-red-500'   :
+                item.actionPriority === 'Medium' ? 'border-l-amber-400' :
+                item.actionPriority === 'Low'    ? 'border-l-green-400' : 'border-l-gray-300';
 
               return (
                 <button
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
-                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:border-amber-300 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-70' : ''}`}
+                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''}`}
                   data-testid={`card-action-${item.id}`}
                 >
-                  <div className={`h-1.5 w-full ${cardTop}`} />
                   <div className="p-3 space-y-2">
-                    <div className="flex items-start gap-1.5 flex-wrap">
-                      <span className="inline-flex items-center gap-1 h-5 px-1.5 rounded-full bg-gray-50 border border-gray-200 text-[10px] font-medium text-gray-500">
-                        {getTypeIcon(item.type)}
-                      </span>
-                      <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getPriorityColor(item.actionPriority)}`}>
-                        {item.actionPriority || 'No Priority'}
-                      </Badge>
+                    {/* Status + type row */}
+                    <div className="flex items-center justify-between gap-2">
                       <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
                         {item.actionStatus || 'Not Started'}
                       </Badge>
+                      <span className="text-gray-300 text-[10px]">{getTypeIcon(item.type)}</span>
                     </div>
 
+                    {/* Title */}
                     <h3 className={`font-semibold text-sm leading-snug ${isCompleted ? 'text-green-800 line-through' : 'text-gray-900'}`}>
                       {item.title || 'Untitled Action'}
                     </h3>
 
-                    {item.description && (
-                      <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
-                    )}
-
-                    <div className="pt-1 border-t border-gray-50 flex flex-col gap-1">
+                    {/* Assigned + due date */}
+                    <div className="flex flex-col gap-0.5 pt-1 border-t border-gray-100">
                       {item.actionAssignedTo && (
                         <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
-                          <User className="h-3 w-3 shrink-0" />
+                          <User className="h-3 w-3 shrink-0 text-gray-400" />
                           <span className="truncate">{item.actionAssignedTo}</span>
                         </span>
                       )}
@@ -677,9 +672,6 @@ export default function Actions() {
                           <Clock className="h-3 w-3 shrink-0" />{formatDate(item.actionDueDate)}
                         </span>
                       ) : null}
-                      <span className="inline-flex items-center gap-1 text-[11px] text-gray-400">
-                        <Calendar className="h-3 w-3 shrink-0" />Meeting: {formatDate(item.meetingDate)}
-                      </span>
                     </div>
                   </div>
                 </button>
