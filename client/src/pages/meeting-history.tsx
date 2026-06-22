@@ -3164,7 +3164,6 @@ export default function MeetingHistory() {
                         </div>
                       );
                     })}
-                  </div>
 
                   {/* Completed Actions - Group Review container */}
                   {(() => {
@@ -3193,7 +3192,7 @@ export default function MeetingHistory() {
                     const containerKey = `${meetingDate}-ready-to-close`;
                     const isExpanded = expandedCategories.has(containerKey);
                     return (
-                      <div className="mt-2 px-3 sm:px-6">
+                      <div className="w-full">
                         <Collapsible open={isExpanded} onOpenChange={(open) => {
                           if (open) {
                             setExpandedCategories(prev => new Set([...prev, containerKey]));
@@ -3296,9 +3295,20 @@ export default function MeetingHistory() {
                                     </div>
                                   )}
                                   {/* Call to action */}
-                                  <div className="mt-3 pt-2 border-t border-amber-100 flex items-center gap-2 text-xs text-amber-700">
-                                    <i className="fas fa-users text-amber-500"></i>
-                                    <span>Group to discuss, confirm outcome and close off this item.</span>
+                                  <div className="mt-3 pt-2 border-t border-amber-100 flex items-center justify-between gap-2 text-xs text-amber-700">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <i className="fas fa-users text-amber-500"></i>
+                                      <span>Group to discuss, confirm outcome and close off this item.</span>
+                                    </div>
+                                    <button
+                                      onClick={() => window.open(`/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`, '_blank', 'noopener,noreferrer')}
+                                      className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 flex-shrink-0 whitespace-nowrap"
+                                      title="Open this action in the Actions page"
+                                      data-testid={`button-open-actions-${item.id}`}
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span>Open in Actions</span>
+                                    </button>
                                   </div>
                                 </div>
                               ))}
@@ -3351,7 +3361,7 @@ export default function MeetingHistory() {
                     const containerKey = `${meetingDate}-on-hold`;
                     const isExpanded = expandedCategories.has(containerKey);
                     return (
-                      <div className="mt-2">
+                      <div className="w-full">
                         <Collapsible open={isExpanded} onOpenChange={(open) => {
                           if (open) {
                             setExpandedCategories(prev => new Set(prev).add(containerKey));
@@ -3459,6 +3469,7 @@ export default function MeetingHistory() {
                       </div>
                     );
                   })()}
+                  </div>
 
                     {/* Print-only signature section */}
                     <div className="print-signatures" style={{display: 'none'}}>
