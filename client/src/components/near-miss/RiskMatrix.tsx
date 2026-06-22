@@ -57,8 +57,14 @@ export default function RiskMatrix({ selectedLikelihood, selectedConsequence, on
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr>
-              <th className="w-28 text-left p-1 font-medium text-gray-600 text-[10px]">
-                Likelihood ↓ / Consequence →
+              <th className="w-28 p-1" aria-hidden="true"></th>
+              <th colSpan={CONSEQUENCES.length} className="p-1 text-center font-semibold text-gray-700 text-[10px] uppercase tracking-wide">
+                Consequence →
+              </th>
+            </tr>
+            <tr>
+              <th className="w-28 text-left p-1 font-semibold text-gray-700 text-[10px] uppercase tracking-wide">
+                Likelihood ↓
               </th>
               {CONSEQUENCES.map(c => (
                 <th key={c} className="p-1 text-center font-medium text-gray-700 text-[10px] min-w-[72px]">{c}</th>
