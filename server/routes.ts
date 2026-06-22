@@ -6204,6 +6204,43 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     }
   });
 
+  // GET /api/near-miss-investigations/:itemId/notes — time-stamped progress history
+  app.get('/api/near-miss-investigations/:itemId/notes', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const notes = await storage.getInvestigationProgressNotes(decodeURIComponent(req.params.itemId));
+      res.json({ success: true, data: notes });
+    } catch (error) {
+      console.error('Fetch investigation notes error:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch investigation notes' });
+    }
+  });
+
+  // POST /api/near-miss-investigations/:itemId/notes — append a progress note
+  app.post('/api/near-miss-investigations/:itemId/notes', async (req, res) => {
+    if (!await requireNearMissAuth(req, res)) return;
+    try {
+      const nearMissItemId = decodeURIComponent(req.params.itemId);
+      const { content, author } = req.body;
+      if (!content || typeof content !== 'string' || !content.trim()) {
+        return res.status(400).json({ success: false, error: 'content is required' });
+      }
+      const existing = await storage.getNearMissInvestigation(nearMissItemId);
+      if (existing && existing.status === 'Complete') {
+        return res.status(403).json({ success: false, error: 'Investigation is complete and cannot be changed' });
+      }
+      const note = await storage.addInvestigationProgressNote({
+        nearMissItemId,
+        content: content.trim(),
+        author: author ? String(author) : null,
+      });
+      res.json({ success: true, data: note });
+    } catch (error) {
+      console.error('Add investigation note error:', error);
+      res.status(500).json({ success: false, error: 'Failed to add investigation note' });
+    }
+  });
+
   // POST /api/ai-near-miss-draft
   app.post('/api/ai-near-miss-draft', async (req, res) => {
     if (!await requireNearMissAuth(req, res)) return;

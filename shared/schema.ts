@@ -649,6 +649,23 @@ export const insertNearMissInvestigationSchema = createInsertSchema(nearMissInve
 export type NearMissInvestigation = typeof nearMissInvestigations.$inferSelect;
 export type InsertNearMissInvestigation = z.infer<typeof insertNearMissInvestigationSchema>;
 
+// ─── Investigation Progress Notes — time-stamped history while an investigation is in progress ───
+export const investigationProgressNotes = pgTable("investigation_progress_notes", {
+  id: serial("id").primaryKey(),
+  nearMissItemId: text("near_miss_item_id").notNull(),
+  content: text("content").notNull(),
+  author: text("author"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertInvestigationProgressNoteSchema = createInsertSchema(investigationProgressNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InvestigationProgressNote = typeof investigationProgressNotes.$inferSelect;
+export type InsertInvestigationProgressNote = z.infer<typeof insertInvestigationProgressNoteSchema>;
+
 // ─── Order Items — Teams Whiteboard field ordering pad ───────────────────────
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),

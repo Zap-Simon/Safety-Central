@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Bot, Loader2, CheckCircle, FileText, PenLine, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, Bot, Loader2, CheckCircle, FileText, PenLine, RotateCcw, X, ClipboardList } from "lucide-react";
 import RiskMatrix from "./RiskMatrix";
 import HazardTable, { type HazardRow } from "./HazardTable";
 import { getRiskLevelForCell } from "./riskUtils";
@@ -26,6 +26,14 @@ interface ResultingAction {
   description: string;
   assignedTo: string;
   completed: boolean;
+}
+
+interface ProgressNote {
+  id: number;
+  nearMissItemId: string;
+  content: string;
+  author: string | null;
+  createdAt: string;
 }
 
 interface InvestigationData {
@@ -145,6 +153,40 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
     }
   }, [existingData, loaded]);
 
+  const [newNote, setNewNote] = useState("");
+  const [isAddingNote, setIsAddingNote] = useState(false);
+
+  const { data: progressNotes = [] } = useQuery<ProgressNote[]>({
+    queryKey: ["/api/near-miss-investigations", item.id, "notes"],
+    queryFn: async () => {
+      const res = await authenticatedFetch(`/api/near-miss-investigations/${encodeURIComponent(item.id)}/notes`);
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data || [];
+    },
+    enabled: open,
+  });
+
+  const addNote = async () => {
+    const content = newNote.trim();
+    if (!content) return;
+    setIsAddingNote(true);
+    try {
+      const res = await authenticatedFetch(`/api/near-miss-investigations/${encodeURIComponent(item.id)}/notes`, {
+        method: "POST",
+        body: JSON.stringify({ content, author: data.investigatorName || undefined }),
+      });
+      if (res.ok) {
+        setNewNote("");
+        queryClient.invalidateQueries({ queryKey: ["/api/near-miss-investigations", item.id, "notes"] });
+      }
+    } catch (e) {
+      console.error("Add note failed:", e);
+    } finally {
+      setIsAddingNote(false);
+    }
+  };
+
   const update = (field: keyof InvestigationData, value: any) => {
     setData(prev => {
       const next = { ...prev, [field]: value };
@@ -160,8 +202,12 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   const saveToDb = async (overrides?: Partial<InvestigationData>) => {
     setIsSaving(true);
     try {
+      // Saving a not-yet-complete investigation moves it into a resumable
+      // "In Progress" state so its status reflects that work is underway.
+      const nextStatus = data.status === "Complete" ? "Complete" : "In Progress";
       const payload = {
         ...data,
+        status: nextStatus,
         ...overrides,
         hazards: JSON.stringify(data.hazards),
         resultingActions: JSON.stringify(data.resultingActions),
@@ -174,7 +220,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
       const res = await authenticatedFetch(url, { method, body: JSON.stringify(payload) });
       if (res.ok) {
         const json = await res.json();
-        if (json.data?.id) setData(prev => ({ ...prev, id: json.data.id }));
+        setData(prev => ({ ...prev, id: json.data?.id ?? prev.id, status: nextStatus }));
         setSaveMsg("Saved");
         setTimeout(() => setSaveMsg(null), 2000);
         queryClient.invalidateQueries({ queryKey: ["/api/near-miss-investigations", item.id] });
@@ -384,9 +430,11 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {data.status === "Complete" && (
+              {data.status === "Complete" ? (
                 <Badge className="bg-green-400 text-green-900 text-xs font-bold">Complete</Badge>
-              )}
+              ) : data.status === "In Progress" ? (
+                <Badge className="bg-amber-300 text-amber-900 text-xs font-bold">In Progress</Badge>
+              ) : null}
               {saveMsg && <span className="text-xs text-green-200">{saveMsg}</span>}
             </div>
           </div>
@@ -420,6 +468,52 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
               <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
             </div>
           )}
+
+          {/* Progress history — time-stamped notes added over the life of the investigation */}
+          <div className="border border-amber-200 rounded-lg overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200">
+              <ClipboardList className="h-3.5 w-3.5 text-amber-600" />
+              <span className="text-xs font-semibold text-amber-800">Progress History</span>
+              <span className="text-[10px] text-amber-600">{progressNotes.length} {progressNotes.length === 1 ? "entry" : "entries"}</span>
+            </div>
+            <div className="px-3 py-2 bg-white space-y-2">
+              {progressNotes.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No progress notes yet. Add updates and findings as the investigation continues.</p>
+              ) : (
+                <ul className="space-y-2 max-h-40 overflow-y-auto">
+                  {progressNotes.map(note => (
+                    <li key={note.id} className="text-xs border-l-2 border-amber-300 pl-2 py-0.5">
+                      <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                        <span>{format(new Date(note.createdAt), "d MMM yyyy, h:mm a")}</span>
+                        {note.author && <span className="text-gray-500">• {note.author}</span>}
+                      </div>
+                      <p className="text-gray-700 whitespace-pre-wrap">{note.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!isComplete && (
+                <div className="flex items-start gap-2 pt-1">
+                  <textarea
+                    rows={2}
+                    className="input-sm resize-none flex-1"
+                    value={newNote}
+                    onChange={e => setNewNote(e.target.value)}
+                    placeholder="Add a progress note, update, or finding…"
+                  />
+                  <Button
+                    size="sm"
+                    type="button"
+                    onClick={addNote}
+                    disabled={isAddingNote || !newNote.trim()}
+                    className="bg-amber-600 hover:bg-amber-700 text-white text-xs shrink-0"
+                  >
+                    {isAddingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
 
           <fieldset disabled={isComplete} className="contents">
           {/* Section 0: Event Details */}
@@ -702,7 +796,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
                 disabled={isSaving}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
-                {isSaving ? <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Saving…</> : "Save Draft"}
+                {isSaving ? <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Saving…</> : "Save Progress"}
               </Button>
             )}
             {isComplete && (

@@ -61,7 +61,10 @@ import {
   type ActionActivityLog,
   type InsertActionActivityLog,
   type NearMissInvestigation,
-  type InsertNearMissInvestigation
+  type InsertNearMissInvestigation,
+  investigationProgressNotes,
+  type InvestigationProgressNote,
+  type InsertInvestigationProgressNote
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -226,6 +229,10 @@ export interface IStorage {
   getAllInvestigations(): Promise<NearMissInvestigation[]>;
   createNearMissInvestigation(data: InsertNearMissInvestigation): Promise<NearMissInvestigation>;
   updateNearMissInvestigation(id: number, data: Partial<InsertNearMissInvestigation>): Promise<NearMissInvestigation>;
+
+  // Investigation Progress Notes methods
+  getInvestigationProgressNotes(nearMissItemId: string): Promise<InvestigationProgressNote[]>;
+  addInvestigationProgressNote(note: InsertInvestigationProgressNote): Promise<InvestigationProgressNote>;
 
   // Order Items methods
   getActiveOrderItems(): Promise<OrderItem[]>;
@@ -1135,6 +1142,23 @@ export class DatabaseStorage implements IStorage {
       .where(eq(nearMissInvestigations.id, id))
       .returning();
     return inv;
+  }
+
+  // Investigation Progress Notes methods
+  async getInvestigationProgressNotes(nearMissItemId: string): Promise<InvestigationProgressNote[]> {
+    return await db
+      .select()
+      .from(investigationProgressNotes)
+      .where(eq(investigationProgressNotes.nearMissItemId, nearMissItemId))
+      .orderBy(investigationProgressNotes.createdAt);
+  }
+
+  async addInvestigationProgressNote(note: InsertInvestigationProgressNote): Promise<InvestigationProgressNote> {
+    const [created] = await db
+      .insert(investigationProgressNotes)
+      .values(note)
+      .returning();
+    return created;
   }
 
   // Order Items methods

@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Progress } from "@/components/ui/progress";
 import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
-import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
 import { predictiveText } from "@/lib/predictiveText";
@@ -138,7 +137,6 @@ export default function MeetingHistory() {
   const [showAddIdeaModal, setShowAddIdeaModal] = useState(false);
   const [selectedMeetingDate, setSelectedMeetingDate] = useState<string>('');
   const [showNotesModal, setShowNotesModal] = useState(false);
-  const [investigationItem, setInvestigationItem] = useState<MeetingItem | null>(null);
   const [editingMeetingNotes, setEditingMeetingNotes] = useState<string>('');
   const [editingNotesItem, setEditingNotesItem] = useState<MeetingItem | null>(null);
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
@@ -273,7 +271,20 @@ export default function MeetingHistory() {
 
       const result = await response.json();
       if (result.success) {
-        showSuccess('Success', `Status updated to ${newStatus}`);
+        // When an item is actioned, also persist a local action record so it
+        // reliably surfaces on the Actions page — independent of whether the
+        // SharePoint "Actioned" status round-trips (the Near Miss list in
+        // particular doesn't always read it back, which hid actioned items).
+        if (newStatus === 'Actioned') {
+          const actionSaved = await updateActionFields(item, { actionStatus: item.actionStatus || 'Not Started' });
+          if (actionSaved) {
+            showSuccess('Success', `Status updated to ${newStatus}`);
+          } else {
+            showError('Partly Saved', 'Status was updated, but adding it to the Actions page failed. Please try again.');
+          }
+        } else {
+          showSuccess('Success', `Status updated to ${newStatus}`);
+        }
         // Refresh data without page reload
         await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
       } else {
@@ -3069,59 +3080,24 @@ export default function MeetingHistory() {
                                                     <div className="text-sm text-red-800 leading-relaxed">{highlightSearchTerm(item.secondaryDescription, searchQuery)}</div>
                                                   </div>
                                                 )}
-                                                {/* Investigation summary sub-row — data is embedded in item from /api/meeting-history */}
-                                                {item.investigation && (() => {
-                                                  const inv = item.investigation!;
-                                                  const riskColor =
-                                                    inv.riskLevel === 'Extreme' ? 'bg-black text-white' :
-                                                    inv.riskLevel === 'High' ? 'bg-red-500 text-white' :
-                                                    inv.riskLevel === 'Moderate' ? 'bg-yellow-400 text-gray-900' :
-                                                    inv.riskLevel === 'Low' ? 'bg-green-500 text-white' :
-                                                    'bg-gray-200 text-gray-700';
-                                                  let actions: string[] = [];
-                                                  try { actions = JSON.parse(inv.resultingActions || '[]').map((a: { description: string }) => a.description).filter(Boolean); } catch {}
-                                                  const isComplete = inv.investigationStatus === 'Complete';
-                                                  return (
-                                                    <div className="border border-orange-200 rounded-lg overflow-hidden">
-                                                      <div className={`flex items-center justify-between px-3 py-2 ${isComplete ? 'bg-green-50 border-b border-green-200' : 'bg-orange-50 border-b border-orange-200'}`}>
-                                                        <div className="flex items-center gap-2">
-                                                          <ClipboardList className={`h-3.5 w-3.5 ${isComplete ? 'text-green-600' : 'text-orange-500'}`} />
-                                                          <span className={`text-xs font-semibold ${isComplete ? 'text-green-800' : 'text-orange-800'}`}>
-                                                            {isComplete ? 'Investigated — Outcome' : 'Investigation In Progress'}
-                                                          </span>
-                                                          {inv.riskLevel && (
-                                                            <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${riskColor}`}>{inv.riskLevel} Risk</span>
-                                                          )}
-                                                        </div>
-                                                        {isComplete && inv.directorName && (
-                                                          <span className="text-[10px] text-green-700 flex items-center gap-1"><CheckCircle className="h-3 w-3" /> {inv.directorName}</span>
-                                                        )}
-                                                      </div>
-                                                      <div className="px-3 py-2 bg-white space-y-1">
-                                                        {inv.investigatorName && (
-                                                          <p className="text-xs text-gray-600"><span className="font-medium">Investigator:</span> {inv.investigatorName}</p>
-                                                        )}
-                                                        {actions.length > 0 && (
-                                                          <ul className="text-xs text-gray-700 space-y-0.5">
-                                                            {actions.slice(0, 3).map((a, i) => (
-                                                              <li key={i} className="flex items-start gap-1"><span className="text-orange-400 mt-0.5">•</span>{a}</li>
-                                                            ))}
-                                                            {actions.length > 3 && <li className="text-gray-400 text-[10px]">+{actions.length - 3} more actions…</li>}
-                                                          </ul>
-                                                        )}
-                                                      </div>
-                                                    </div>
-                                                  );
-                                                })()}
-
-                                                {/* Investigation button */}
-                                                <button
-                                                  onClick={() => setInvestigationItem(item)}
-                                                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-lg shadow transition-all ${item.investigation ? 'bg-gray-700 hover:bg-gray-800' : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'}`}
-                                                >
-                                                  <ClipboardList className="h-4 w-4" />
-                                                  {item.investigation ? 'View / Edit Investigation' : 'Open Investigation Report'}
-                                                </button>
+                                                {/* Once actioned, the investigation is created and managed from the
+                                                    Actions area. Show a simple "Actioned" badge + link, consistent with
+                                                    how Safety Ideas and Business Ideas are shown here. */}
+                                                {item.status === 'Actioned' && (
+                                                  <div className="flex items-center justify-between gap-2 border border-amber-200 bg-amber-50 rounded-lg px-3 py-2">
+                                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800">
+                                                      <ClipboardList className="h-3.5 w-3.5 text-amber-600" />
+                                                      Actioned — investigation managed in Actions
+                                                    </span>
+                                                    <button
+                                                      onClick={() => setLocation('/actions')}
+                                                      className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 underline underline-offset-2 shrink-0"
+                                                      data-testid={`link-to-actions-${item.id}`}
+                                                    >
+                                                      Open in Actions →
+                                                    </button>
+                                                  </div>
+                                                )}
                                               </div>
                                             ) : (
                                               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
@@ -4897,24 +4873,6 @@ export default function MeetingHistory() {
 
         </div>
       </div>
-
-      {/* Near Miss Investigation Modal */}
-      {investigationItem && (
-        <NearMissInvestigationModal
-          open={!!investigationItem}
-          item={{
-            id: investigationItem.id,
-            title: investigationItem.title,
-            description: investigationItem.description || "",
-            secondaryDescription: investigationItem.secondaryDescription,
-            submittedBy: investigationItem.submittedBy || "",
-            meetingDate: investigationItem.meetingDate || "",
-            meetingNotes: investigationItem.meetingNotes,
-            actionNotes: undefined,
-          }}
-          onClose={() => setInvestigationItem(null)}
-        />
-      )}
     </div>
   );
 }
