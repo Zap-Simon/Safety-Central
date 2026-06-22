@@ -3227,109 +3227,50 @@ export default function MeetingHistory() {
                           <CollapsibleContent>
                             <div className="space-y-3 pl-1 sm:pl-2">
                               {readyToCloseItems.map((item: MeetingItem) => (
-                                <div key={`rtc-${item.id}`} className="bg-white rounded-lg border border-amber-200 shadow-sm p-3 sm:p-4">
+                                <div key={`rtc-${item.id}`} className="bg-white rounded-lg border border-amber-200 shadow-sm p-3">
                                   {/* Header row */}
-                                  <div className="flex items-start justify-between gap-2 mb-3">
-                                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2 line-clamp-2">
-                                      {item.title?.trim() || <span className="text-gray-400 italic">No title</span>}
-                                    </h4>
-                                    <div className="flex flex-wrap gap-1.5 flex-shrink-0">
-                                      <Badge variant="outline" className={`text-xs whitespace-nowrap ${
-                                        item.type === 'Safety Ideas' ? 'bg-red-50 text-red-700 border-red-200' :
-                                        item.type === 'Near Miss' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                        'bg-blue-50 text-blue-700 border-blue-200'
-                                      }`}>
-                                        {item.type}
-                                      </Badge>
-                                      <Badge className="text-xs whitespace-nowrap bg-amber-100 text-amber-800 border-amber-300">
-                                        Ready to Close
-                                      </Badge>
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                      <h4 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2">
+                                        {item.title?.trim() || <span className="text-gray-400 italic">No title</span>}
+                                      </h4>
+                                      {(item.actionAssignedTo || item.actionDueDate) && (
+                                        <p className="text-xs text-gray-500 mt-1 truncate">
+                                          {item.actionAssignedTo}
+                                          {item.actionAssignedTo && item.actionDueDate && ' · '}
+                                          {item.actionDueDate && `Due ${formatDate(item.actionDueDate.split('T')[0])}`}
+                                        </p>
+                                      )}
                                     </div>
+                                    <Badge variant="outline" className={`text-xs whitespace-nowrap flex-shrink-0 ${
+                                      item.type === 'Safety Ideas' ? 'bg-red-50 text-red-700 border-red-200' :
+                                      item.type === 'Near Miss' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                      'bg-blue-50 text-blue-700 border-blue-200'
+                                    }`}>
+                                      {item.type}
+                                    </Badge>
                                   </div>
-                                  {/* Detail rows */}
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
-                                    {item.actionAssignedTo && (
-                                      <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-user text-amber-600 w-3"></i>
-                                        <span><span className="font-medium">Actioned by:</span> {item.actionAssignedTo}</span>
-                                      </div>
-                                    )}
-                                    {item.actionDueDate && (
-                                      <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-calendar-check text-amber-600 w-3"></i>
-                                        <span><span className="font-medium">Due:</span> {formatDate(item.actionDueDate.split('T')[0])}</span>
-                                      </div>
-                                    )}
-                                    {item.submittedBy && (
-                                      <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-user-edit text-gray-400 w-3"></i>
-                                        <span><span className="font-medium">Submitted by:</span> {item.submittedBy}</span>
-                                      </div>
-                                    )}
-                                    {item.status && (
-                                      <div className="flex items-center gap-1.5">
-                                        <i className="fas fa-tag text-gray-400 w-3"></i>
-                                        <span><span className="font-medium">Item status:</span> {item.status}</span>
-                                      </div>
-                                    )}
-                                    {isUpcomingMeeting && item.meetingDate && getDateGroupKey(item.meetingDate) !== getDateGroupKey(meetingDate) && (
-                                      <div className="flex items-center gap-1.5 col-span-2">
-                                        <i className="fas fa-history text-amber-500 w-3"></i>
-                                        <span><span className="font-medium text-amber-700">From meeting:</span> {formatDate(item.meetingDate)}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* Action notes */}
-                                  {item.actionNotes && (
-                                    <div className="bg-amber-50 border border-amber-100 rounded p-2 mb-2">
-                                      <div className="flex items-start gap-2">
-                                        <i className="fas fa-clipboard-check text-amber-600 text-xs mt-0.5"></i>
-                                        <div>
-                                          <span className="text-xs font-medium text-amber-800">What was done: </span>
-                                          <span className="text-xs text-amber-900">{item.actionNotes}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {/* Meeting notes */}
-                                  {item.meetingNotes && (
-                                    <div className="bg-gray-50 border border-gray-100 rounded p-2">
-                                      <div className="flex items-start gap-2">
-                                        <i className="fas fa-comment-dots text-gray-400 text-xs mt-0.5"></i>
-                                        <div>
-                                          <span className="text-xs font-medium text-gray-600">Discussion notes: </span>
-                                          <span className="text-xs text-gray-700">{item.meetingNotes}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {/* Call to action */}
-                                  <div className="mt-3 pt-2 border-t border-amber-100 flex items-center justify-between gap-2 text-xs text-amber-700">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <i className="fas fa-users text-amber-500"></i>
-                                      <span>Group to discuss, confirm outcome and close off this item.</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                      <button
-                                        onClick={() => updateActionFields(item, { actionStatus: 'Completed' })}
-                                        disabled={isUpdatingAction === item.id}
-                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
-                                        title="Sign off and mark this item completed"
-                                        data-testid={`button-complete-${item.id}`}
-                                      >
-                                        <CheckCircle className="h-3 w-3" />
-                                        <span>{isUpdatingAction === item.id ? 'Saving…' : 'Mark Completed'}</span>
-                                      </button>
-                                      <button
-                                        onClick={() => window.open(`/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`, '_blank', 'noopener,noreferrer')}
-                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 whitespace-nowrap"
-                                        title="Open this action in the Actions page"
-                                        data-testid={`button-open-actions-${item.id}`}
-                                      >
-                                        <ExternalLink className="h-3 w-3" />
-                                        <span>Open in Actions</span>
-                                      </button>
-                                    </div>
+                                  {/* Actions */}
+                                  <div className="mt-3 flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => updateActionFields(item, { actionStatus: 'Completed' })}
+                                      disabled={isUpdatingAction === item.id}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                                      title="Sign off and mark this item completed"
+                                      data-testid={`button-complete-${item.id}`}
+                                    >
+                                      <CheckCircle className="h-3 w-3" />
+                                      <span>{isUpdatingAction === item.id ? 'Saving…' : 'Mark Completed'}</span>
+                                    </button>
+                                    <button
+                                      onClick={() => window.open(`/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`, '_blank', 'noopener,noreferrer')}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 whitespace-nowrap"
+                                      title="Open this action in the Actions page"
+                                      data-testid={`button-open-actions-${item.id}`}
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span>Open in Actions</span>
+                                    </button>
                                   </div>
                                 </div>
                               ))}
