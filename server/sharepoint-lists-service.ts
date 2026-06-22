@@ -747,7 +747,12 @@ export class SharePointListsService {
       if (!createResponse.ok) {
         const errorText = await createResponse.text();
         if (createResponse.status === 403) {
-          throw new Error(`You don't have permission to submit to this list. Please ask your administrator to grant you Contribute access to the Cranfield Glass SharePoint site.`);
+          const siteUrl = config.siteUrl || 'https://cranfieldglass.sharepoint.com';
+          throw new Error(
+            `Permission denied writing to the "${config.listTitle}" list on SharePoint.\n` +
+            `Site: ${siteUrl}\n` +
+            `Fix: In SharePoint, go to that site → Site permissions → add this user to the Members group (Contribute access).`
+          );
         }
         throw new Error(`SharePoint create failed: ${createResponse.status} - ${errorText}`);
       }
