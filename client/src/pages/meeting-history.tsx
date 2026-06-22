@@ -142,6 +142,9 @@ export default function MeetingHistory() {
   const [showSaveDropdown, setShowSaveDropdown] = useState(false);
   const [isEnhancingNotes, setIsEnhancingNotes] = useState<boolean>(false);
   const [closeOutcomeItem, setCloseOutcomeItem] = useState<MeetingItem | null>(null);
+  const [priorityItem, setPriorityItem] = useState<MeetingItem | null>(null);
+  const [selectedPriority, setSelectedPriority] = useState<string>('Medium');
+  const [isSavingPriority, setIsSavingPriority] = useState(false);
   const [closeOutcomeText, setCloseOutcomeText] = useState<string>('');
   const [isClosingWithOutcome, setIsClosingWithOutcome] = useState<boolean>(false);
   
@@ -257,7 +260,7 @@ export default function MeetingHistory() {
     }
   };
 
-  const updateItemStatus = async (item: MeetingItem, newStatus: string) => {
+  const updateItemStatus = async (item: MeetingItem, newStatus: string, actionPriority?: string) => {
     setIsUpdatingStatus(item.id);
     try {
       const response = await authenticatedFetch('/api/sharepoint/update-item', {
@@ -276,23 +279,30 @@ export default function MeetingHistory() {
         // SharePoint "Actioned" status round-trips (the Near Miss list in
         // particular doesn't always read it back, which hid actioned items).
         if (newStatus === 'Actioned') {
-          const actionSaved = await updateActionFields(item, { actionStatus: item.actionStatus || 'Not Started' });
+          const actionSaved = await updateActionFields(item, {
+            actionStatus: item.actionStatus || 'Not Started',
+            actionPriority: actionPriority || item.actionPriority || 'Medium',
+          });
           if (actionSaved) {
             showSuccess('Success', `Status updated to ${newStatus}`);
           } else {
             showError('Partly Saved', 'Status was updated, but adding it to the Actions page failed. Please try again.');
+            return false;
           }
         } else {
           showSuccess('Success', `Status updated to ${newStatus}`);
         }
         // Refresh data without page reload
         await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+        return true;
       } else {
         showError('Update Failed', result.error || 'Failed to update status');
+        return false;
       }
     } catch (error) {
       console.error('Error updating status:', error);
       showError('Update Failed', 'Failed to update status');
+      return false;
     } finally {
       setIsUpdatingStatus('');
     }
@@ -530,8 +540,25 @@ export default function MeetingHistory() {
     if (newStatus === 'Closed' && item.status !== 'Actioned' && !itemHasActionData(item)) {
       setCloseOutcomeItem(item);
       setCloseOutcomeText('');
+    } else if (newStatus === 'Actioned') {
+      // Capture a priority up front so the work already shows ranked on the
+      // Actions page. Pre-fill with any existing priority, default to Medium.
+      setPriorityItem(item);
+      setSelectedPriority(item.actionPriority || 'Medium');
     } else {
       updateItemStatus(item, newStatus);
+    }
+  };
+
+  const confirmActionWithPriority = async () => {
+    if (!priorityItem) return;
+    const item = priorityItem;
+    setIsSavingPriority(true);
+    try {
+      const ok = await updateItemStatus(item, 'Actioned', selectedPriority);
+      if (ok) setPriorityItem(null);
+    } finally {
+      setIsSavingPriority(false);
     }
   };
 
@@ -4807,6 +4834,60 @@ export default function MeetingHistory() {
                   data-testid="button-confirm-close-outcome"
                 >
                   {isClosingWithOutcome ? 'Closing…' : 'Close item'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Set priority when actioning — so the work shows ranked on Actions */}
+        <Dialog open={!!priorityItem} onOpenChange={(open) => { if (!open && !isSavingPriority) setPriorityItem(null); }}>
+          <DialogContent className="w-[95vw] max-w-lg mx-auto my-4" aria-describedby="action-priority-description">
+            <DialogHeader className="pb-3">
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <i className="fas fa-flag text-amber-500"></i>
+                How urgent is this action?
+              </DialogTitle>
+              <div id="action-priority-description" className="sr-only">Choose a priority before moving this item to Actioned</div>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Pick a priority so this work already shows ranked when you open the Actions page. You can change it later.
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'High', label: 'High', active: 'bg-red-600 text-white border-red-600', idle: 'border-red-200 text-red-700 hover:bg-red-50' },
+                  { value: 'Medium', label: 'Medium', active: 'bg-amber-500 text-white border-amber-500', idle: 'border-amber-200 text-amber-700 hover:bg-amber-50' },
+                  { value: 'Low', label: 'Low', active: 'bg-green-600 text-white border-green-600', idle: 'border-green-200 text-green-700 hover:bg-green-50' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSelectedPriority(opt.value)}
+                    disabled={isSavingPriority}
+                    className={`min-h-[44px] rounded-lg border-2 font-semibold text-sm transition-colors ${selectedPriority === opt.value ? opt.active : opt.idle}`}
+                    data-testid={`button-priority-${opt.value.toLowerCase()}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 min-h-[44px] touch-manipulation"
+                  onClick={() => setPriorityItem(null)}
+                  disabled={isSavingPriority}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 min-h-[44px] touch-manipulation bg-green-600 hover:bg-green-700 text-white"
+                  onClick={confirmActionWithPriority}
+                  disabled={isSavingPriority}
+                  data-testid="button-confirm-action-priority"
+                >
+                  {isSavingPriority ? 'Saving…' : 'Move to Actioned'}
                 </Button>
               </div>
             </div>
