@@ -45,34 +45,41 @@ export default function Actions() {
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
 
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
-    const token = await authService.getAccessToken();
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    const makeRequest = async (forceRefresh: boolean) => {
+      const token = await authService.getAccessToken(forceRefresh);
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    };
+
+    const response = await makeRequest(false);
+    // On 401 the token may be stale in MSAL's cache; force a fresh one and retry once.
+    if (response.status === 401) {
+      return makeRequest(true);
+    }
     return response;
   };
 
-  const { data: apiResponse, isLoading, isError, error } = useQuery({
+  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/meeting-history'],
     queryFn: () => authenticatedFetch('/api/meeting-history').then(async res => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     }),
     staleTime: 5 * 60 * 1000,
-    // Retry transient server/network failures (e.g. a not-yet-ready token just
-    // after a deploy reload) so the action list self-heals. Do NOT retry when the
-    // user needs to sign in again — that would just re-trigger sign-in popups.
+    // 401s are handled inside authenticatedFetch (forceRefresh + retry).
+    // Only retry genuine transient network faults here, not auth errors.
     retry: (failureCount, error) => {
       const msg = error instanceof Error ? error.message : String(error);
-      if (/interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
-      return failureCount < 3;
+      if (/401|interaction|popup|cancel|No authenticated accounts/i.test(msg)) return false;
+      return failureCount < 2;
     },
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
   });
 
   const meetingItems: ActionableItem[] = (apiResponse as any)?.data || [];
@@ -436,6 +443,26 @@ export default function Actions() {
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading actions...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError && !apiResponse) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <MeetingHeader />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+              <p className="text-gray-700 font-medium mb-2">Couldn't load actions</p>
+              <p className="text-gray-500 text-sm mb-4">Your session may have refreshed. Try again below.</p>
+              <Button onClick={() => refetch()} className="bg-amber-600 hover:bg-amber-700 text-white">
+                Retry
+              </Button>
             </div>
           </div>
         </div>

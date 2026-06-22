@@ -69,7 +69,7 @@ export class AuthService {
     }
   }
 
-  async getAccessToken(): Promise<string> {
+  async getAccessToken(forceRefresh = false): Promise<string> {
     // Ensure MSAL is initialized
     if (!msalInstance.getConfiguration()) {
       await msalInstance.initialize();
@@ -88,6 +88,7 @@ export class AuthService {
       const silentRequest: SilentRequest = {
         scopes: loginRequest.scopes,
         account: accounts[0],
+        forceRefresh,
       };
 
       const response = await msalInstance.acquireTokenSilent(silentRequest);
