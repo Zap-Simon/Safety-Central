@@ -1,3 +1,4 @@
+- [Large-file decomposition convention](large-file-decomposition.md) — don't grow server/routes.ts (~6.5k) or meeting-history.tsx (~4.6k); ship new features as new modules and extract slices as you touch them.
 - [Mobile-friendly tab navigation pattern](mobile-tabs-pattern.md) — shadcn TabsTrigger whitespace-nowrap + fixed grid-cols overlaps labels on phones; use responsive grid + whitespace-normal + flex-col.
 - [Teams personal-tab layout shell](teams-tab-layout-shell.md) — fixed h-screen shell + flex-1 min-h-0 internal scroll; no in-app headers/bottom-nav (Teams owns chrome); top segmented toggle; Submit ambient greeting; Orders shared-with-team.
 - [Global mobile CSS quirks](global-mobile-css-quirks.md) — index.css forces `button{min-height:44px}` on mobile (ovals small round buttons); plus iOS safe-area inset setup.
