@@ -2079,6 +2079,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Move a single SharePoint list item to a different meeting date
+  app.post('/api/sharepoint/move-item-to-meeting', async (req, res) => {
+    try {
+      let accessToken: string;
+      try {
+        accessToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      } catch (err) {
+        const status = err instanceof AuthError ? err.status : 401;
+        return res.status(status).json({
+          success: false,
+          error: err instanceof Error ? err.message : 'Authentication required',
+        });
+      }
+
+      const { itemId, listType, meetingDate } = req.body;
+
+      if (!itemId || !listType || !meetingDate) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: itemId, listType, and meetingDate'
+        });
+      }
+
+      if (typeof itemId !== 'string' || !/-\d+$/.test(itemId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid itemId format'
+        });
+      }
+
+      const listsService = new SharePointListsService(accessToken);
+      await listsService.updateItemMeetingDate(itemId, meetingDate, listType);
+
+      res.json({
+        success: true,
+        message: `Successfully moved ${listType} item ${itemId} to a new meeting`
+      });
+
+    } catch (error) {
+      console.error('Error moving SharePoint item to meeting:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to move item to meeting'
+      });
+    }
+  });
+
   // Change who an existing item was submitted by
   app.post('/api/sharepoint/update-submitter', async (req, res) => {
     try {

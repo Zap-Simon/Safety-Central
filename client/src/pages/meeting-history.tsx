@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CalendarClock, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
@@ -167,6 +167,10 @@ export default function MeetingHistory() {
   const [isMovingItem, setIsMovingItem] = useState<string>(''); // item ID being moved
   const [moveConfirm, setMoveConfirm] = useState<{ item: MeetingItem; toList: string } | null>(null);
 
+  // Move single item to next meeting states
+  const [isMovingToMeeting, setIsMovingToMeeting] = useState<string>(''); // item ID being moved to another meeting
+  const [moveToMeetingConfirm, setMoveToMeetingConfirm] = useState<{ item: MeetingItem; targetDate: string; formatted: string } | null>(null);
+
   // Change-submitter states
   const [isUpdatingSubmitter, setIsUpdatingSubmitter] = useState<string>(''); // item ID being updated
 
@@ -318,6 +322,85 @@ export default function MeetingHistory() {
     } finally {
       setIsMovingItem('');
       setMoveConfirm(null);
+    }
+  };
+
+  // Work out which meeting an individual item should move to: the earliest upcoming
+  // (green) meeting that comes strictly after the item's current meeting. Returns null
+  // when there's no later scheduled meeting, so we never move an item backwards.
+  const getNextMeetingDateForItem = (item: MeetingItem): string | null => {
+    const itemKey = getDateGroupKey(item.meetingDate);
+    const itemTime = new Date(item.meetingDate).getTime();
+    const upcoming = meetingDates
+      .filter(d => getMeetingStatus(d).isUpcoming)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    const after = upcoming.find(d => getDateGroupKey(d) !== itemKey && new Date(d).getTime() > itemTime);
+    return after || null;
+  };
+
+  // Open the confirmation modal for moving a single item to the next meeting
+  const requestMoveItemToNextMeeting = (item: MeetingItem) => {
+    const targetDate = getNextMeetingDateForItem(item);
+    if (!targetDate) {
+      showError('No Upcoming Meeting', 'There is no later scheduled meeting to move this item to. Please create an upcoming meeting first.');
+      return;
+    }
+    const formatted = new Date(targetDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    setMoveToMeetingConfirm({ item, targetDate, formatted });
+  };
+
+  // Update a single item's meeting date in SharePoint, then optimistically update the cache
+  const executeMoveItemToNextMeeting = async () => {
+    if (!moveToMeetingConfirm) return;
+    const { item, targetDate } = moveToMeetingConfirm;
+    const targetDateKey = targetDate.split('T')[0];
+
+    setIsMovingToMeeting(item.id);
+    try {
+      const response = await authenticatedFetch('/api/sharepoint/move-item-to-meeting', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item.id,
+          listType: item.type,
+          // Send the date at midnight UTC; the server compensates for the SharePoint
+          // timezone offset before writing (same convention as the meeting-level merge).
+          meetingDate: new Date(targetDateKey).toISOString()
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to move item');
+      }
+
+      const formatted = new Date(targetDate).toLocaleDateString('en-GB');
+      showSuccess('Item Moved', `Moved to the meeting on ${formatted} in SharePoint.`);
+
+      // Optimistically update the local cache so the item appears under the new meeting
+      // straight away (SharePoint has a propagation delay before a refetch would show it).
+      const newMeetingDateISO = `${targetDateKey}T10:00:00.000Z`;
+      const currentCacheData = queryClient.getQueryData(['/api/meeting-history']) as any;
+      if (currentCacheData?.data) {
+        const updatedData = {
+          ...currentCacheData,
+          data: currentCacheData.data.map((cached: any) =>
+            cached.id === item.id ? { ...cached, meetingDate: newMeetingDateISO } : cached
+          )
+        };
+        queryClient.setQueryData(['/api/meeting-history'], updatedData);
+      }
+
+      // Sync with SharePoint a few seconds later once the change has propagated
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+      }, 5000);
+
+    } catch (error) {
+      console.error('Error moving item to next meeting:', error);
+      showError('Move Failed', 'Failed to move the item to the next meeting. Please try again.');
+    } finally {
+      setIsMovingToMeeting('');
+      setMoveToMeetingConfirm(null);
     }
   };
 
@@ -2984,6 +3067,19 @@ export default function MeetingHistory() {
                                                     </select>
                                                   );
                                                 })()}
+                                                {/* Move this single item to the next scheduled meeting (and update SharePoint) */}
+                                                {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && item.status !== 'Closed' && (
+                                                  <button
+                                                    onClick={() => requestMoveItemToNextMeeting(item)}
+                                                    disabled={isMovingToMeeting === item.id}
+                                                    className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md transition-colors text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 disabled:opacity-60 whitespace-nowrap"
+                                                    title="Move this item to the next scheduled meeting"
+                                                    data-testid={`button-move-next-meeting-${item.id}`}
+                                                  >
+                                                    <CalendarClock className="h-3 w-3" />
+                                                    <span>{isMovingToMeeting === item.id ? 'Moving…' : 'Next meeting'}</span>
+                                                  </button>
+                                                )}
                                                 {/* Change who the item was submitted by */}
                                                 {(item.type === 'Business Ideas' || item.type === 'Safety Ideas' || item.type === 'Near Miss') && (
                                                   (() => {
@@ -4003,6 +4099,47 @@ export default function MeetingHistory() {
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11"
                 >
                   {isMovingItem ? 'Moving…' : 'Move'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Move Item to Next Meeting Confirmation Modal */}
+        <Dialog open={!!moveToMeetingConfirm} onOpenChange={(open) => { if (!open) setMoveToMeetingConfirm(null); }}>
+          <DialogContent className="mx-4 max-w-sm rounded-2xl border-0 shadow-2xl" aria-describedby="move-meeting-description">
+            <DialogHeader>
+              <div className="flex flex-col items-center text-center gap-3 pt-2">
+                <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <CalendarClock className="h-6 w-6 text-indigo-600" />
+                </div>
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  Move to next meeting?
+                </DialogTitle>
+                <div id="move-meeting-description" className="sr-only">Move item to next meeting confirmation dialog</div>
+              </div>
+            </DialogHeader>
+            <div className="space-y-4 pb-2">
+              <p className="text-sm text-gray-600 text-center">
+                {moveToMeetingConfirm && (
+                  <>This will move <span className="font-medium">{moveToMeetingConfirm.item.title?.trim() || 'this item'}</span> to the meeting on <span className="font-medium">{moveToMeetingConfirm.formatted}</span> and update SharePoint.</>
+                )}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setMoveToMeetingConfirm(null)}
+                  disabled={!!isMovingToMeeting}
+                  className="flex-1 rounded-xl h-11"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => executeMoveItemToNextMeeting()}
+                  disabled={!!isMovingToMeeting}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11"
+                >
+                  {isMovingToMeeting ? 'Moving…' : 'Move'}
                 </Button>
               </div>
             </div>
