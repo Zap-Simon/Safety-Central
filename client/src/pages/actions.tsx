@@ -59,6 +59,9 @@ export default function Actions() {
   const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
   const [loadingActivity, setLoadingActivity] = useState<string>('');
   const [investigationItem, setInvestigationItem] = useState<ActionableItem | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const deepLinkHandled = useRef(false);
 
   // Use the SharePoint-scoped token (same as meeting-history.tsx). The
   // /api/meeting-history endpoint talks to SharePoint, so it needs a SharePoint
@@ -201,6 +204,57 @@ export default function Actions() {
     const bDate = b.actionDueDate ? new Date(b.actionDueDate).getTime() : Infinity;
     return aDate - bDate;
   });
+
+  // Deep link from Minutes (Meeting History): a per-item "Actions" button opens
+  // /actions?itemId=…&type=… in a new tab. Focus that exact action — clear the
+  // default filters so it can't be hidden, scroll to it, highlight it, and open
+  // its detail (the investigation modal for Near Miss, the standard modal otherwise).
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    if (meetingItems.length === 0) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const itemId = params.get('itemId');
+    const itemType = params.get('type');
+    if (!itemId) {
+      deepLinkHandled.current = true;
+      return;
+    }
+
+    const target = actionItems.find(
+      (i) => i.id === itemId && (!itemType || i.type === itemType)
+    );
+    // Data may still be settling — wait for the next data change before giving up.
+    if (!target) return;
+
+    deepLinkHandled.current = true;
+
+    // Clear default filters/search so the targeted item is never filtered out.
+    setFilterStatus('all');
+    setFilterPriority('all');
+    setFilterType('all');
+    setFilterAssignedTo('all');
+    setSearchQuery('');
+
+    setHighlightedId(target.id);
+    if (target.type === 'Near Miss') {
+      setInvestigationItem(target);
+    } else {
+      setSelectedItem(target);
+    }
+  }, [meetingItems]);
+
+  // Scroll the highlighted card into view once it actually renders (it may not be
+  // present on the first pass while the cleared filters take effect).
+  useEffect(() => {
+    if (!highlightedId) return;
+    const el = cardRefs.current[highlightedId];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const timer = setTimeout(() => setHighlightedId(null), 4000);
+    return () => clearTimeout(timer);
+  }, [highlightedId, sortedItems.length]);
 
   const getActionFieldValue = (item: ActionableItem, field: 'actionNotes' | 'actionAssignedTo') => {
     if (localActionEdits[item.id]?.[field] !== undefined) {
@@ -706,8 +760,9 @@ export default function Actions() {
               return (
                 <button
                   key={item.id}
+                  ref={(el) => { cardRefs.current[item.id] = el; }}
                   onClick={() => item.type === 'Near Miss' ? setInvestigationItem(item) : setSelectedItem(item)}
-                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''} h-36 flex flex-col`}
+                  className={`text-left bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${borderColor} hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ${isCompleted ? 'opacity-60' : ''} ${highlightedId === item.id ? 'ring-2 ring-amber-500 ring-offset-2 shadow-lg' : ''} h-36 flex flex-col`}
                   data-testid={`card-action-${item.id}`}
                 >
                   <div className="p-3 flex flex-col flex-1 min-h-0">

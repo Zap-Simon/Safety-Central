@@ -188,8 +188,6 @@ export default function MeetingHistory() {
   const [recentlySavedNotes, setRecentlySavedNotes] = useState<Set<string>>(new Set());
   const [floatingMeetingDate, setFloatingMeetingDate] = useState<string>('');
   
-  // Flip card state for action items
-  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [isUpdatingAction, setIsUpdatingAction] = useState<string>(''); // item ID being updated
   const [recentlySavedActions, setRecentlySavedActions] = useState<Set<string>>(new Set());
   const [isEnhancingActionNotes, setIsEnhancingActionNotes] = useState<string>(''); // item ID being enhanced
@@ -200,19 +198,6 @@ export default function MeetingHistory() {
     actionAssignedTo?: string;
   }>>({});
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
-  
-  // Toggle flip card
-  const toggleFlipCard = (itemId: string) => {
-    setFlippedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
 
   // Functions for SharePoint item management
   const createSharePointItem = async (itemData: any) => {
@@ -2919,29 +2904,8 @@ export default function MeetingHistory() {
                             <CollapsibleContent className="w-full">
                               <div className="space-y-3 pl-1 sm:pl-2">
                                 {categoryItems.map((item: MeetingItem) => {
-                                  // Determine if card should be flipped
-                                  // All items default to showing details (front face)
-                                  // User can manually flip to see actions by clicking the flip button
-                                  // No auto-flip - everything is manual
-                                  const isFlipped = flippedCards.has(item.id);
-                                  
                                   return (
-                                    <div key={item.id} className="flip-card-container" style={{ perspective: '1000px' }}>
-                                      <div 
-                                        className={`flip-card-inner relative transition-transform duration-500`}
-                                        style={{ 
-                                          transformStyle: 'preserve-3d',
-                                          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                                        }}
-                                      >
-                                        {/* FRONT FACE - Details */}
-                                        <div 
-                                          className="flip-card-front bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                                          style={{ 
-                                            backfaceVisibility: 'hidden',
-                                            WebkitBackfaceVisibility: 'hidden'
-                                          }}
-                                        >
+                                    <div key={item.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                           {/* Item Header */}
                                           <div className="p-3 sm:p-4">
                                             <div className="flex flex-col gap-3">
@@ -3056,22 +3020,24 @@ export default function MeetingHistory() {
                                                     );
                                                   })()
                                                 )}
-                                                {/* Flip to Actions button - only show for Actioned status OR Closed with action data */}
+                                                {/* Open in Actions button - only show for Actioned status OR Closed with action data */}
                                                 {(() => {
                                                   const hasActionData = !!(item.actionPriority || item.actionStatus || item.actionAssignedTo || item.actionStartDate || item.actionDueDate || item.actionNotes);
                                                   const canFlip = item.status === 'Actioned' || (item.status === 'Closed' && hasActionData);
                                                   
                                                   if (!canFlip) return null;
                                                   
+                                                  const actionsUrl = `/actions?itemId=${encodeURIComponent(item.id)}&type=${encodeURIComponent(item.type)}`;
+                                                  
                                                   return (
                                                     <button
-                                                      onClick={() => toggleFlipCard(item.id)}
+                                                      onClick={() => window.open(actionsUrl, '_blank', 'noopener,noreferrer')}
                                                       className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
                                                         item.status === 'Closed' 
                                                           ? 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-300' 
                                                           : 'text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200'
                                                       }`}
-                                                      title={item.status === 'Closed' ? "View completed action details" : "View action details"}
+                                                      title={item.status === 'Closed' ? "Open completed action in Actions page" : "Open this action in Actions page"}
                                                       data-testid={`button-flip-to-actions-${item.id}`}
                                                     >
                                                       <i className={`fas ${item.status === 'Closed' ? 'fa-check-circle' : 'fa-exchange-alt'} text-xs`}></i>
@@ -3189,251 +3155,6 @@ export default function MeetingHistory() {
                                               )}
                                             </div>
                                           </div>
-                                        </div>
-                                        
-                                        {/* BACK FACE - Actions (Yellow/Orange Gradient) */}
-                                        <div 
-                                          className="flip-card-back rounded-lg border-2 border-amber-400 shadow-lg absolute top-0 left-0 w-full h-full"
-                                          style={{ 
-                                            backfaceVisibility: 'hidden',
-                                            WebkitBackfaceVisibility: 'hidden',
-                                            transform: 'rotateY(180deg)',
-                                            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 25%, #fcd34d 50%, #fbbf24 75%, #f59e0b 100%)'
-                                          }}
-                                        >
-                                          {/* Action Card Header */}
-                                          <div className="p-3 sm:p-4 border-b border-amber-300">
-                                            <div className="flex items-start justify-between gap-2">
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                  <i className="fas fa-tasks text-amber-700"></i>
-                                                  <span className="font-bold text-amber-900 text-sm uppercase tracking-wide">Action Card</span>
-                                                </div>
-                                                <h4 className="font-semibold text-amber-900 text-sm sm:text-base leading-tight line-clamp-2">
-                                                  {item.title && item.title.trim() !== '' ? item.title : 'Untitled Item'}
-                                                </h4>
-                                              </div>
-                                              {/* Flip back button */}
-                                              <button
-                                                onClick={() => toggleFlipCard(item.id)}
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs text-amber-800 bg-white/80 hover:bg-white border border-amber-400 rounded-md transition-colors shadow-sm"
-                                                title="View original details"
-                                                data-testid={`button-flip-to-details-${item.id}`}
-                                              >
-                                                <i className="fas fa-exchange-alt text-xs"></i>
-                                                <span className="hidden sm:inline">Details</span>
-                                              </button>
-                                            </div>
-                                          </div>
-                                          
-                                          {/* Action Content - Redesigned */}
-                                          <div className="p-3 flex flex-col gap-3">
-
-                                            {/* Completeness banner */}
-                                            {(() => {
-                                              const missing: string[] = [];
-                                              if (!item.actionPriority) missing.push('Priority');
-                                              if (!item.actionDueDate) missing.push('Due Date');
-                                              if (!getActionFieldValue(item, 'actionAssignedTo')) missing.push('Assigned To');
-                                              return missing.length > 0 ? (
-                                                <div className="flex items-start gap-2 bg-orange-50 border border-orange-300 rounded-lg px-3 py-2">
-                                                  <i className="fas fa-exclamation-triangle text-orange-500 text-xs mt-0.5 flex-shrink-0"></i>
-                                                  <span className="text-xs text-orange-800 leading-tight">
-                                                    <span className="font-semibold">Fill in before saving: </span>
-                                                    {missing.join(' · ')}
-                                                  </span>
-                                                </div>
-                                              ) : (
-                                                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                                                  <i className="fas fa-check-circle text-green-500 text-xs flex-shrink-0"></i>
-                                                  <span className="text-xs text-green-800 font-medium">Action details complete</span>
-                                                </div>
-                                              );
-                                            })()}
-
-                                            {/* Status workflow */}
-                                            <div>
-                                              <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide block mb-1.5">Status</label>
-                                              <ActionStatusWorkflow
-                                                compact
-                                                status={item.actionStatus || ''}
-                                                reconsiderDate={item.reconsiderDate}
-                                                onChange={(updates) => updateActionFields(item, updates)}
-                                              />
-                                            </div>
-
-                                            {/* Priority */}
-                                            <div>
-                                              <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
-                                                Priority
-                                                {!item.actionPriority && <span className="text-red-500 font-bold">*</span>}
-                                              </label>
-                                              <select
-                                                value={item.actionPriority || ''}
-                                                onChange={(e) => {
-                                                  const priority = e.target.value;
-                                                  let dueDate = item.actionDueDate || '';
-                                                  if (priority && !item.actionDueDate) {
-                                                    const today = new Date();
-                                                    const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
-                                                    today.setDate(today.getDate() + daysToAdd);
-                                                    dueDate = today.toISOString().split('T')[0];
-                                                  }
-                                                  updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
-                                                }}
-                                                className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
-                                                  !item.actionPriority
-                                                    ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
-                                                    : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
-                                                }`}
-                                                data-testid={`select-action-priority-${item.id}`}
-                                              >
-                                                <option value="">— Select priority —</option>
-                                                <option value="High">🔴 High (7 days)</option>
-                                                <option value="Medium">🟡 Medium (14 days)</option>
-                                                <option value="Low">🟢 Low (30 days)</option>
-                                              </select>
-                                            </div>
-
-                                            {/* Row 2: Assigned To + Due Date */}
-                                            <div className="grid grid-cols-2 gap-2">
-                                              <div>
-                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
-                                                  Assigned To
-                                                  {!getActionFieldValue(item, 'actionAssignedTo') && <span className="text-red-500 font-bold">*</span>}
-                                                </label>
-                                                <input
-                                                  type="text"
-                                                  value={getActionFieldValue(item, 'actionAssignedTo')}
-                                                  onChange={(e) => handleActionTextChange(item, 'actionAssignedTo', e.target.value)}
-                                                  placeholder="Enter name…"
-                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
-                                                    !getActionFieldValue(item, 'actionAssignedTo')
-                                                      ? 'border-orange-400 bg-orange-50 placeholder-orange-400 focus:border-orange-500 focus:outline-none'
-                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
-                                                  }`}
-                                                  data-testid={`input-action-assigned-${item.id}`}
-                                                />
-                                              </div>
-                                              <div>
-                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
-                                                  Due Date
-                                                  {!item.actionDueDate && <span className="text-red-500 font-bold">*</span>}
-                                                </label>
-                                                <input
-                                                  type="date"
-                                                  value={item.actionDueDate ? item.actionDueDate.split('T')[0] : ''}
-                                                  onChange={(e) => updateActionFields(item, { actionDueDate: e.target.value })}
-                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
-                                                    !item.actionDueDate
-                                                      ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
-                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
-                                                  }`}
-                                                  data-testid={`input-action-due-date-${item.id}`}
-                                                />
-                                              </div>
-                                            </div>
-
-                                            {/* Divider */}
-                                            <div className="border-t border-amber-300/60"></div>
-
-                                            {/* Action Notes */}
-                                            <div>
-                                              <div className="flex items-center justify-between mb-1">
-                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
-                                                  Action Notes
-                                                  <i className="fas fa-robot text-green-500 text-[10px] opacity-80"></i>
-                                                </label>
-                                                {recentlySavedActions.has(item.id) && !localActionEdits[item.id] && (
-                                                  <span className="text-xs text-green-600 flex items-center gap-1 font-medium">
-                                                    <i className="fas fa-check-circle text-[10px]"></i>Saved
-                                                  </span>
-                                                )}
-                                              </div>
-                                              <textarea
-                                                value={getActionFieldValue(item, 'actionNotes')}
-                                                onChange={(e) => handleActionTextChange(item, 'actionNotes', e.target.value)}
-                                                placeholder="Add action notes…"
-                                                rows={2}
-                                                className="w-full text-xs border-2 border-amber-300 rounded-md px-2 py-1.5 bg-white/95 hover:bg-white focus:border-amber-500 focus:outline-none transition-colors resize-none"
-                                                data-testid={`textarea-action-notes-${item.id}`}
-                                              />
-                                              <div className="flex items-center justify-between mt-1.5 gap-2">
-                                                <button
-                                                  type="button"
-                                                  onClick={async () => {
-                                                    const currentNotes = getActionFieldValue(item, 'actionNotes');
-                                                    if (!currentNotes.trim()) return;
-                                                    setIsEnhancingActionNotes(item.id);
-                                                    try {
-                                                      const response = await fetch('/api/ai-enhance-notes', {
-                                                        method: 'POST',
-                                                        headers: {
-                                                          'Content-Type': 'application/json',
-                                                          'Authorization': `Bearer ${await authService.getAccessToken()}`
-                                                        },
-                                                        body: JSON.stringify({ content: currentNotes, itemType: 'Action Notes' })
-                                                      });
-                                                      if (response.ok) {
-                                                        const data = await response.json();
-                                                        setLocalActionEdits(prev => ({ ...prev, [item.id]: { ...prev[item.id], actionNotes: data.enhancedContent } }));
-                                                        handleActionTextChange(item, 'actionNotes', data.enhancedContent);
-                                                      }
-                                                    } catch (error) {
-                                                      console.error('AI enhancement failed:', error);
-                                                    } finally {
-                                                      setIsEnhancingActionNotes('');
-                                                    }
-                                                  }}
-                                                  disabled={!getActionFieldValue(item, 'actionNotes').trim() || isEnhancingActionNotes === item.id}
-                                                  className="text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-2 py-1 rounded-md flex items-center gap-1 transition-colors"
-                                                >
-                                                  {isEnhancingActionNotes === item.id ? (
-                                                    <><i className="fas fa-spinner fa-spin text-[10px]"></i><span>Enhancing…</span></>
-                                                  ) : (
-                                                    <><i className="fas fa-wand-magic-sparkles text-[10px]"></i><span>Improve Writing</span></>
-                                                  )}
-                                                </button>
-                                                {localActionEdits[item.id] && (
-                                                  <button
-                                                    type="button"
-                                                    onClick={async () => {
-                                                      const edits = localActionEdits[item.id] || {};
-                                                      const updates: Record<string, string> = {};
-                                                      if (edits.actionNotes !== undefined) updates.actionNotes = edits.actionNotes;
-                                                      if (edits.actionAssignedTo !== undefined) updates.actionAssignedTo = edits.actionAssignedTo;
-                                                      if (Object.keys(updates).length > 0) {
-                                                        await updateActionFields(item, updates);
-                                                        setLocalActionEdits(prev => {
-                                                          const next = { ...prev };
-                                                          delete next[item.id];
-                                                          return next;
-                                                        });
-                                                      }
-                                                    }}
-                                                    className="text-xs bg-amber-700 hover:bg-amber-800 text-white px-3 py-1 rounded-md font-semibold flex items-center gap-1 shadow-sm transition-colors"
-                                                  >
-                                                    <i className="fas fa-save text-[10px]"></i>Save
-                                                  </button>
-                                                )}
-                                              </div>
-                                            </div>
-
-                                            {/* Meeting Discussion */}
-                                            {item.meetingNotes && item.meetingNotes.trim() && (
-                                              <div className="bg-white/60 rounded-lg border border-amber-200 p-2.5">
-                                                <div className="flex items-start gap-2">
-                                                  <i className="fas fa-comment-dots text-amber-600 text-xs mt-0.5 flex-shrink-0"></i>
-                                                  <div className="flex-1 min-w-0">
-                                                    <div className="text-xs font-semibold text-amber-700 mb-0.5">Meeting Discussion</div>
-                                                    <span className="text-xs text-amber-800">{item.meetingNotes}</span>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
                                     </div>
                                   );
                                 })}
@@ -4011,42 +3732,6 @@ export default function MeetingHistory() {
 
         {/* Mobile & Print Styles */}
         <style>{`
-          /* Flip Card Styles */
-          .flip-card-container {
-            perspective: 1000px;
-          }
-          
-          .flip-card-inner {
-            position: relative;
-            width: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-style: preserve-3d;
-          }
-          
-          .flip-card-front,
-          .flip-card-back {
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-          }
-          
-          .flip-card-back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: rotateY(180deg);
-          }
-          
-          /* Ensure proper height calculation for flip cards */
-          .flip-card-container {
-            min-height: auto;
-          }
-          
-          .flip-card-inner.flipped {
-            transform: rotateY(180deg);
-          }
-          
           /* Touch-friendly mobile enhancements */
           .touch-manipulation {
             touch-action: manipulation;
