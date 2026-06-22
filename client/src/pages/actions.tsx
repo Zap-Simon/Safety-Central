@@ -164,6 +164,9 @@ export default function Actions() {
       [item.id]: { ...prev[item.id], [field]: value }
     }));
 
+    // actionNotes uses a manual Save button — no auto-save
+    if (field === 'actionNotes') return;
+
     if (debounceTimers.current[`${item.id}-${field}`]) {
       clearTimeout(debounceTimers.current[`${item.id}-${field}`]);
     }
@@ -835,7 +838,6 @@ export default function Actions() {
                             if (response.ok) {
                               const data = await response.json();
                               setLocalActionEdits(prev => ({ ...prev, [item.id]: { ...prev[item.id], actionNotes: data.enhancedContent } }));
-                              handleActionTextChange(item, 'actionNotes', data.enhancedContent);
                             }
                           } catch (e) {
                             console.error('AI enhancement failed:', e);
@@ -859,6 +861,18 @@ export default function Actions() {
                     rows={3}
                     className="w-full text-sm border border-gray-200 rounded px-3 py-2 bg-gray-50 focus:bg-white focus:border-amber-400 focus:outline-none resize-none"
                   />
+                  <div className="flex justify-end mt-1">
+                    <button
+                      type="button"
+                      disabled={localActionEdits[item.id]?.actionNotes === undefined || isUpdatingAction === item.id}
+                      onClick={() => updateActionFields(item, { actionNotes: localActionEdits[item.id]?.actionNotes ?? '' }, 'actionNotes')}
+                      className="text-xs bg-amber-600 hover:bg-amber-700 disabled:bg-gray-200 disabled:text-gray-400 text-white px-3 py-1 rounded flex items-center gap-1"
+                    >
+                      {isUpdatingAction === item.id
+                        ? <><i className="fas fa-spinner fa-spin text-[10px]"></i>Saving…</>
+                        : <><i className="fas fa-save text-[10px]"></i>Save</>}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Meeting discussion */}
