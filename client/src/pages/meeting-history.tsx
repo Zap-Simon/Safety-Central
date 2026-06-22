@@ -3424,8 +3424,27 @@ export default function MeetingHistory() {
 
                   {/* Completed Actions - Group Review container */}
                   {(() => {
-                    const allMeetingItems = Object.values(categorized).flat() as MeetingItem[];
-                    const readyToCloseItems = allMeetingItems.filter(item => item.actionStatus === 'Ready to Close');
+                    const isUpcomingMeeting = getMeetingStatus(meetingDate).isUpcoming;
+
+                    // For the upcoming meeting, gather "Ready to Close" items from ALL meeting
+                    // groups (past and present) — they need group sign-off at the next meeting
+                    // regardless of which meeting they were originally submitted to.
+                    // For past meetings, only show items that belong to that meeting.
+                    let readyToCloseItems: MeetingItem[];
+                    if (isUpcomingMeeting) {
+                      const seen = new Set<string>();
+                      readyToCloseItems = groupedByMeetingAndCategory.flatMap(({ categorized: c }) =>
+                        (Object.values(c).flat() as MeetingItem[]).filter(item => item.actionStatus === 'Ready to Close')
+                      ).filter(item => {
+                        if (seen.has(item.id)) return false;
+                        seen.add(item.id);
+                        return true;
+                      });
+                    } else {
+                      const allMeetingItems = Object.values(categorized).flat() as MeetingItem[];
+                      readyToCloseItems = allMeetingItems.filter(item => item.actionStatus === 'Ready to Close');
+                    }
+
                     if (readyToCloseItems.length === 0) return null;
                     const containerKey = `${meetingDate}-ready-to-close`;
                     const isExpanded = expandedCategories.has(containerKey);
@@ -3499,6 +3518,12 @@ export default function MeetingHistory() {
                                       <div className="flex items-center gap-1.5">
                                         <i className="fas fa-tag text-gray-400 w-3"></i>
                                         <span><span className="font-medium">Item status:</span> {item.status}</span>
+                                      </div>
+                                    )}
+                                    {isUpcomingMeeting && item.meetingDate && getDateGroupKey(item.meetingDate) !== getDateGroupKey(meetingDate) && (
+                                      <div className="flex items-center gap-1.5 col-span-2">
+                                        <i className="fas fa-history text-amber-500 w-3"></i>
+                                        <span><span className="font-medium text-amber-700">From meeting:</span> {formatDate(item.meetingDate)}</span>
                                       </div>
                                     )}
                                   </div>
