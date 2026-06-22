@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList } from "lucide-react";
 import { format } from "date-fns";
 import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
+import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
 
 interface ActionableItem {
   id: string;
@@ -27,6 +28,7 @@ interface ActionableItem {
   actionPriority?: string;
   actionStartDate?: string;
   actionDueDate?: string;
+  reconsiderDate?: string;
   actionNotes?: string;
 }
 
@@ -233,6 +235,7 @@ export default function Actions() {
       actionAssignedTo?: string;
       actionStartDate?: string;
       actionDueDate?: string;
+      reconsiderDate?: string;
       actionNotes?: string;
     },
     clearLocalEditField?: 'actionNotes' | 'actionAssignedTo'
@@ -247,6 +250,7 @@ export default function Actions() {
         actionAssignedTo: localActionEdits[item.id]?.actionAssignedTo ?? updates.actionAssignedTo ?? item.actionAssignedTo ?? '',
         actionStartDate: updates.actionStartDate ?? item.actionStartDate ?? '',
         actionDueDate: updates.actionDueDate ?? item.actionDueDate ?? '',
+        reconsiderDate: updates.reconsiderDate ?? item.reconsiderDate ?? '',
         actionNotes: localActionEdits[item.id]?.actionNotes ?? updates.actionNotes ?? item.actionNotes ?? ''
       };
 
@@ -773,26 +777,24 @@ export default function Actions() {
                   <p className="text-sm text-gray-600">{item.description}</p>
                 )}
 
-                {/* Quick-complete banner */}
-                {item.actionStatus !== 'Completed' && (
-                  <Button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-                    onClick={() => {
-                      updateActionFields(item, { actionStatus: 'Completed' });
-                      setSelectedItem({ ...item, actionStatus: 'Completed' });
+                {/* Status workflow */}
+                <div>
+                  <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide mb-1.5 block">Status</label>
+                  <ActionStatusWorkflow
+                    status={item.actionStatus || ''}
+                    reconsiderDate={item.reconsiderDate}
+                    onChange={(updates) => {
+                      updateActionFields(item, updates);
+                      setSelectedItem({ ...item, ...updates });
+                      if (updates.actionStatus !== undefined) {
+                        postActivityEntry(item, 'status', `Status changed to ${updates.actionStatus || 'Not Started'}`);
+                      }
+                      if (updates.reconsiderDate) {
+                        try { postActivityEntry(item, 'status', `On hold — reconsider on ${format(new Date(updates.reconsiderDate), 'dd MMM yyyy')}`); } catch { /* silent */ }
+                      }
                     }}
-                    disabled={isUpdatingAction === item.id}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Mark as Completed
-                  </Button>
-                )}
-
-                {item.actionStatus === 'Completed' && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                    <CheckCircle className="h-4 w-4" />Completed
-                  </div>
-                )}
+                  />
+                </div>
 
                 {/* Editable fields */}
                 <div className="grid grid-cols-2 gap-3">
@@ -818,25 +820,6 @@ export default function Actions() {
                       <option value="High">High</option>
                       <option value="Medium">Medium</option>
                       <option value="Low">Low</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Status</label>
-                    <select
-                      value={item.actionStatus || ''}
-                      onChange={(e) => {
-                        const newStatus = e.target.value;
-                        updateActionFields(item, { actionStatus: newStatus });
-                        setSelectedItem({ ...item, actionStatus: newStatus });
-                        if (newStatus) postActivityEntry(item, 'status', `Status changed to ${newStatus || 'Not Started'}`);
-                      }}
-                      className="w-full mt-0.5 text-sm border border-gray-200 rounded px-2 h-9 bg-white focus:border-amber-400 focus:outline-none"
-                    >
-                      <option value="">Not Started</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="On Hold">On Hold</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Ready to Close">Ready to Close</option>
                     </select>
                   </div>
                   <div>

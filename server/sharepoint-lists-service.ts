@@ -88,6 +88,7 @@ export interface ProcessedMeetingItem {
   actionAssignedTo?: string; // Person assigned to action
   actionStartDate?: string; // When action work began
   actionDueDate?: string; // When action is due
+  reconsiderDate?: string; // When an On Hold item should be revisited
   actionNotes?: string; // Action-specific notes and updates
   // Legacy Actions-specific fields (for backward compatibility)
   priority?: string; // High, Medium, Low

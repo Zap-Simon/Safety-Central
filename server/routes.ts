@@ -1068,6 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           actionAssignedTo: localAction.actionAssignedTo ?? item.actionAssignedTo,
           actionStartDate: localAction.actionStartDate ?? item.actionStartDate,
           actionDueDate: localAction.actionDueDate ?? item.actionDueDate,
+          reconsiderDate: localAction.reconsiderDate ?? item.reconsiderDate,
           actionNotes: localAction.actionNotes ?? item.actionNotes,
           // Local meeting notes override SharePoint (local is always latest save)
           meetingNotes: localAction.meetingNotes !== null && localAction.meetingNotes !== undefined
@@ -1118,7 +1119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upsert (create or update) action item in local database
   app.post('/api/action-items', async (req, res) => {
     try {
-      const { listType, sharePointItemId, actionPriority, actionStatus, actionAssignedTo, actionStartDate, actionDueDate, actionNotes, meetingNotes } = req.body;
+      const { listType, sharePointItemId, actionPriority, actionStatus, actionAssignedTo, actionStartDate, actionDueDate, reconsiderDate, actionNotes, meetingNotes } = req.body;
       
       // Validate required fields
       if (!listType || typeof listType !== 'string') {
@@ -1150,6 +1151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actionAssignedTo: normalizeField(actionAssignedTo),
         actionStartDate: normalizeField(actionStartDate),
         actionDueDate: normalizeField(actionDueDate),
+        reconsiderDate: normalizeField(reconsiderDate),
         actionNotes: normalizeField(actionNotes),
         meetingNotes: meetingNotes !== undefined ? meetingNotes : undefined
       });

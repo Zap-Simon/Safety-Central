@@ -10,10 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
 import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
+import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
 import { predictiveText } from "@/lib/predictiveText";
 import { InlineTextarea } from "@/components/ui/inline-textarea";
 import { format } from "date-fns";
@@ -41,6 +42,7 @@ interface MeetingItem {
   actionPriority?: string;
   actionStartDate?: string;
   actionDueDate?: string;
+  reconsiderDate?: string;
   actionNotes?: string;
 
   // Near Miss investigation summary (injected by /api/meeting-history from DB)
@@ -422,6 +424,7 @@ export default function MeetingHistory() {
       actionAssignedTo?: string;
       actionStartDate?: string;
       actionDueDate?: string;
+      reconsiderDate?: string;
       actionNotes?: string;
     },
     clearLocalEditItemId?: string,
@@ -436,6 +439,7 @@ export default function MeetingHistory() {
         actionAssignedTo: localActionEdits[item.id]?.actionAssignedTo ?? item.actionAssignedTo ?? '',
         actionStartDate: item.actionStartDate || '',
         actionDueDate: item.actionDueDate || '',
+        reconsiderDate: item.reconsiderDate || '',
         actionNotes: localActionEdits[item.id]?.actionNotes ?? item.actionNotes ?? ''
       };
       
@@ -3244,54 +3248,48 @@ export default function MeetingHistory() {
                                               );
                                             })()}
 
-                                            {/* Row 1: Priority + Status */}
-                                            <div className="grid grid-cols-2 gap-2">
-                                              <div>
-                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
-                                                  Priority
-                                                  {!item.actionPriority && <span className="text-red-500 font-bold">*</span>}
-                                                </label>
-                                                <select
-                                                  value={item.actionPriority || ''}
-                                                  onChange={(e) => {
-                                                    const priority = e.target.value;
-                                                    let dueDate = item.actionDueDate || '';
-                                                    if (priority && !item.actionDueDate) {
-                                                      const today = new Date();
-                                                      const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
-                                                      today.setDate(today.getDate() + daysToAdd);
-                                                      dueDate = today.toISOString().split('T')[0];
-                                                    }
-                                                    updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
-                                                  }}
-                                                  className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
-                                                    !item.actionPriority
-                                                      ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
-                                                      : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
-                                                  }`}
-                                                  data-testid={`select-action-priority-${item.id}`}
-                                                >
-                                                  <option value="">— Select priority —</option>
-                                                  <option value="High">🔴 High (7 days)</option>
-                                                  <option value="Medium">🟡 Medium (14 days)</option>
-                                                  <option value="Low">🟢 Low (30 days)</option>
-                                                </select>
-                                              </div>
-                                              <div>
-                                                <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide">Status</label>
-                                                <select
-                                                  value={item.actionStatus || ''}
-                                                  onChange={(e) => updateActionFields(item, { actionStatus: e.target.value })}
-                                                  className="w-full mt-1 text-xs border-2 border-amber-300 bg-white rounded-md px-2 py-1.5 focus:border-amber-500 focus:outline-none transition-colors"
-                                                  data-testid={`select-action-status-${item.id}`}
-                                                >
-                                                  <option value="">Not Started</option>
-                                                  <option value="In Progress">In Progress</option>
-                                                  <option value="On Hold">On Hold</option>
-                                                  <option value="Completed">Completed</option>
-                                                  <option value="Ready to Close">Ready to Close</option>
-                                                </select>
-                                              </div>
+                                            {/* Status workflow */}
+                                            <div>
+                                              <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide block mb-1.5">Status</label>
+                                              <ActionStatusWorkflow
+                                                compact
+                                                status={item.actionStatus || ''}
+                                                reconsiderDate={item.reconsiderDate}
+                                                onChange={(updates) => updateActionFields(item, updates)}
+                                              />
+                                            </div>
+
+                                            {/* Priority */}
+                                            <div>
+                                              <label className="text-xs font-semibold text-amber-900 uppercase tracking-wide flex items-center gap-1">
+                                                Priority
+                                                {!item.actionPriority && <span className="text-red-500 font-bold">*</span>}
+                                              </label>
+                                              <select
+                                                value={item.actionPriority || ''}
+                                                onChange={(e) => {
+                                                  const priority = e.target.value;
+                                                  let dueDate = item.actionDueDate || '';
+                                                  if (priority && !item.actionDueDate) {
+                                                    const today = new Date();
+                                                    const daysToAdd = priority === 'High' ? 7 : priority === 'Medium' ? 14 : 30;
+                                                    today.setDate(today.getDate() + daysToAdd);
+                                                    dueDate = today.toISOString().split('T')[0];
+                                                  }
+                                                  updateActionFields(item, { actionPriority: priority, actionDueDate: dueDate });
+                                                }}
+                                                className={`w-full mt-1 text-xs border-2 rounded-md px-2 py-1.5 transition-colors ${
+                                                  !item.actionPriority
+                                                    ? 'border-orange-400 bg-orange-50 focus:border-orange-500 focus:outline-none'
+                                                    : 'border-green-300 bg-green-50 focus:border-green-500 focus:outline-none'
+                                                }`}
+                                                data-testid={`select-action-priority-${item.id}`}
+                                              >
+                                                <option value="">— Select priority —</option>
+                                                <option value="High">🔴 High (7 days)</option>
+                                                <option value="Medium">🟡 Medium (14 days)</option>
+                                                <option value="Low">🟢 Low (30 days)</option>
+                                              </select>
                                             </div>
 
                                             {/* Row 2: Assigned To + Due Date */}
@@ -3577,6 +3575,157 @@ export default function MeetingHistory() {
                                   <div className="mt-3 pt-2 border-t border-emerald-100 flex items-center gap-2 text-xs text-emerald-700">
                                     <i className="fas fa-users text-emerald-500"></i>
                                     <span>Group to discuss, confirm outcome and close off this item.</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </div>
+                    );
+                  })()}
+
+                  {/* On Hold - due for reconsideration container */}
+                  {(() => {
+                    // Use the same UTC date-key basis as item grouping so a reconsider
+                    // date matches the day it was set for (avoids timezone drift).
+                    const todayKey = getDateGroupKey(new Date());
+                    const isDue = (item: MeetingItem) =>
+                      !!item.reconsiderDate && getDateGroupKey(item.reconsiderDate) <= todayKey;
+
+                    // Only the single nearest upcoming meeting gathers due On Hold items,
+                    // so they can't duplicate across multiple future meeting groups.
+                    const nextUpcomingKey = groupedByMeetingAndCategory
+                      .map(({ meetingDate: d }) => getDateGroupKey(d))
+                      .filter(key => getMeetingStatus(key).isUpcoming)
+                      .sort()[0];
+                    const isNextMeeting = !!nextUpcomingKey && getDateGroupKey(meetingDate) === nextUpcomingKey;
+
+                    // The nearest upcoming meeting surfaces any On Hold item whose reconsider
+                    // date has arrived (or passed) — wherever it originally lived.
+                    // Other meetings show On Hold items whose reconsider date lands in
+                    // that meeting group.
+                    let onHoldItems: MeetingItem[];
+                    if (isNextMeeting) {
+                      const seen = new Set<string>();
+                      onHoldItems = groupedByMeetingAndCategory.flatMap(({ categorized: c }) =>
+                        (Object.values(c).flat() as MeetingItem[]).filter(item => item.actionStatus === 'On Hold' && isDue(item))
+                      ).filter(item => {
+                        if (seen.has(item.id)) return false;
+                        seen.add(item.id);
+                        return true;
+                      });
+                    } else {
+                      const allMeetingItems = Object.values(categorized).flat() as MeetingItem[];
+                      onHoldItems = allMeetingItems.filter(item =>
+                        item.actionStatus === 'On Hold' && item.reconsiderDate &&
+                        getDateGroupKey(item.reconsiderDate) === getDateGroupKey(meetingDate)
+                      );
+                    }
+
+                    if (onHoldItems.length === 0) return null;
+                    const containerKey = `${meetingDate}-on-hold`;
+                    const isExpanded = expandedCategories.has(containerKey);
+                    return (
+                      <div className="mt-2">
+                        <Collapsible open={isExpanded} onOpenChange={(open) => {
+                          if (open) {
+                            setExpandedCategories(prev => new Set(prev).add(containerKey));
+                          } else {
+                            setExpandedCategories(prev => { const n = new Set(prev); n.delete(containerKey); return n; });
+                          }
+                        }}>
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-between p-3 sm:p-4 h-auto bg-orange-50 text-orange-900 border border-orange-300 rounded-lg hover:bg-orange-100 mb-2 touch-manipulation min-h-[48px] sm:min-h-[44px]"
+                            >
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                <Clock className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-orange-600" />
+                                <div className="text-left min-w-0 flex-1">
+                                  <div className="font-semibold text-sm sm:text-base leading-tight">On Hold – Time to Reconsider</div>
+                                  <div className="text-xs opacity-75 mt-0.5">{onHoldItems.length} item{onHoldItems.length !== 1 ? 's' : ''} due to be revisited</div>
+                                </div>
+                              </div>
+                              {isExpanded ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-3 pl-1 sm:pl-2">
+                              {onHoldItems.map((item: MeetingItem) => (
+                                <div key={`hold-${item.id}`} className="bg-white rounded-lg border border-orange-200 shadow-sm p-3 sm:p-4">
+                                  {/* Header row */}
+                                  <div className="flex items-start justify-between gap-2 mb-3">
+                                    <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2 line-clamp-2">
+                                      {item.title?.trim() || <span className="text-gray-400 italic">No title</span>}
+                                    </h4>
+                                    <div className="flex flex-wrap gap-1.5 flex-shrink-0">
+                                      <Badge variant="outline" className={`text-xs whitespace-nowrap ${
+                                        item.type === 'Safety Ideas' ? 'bg-red-50 text-red-700 border-red-200' :
+                                        item.type === 'Near Miss' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                        'bg-blue-50 text-blue-700 border-blue-200'
+                                      }`}>
+                                        {item.type}
+                                      </Badge>
+                                      <Badge className="text-xs whitespace-nowrap bg-orange-100 text-orange-800 border-orange-300">
+                                        On Hold
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  {/* Detail rows */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+                                    {item.reconsiderDate && (
+                                      <div className="flex items-center gap-1.5 col-span-2">
+                                        <i className="fas fa-clock text-orange-600 w-3"></i>
+                                        <span><span className="font-medium text-orange-700">Reconsider on:</span> {formatDate(item.reconsiderDate.split('T')[0])}</span>
+                                      </div>
+                                    )}
+                                    {item.actionAssignedTo && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-user text-orange-600 w-3"></i>
+                                        <span><span className="font-medium">Assigned to:</span> {item.actionAssignedTo}</span>
+                                      </div>
+                                    )}
+                                    {item.submittedBy && (
+                                      <div className="flex items-center gap-1.5">
+                                        <i className="fas fa-user-edit text-gray-400 w-3"></i>
+                                        <span><span className="font-medium">Submitted by:</span> {item.submittedBy}</span>
+                                      </div>
+                                    )}
+                                    {isNextMeeting && item.meetingDate && getDateGroupKey(item.meetingDate) !== getDateGroupKey(meetingDate) && (
+                                      <div className="flex items-center gap-1.5 col-span-2">
+                                        <i className="fas fa-history text-amber-500 w-3"></i>
+                                        <span><span className="font-medium text-amber-700">From meeting:</span> {formatDate(item.meetingDate)}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Reason / notes */}
+                                  {item.actionNotes && (
+                                    <div className="bg-orange-50 border border-orange-100 rounded p-2 mb-2">
+                                      <div className="flex items-start gap-2">
+                                        <i className="fas fa-sticky-note text-orange-600 text-xs mt-0.5"></i>
+                                        <div>
+                                          <span className="text-xs font-medium text-orange-800">Why it's on hold: </span>
+                                          <span className="text-xs text-orange-900">{item.actionNotes}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {item.meetingNotes && (
+                                    <div className="bg-gray-50 border border-gray-100 rounded p-2">
+                                      <div className="flex items-start gap-2">
+                                        <i className="fas fa-comment-dots text-gray-400 text-xs mt-0.5"></i>
+                                        <div>
+                                          <span className="text-xs font-medium text-gray-600">Discussion notes: </span>
+                                          <span className="text-xs text-gray-700">{item.meetingNotes}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Call to action */}
+                                  <div className="mt-3 pt-2 border-t border-orange-100 flex items-center gap-2 text-xs text-orange-700">
+                                    <i className="fas fa-users text-orange-500"></i>
+                                    <span>Group to revisit: resume, reschedule, or close this item.</span>
                                   </div>
                                 </div>
                               ))}

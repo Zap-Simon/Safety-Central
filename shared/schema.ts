@@ -63,6 +63,7 @@ export const actionItems = pgTable("action_items", {
   actionAssignedTo: text("action_assigned_to"),
   actionStartDate: text("action_start_date"), // ISO date string
   actionDueDate: text("action_due_date"), // ISO date string
+  reconsiderDate: text("reconsider_date"), // ISO date — when an "On Hold" item should be revisited (re-surfaces in that meeting)
   actionNotes: text("action_notes"),
   meetingNotes: text("meeting_notes"), // Local backup of meeting notes (also saved to SharePoint)
   createdAt: timestamp("created_at").notNull().defaultNow(),
