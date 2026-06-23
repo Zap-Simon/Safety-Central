@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Textarea,
+  Input,
   Card,
   Spinner,
   ProgressBar,
@@ -26,6 +28,7 @@ import {
   ChevronRight20Regular,
   ArrowCounterclockwise20Regular,
   Sparkle16Regular,
+  Add20Regular,
 } from "@fluentui/react-icons";
 import {
   TeamsPage,
@@ -35,6 +38,8 @@ import {
   TeamsFullScreen,
 } from "./TeamsPageShell";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
+import OrdersList from "./OrdersList";
+import type { OrderItem } from "@shared/schema";
 
 type Category =
   | "Near Miss"
@@ -53,6 +58,7 @@ interface ClassifyResult {
   confidence: number;
   reasoning: string;
   followUpQuestions: string[];
+  orderItem: string;
 }
 
 type SubmitStep =
@@ -60,6 +66,7 @@ type SubmitStep =
   | "classifying"
   | "followup"
   | "confirm"
+  | "order-confirm"
   | "submitting"
   | "done";
 
@@ -67,7 +74,7 @@ type SubmitStep =
 // tab switch (Teams remounts the tab) or the app being closed and reopened.
 // Bump the version suffix whenever the draft shape changes so stale drafts from
 // an older build can never restore into a broken render.
-const DRAFT_KEY = "cranfield.submit.draft.v2";
+const DRAFT_KEY = "cranfield.submit.draft.v3";
 
 interface SubmitDraft {
   step: SubmitStep;
@@ -75,11 +82,12 @@ interface SubmitDraft {
   classifyResult: ClassifyResult | null;
   followUpAnswers: string[];
   submittedCategory: string;
+  orderItemText: string;
 }
 
-// Only the "input" step can be resumed from a raw text draft; "followup"/"confirm"
+// Only the "input" step can be resumed from a raw text draft; the stage-2 steps
 // additionally require a fully-formed classification (see isValidClassifyResult).
-const RESUMABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm"];
+const RESUMABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm", "order-confirm"];
 
 const VALID_CATEGORIES: Category[] = [
   "Near Miss",
@@ -109,7 +117,7 @@ function isValidClassifyResult(r: any): r is ClassifyResult {
 
 // A clean text-only draft: keep what the user typed but start stage 1 fresh.
 function inputOnlyDraft(inputText: string): SubmitDraft {
-  return { step: "input", inputText, classifyResult: null, followUpAnswers: [], submittedCategory: "" };
+  return { step: "input", inputText, classifyResult: null, followUpAnswers: [], submittedCategory: "", orderItemText: "" };
 }
 
 function loadDraft(): SubmitDraft | null {
@@ -121,7 +129,15 @@ function loadDraft(): SubmitDraft | null {
     // Transient in-flight steps can't be resumed (the network call was lost),
     // so drop back to the nearest stable step the user can act on.
     if (d.step === "classifying") d.step = "input";
-    if (d.step === "submitting") d.step = d.classifyResult ? "confirm" : "input";
+    if (d.step === "submitting") {
+      // Resume to the right confirm screen for the classified category: supply
+      // requests go to the order-confirm card, everything else to confirm.
+      d.step = d.classifyResult
+        ? d.classifyResult.category === "Supply Request"
+          ? "order-confirm"
+          : "confirm"
+        : "input";
+    }
     // A completed submission shouldn't reopen — start fresh next time.
     if (d.step === "done") return null;
     // Unknown/corrupted step: don't try to render it.
@@ -129,7 +145,7 @@ function loadDraft(): SubmitDraft | null {
     // Stage 2 needs a valid classification. If it's missing or from an older
     // shape, fall back to stage 1 so the user keeps their text instead of a
     // blank, stuck card.
-    if (d.step === "confirm" || d.step === "followup") {
+    if (d.step === "confirm" || d.step === "followup" || d.step === "order-confirm") {
       if (!isValidClassifyResult(d.classifyResult)) return inputOnlyDraft(d.inputText);
       return {
         step: d.step,
@@ -137,6 +153,7 @@ function loadDraft(): SubmitDraft | null {
         classifyResult: d.classifyResult,
         followUpAnswers: Array.isArray(d.followUpAnswers) ? d.followUpAnswers : [],
         submittedCategory: typeof d.submittedCategory === "string" ? d.submittedCategory : "",
+        orderItemText: typeof d.orderItemText === "string" ? d.orderItemText : "",
       };
     }
     return inputOnlyDraft(d.inputText);
@@ -252,6 +269,15 @@ const useStyles = makeStyles({
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
   },
+  ordersSection: {
+    paddingTop: tokens.spacingVerticalS,
+    paddingBottom: tokens.spacingVerticalXL,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    borderTopWidth: tokens.strokeWidthThin,
+    borderTopStyle: "solid",
+    borderTopColor: tokens.colorNeutralStroke2,
+  },
   card: {
     width: "100%",
     maxWidth: "520px",
@@ -351,8 +377,14 @@ export default function SubmitTab() {
   const [submittedCategory, setSubmittedCategory] = useState<string>(
     draft?.submittedCategory ?? "",
   );
+  // The editable item name shown on the "Add to order list?" confirm step, and a
+  // flag so the success screen can tailor its message for orders.
+  const [orderItemText, setOrderItemText] = useState<string>(draft?.orderItemText ?? "");
+  const [submittedAsOrder, setSubmittedAsOrder] = useState(false);
   const [exampleIdx, setExampleIdx] = useState(0);
   const [prefetching, setPrefetching] = useState(false);
+
+  const qc = useQueryClient();
 
   const classifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const classifyCache = useRef<Map<string, ClassifyResult>>(new Map());
@@ -373,12 +405,12 @@ export default function SubmitTab() {
       }
       localStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({ step, inputText, classifyResult, followUpAnswers, submittedCategory }),
+        JSON.stringify({ step, inputText, classifyResult, followUpAnswers, submittedCategory, orderItemText }),
       );
     } catch {
       /* storage unavailable — fall back to in-memory only */
     }
-  }, [step, inputText, classifyResult, followUpAnswers, submittedCategory]);
+  }, [step, inputText, classifyResult, followUpAnswers, submittedCategory, orderItemText]);
 
   // No auto-focus on mount: tabs remount on every switch, so focusing here would
   // pop the mobile keyboard each time you toggle between Submit and Orders. The
@@ -416,6 +448,7 @@ export default function SubmitTab() {
         confidence: typeof data.confidence === "number" ? data.confidence : 0,
         reasoning: typeof data.reasoning === "string" ? data.reasoning : "",
         followUpQuestions: Array.isArray(data.followUpQuestions) ? data.followUpQuestions : [],
+        orderItem: typeof data.orderItem === "string" ? data.orderItem : "",
       };
       classifyCache.current.set(key, result);
       classifyInFlight.current.delete(key);
@@ -449,6 +482,15 @@ export default function SubmitTab() {
   function applyResult(result: ClassifyResult) {
     setClassifyResult(result);
     setFollowUpAnswers(new Array(result.followUpQuestions.length).fill(""));
+    // A supply/restock request skips the SharePoint flow entirely: it goes to
+    // the shared team order list after a one-tap confirm (it is NOT also filed
+    // into Business Ideas). Pre-fill the editable item name from the AI's
+    // short extraction, falling back to what the user typed.
+    if (result.category === "Supply Request") {
+      setOrderItemText(result.orderItem?.trim() || inputText.trim());
+      setStep("order-confirm");
+      return;
+    }
     setStep(result.followUpQuestions.length > 0 ? "followup" : "confirm");
   }
 
@@ -471,6 +513,12 @@ export default function SubmitTab() {
   // ─── Submission ───────────────────────────────────────────────────────────
   async function handleSubmit() {
     if (!classifyResult || authState !== "authenticated") return;
+    // Supply requests never go through the SharePoint submission path — they're
+    // added to the shared order list via handleAddToOrders() instead.
+    if (classifyResult.category === "Supply Request") {
+      setStep("order-confirm");
+      return;
+    }
     setStep("submitting");
     setSubmitError("");
 
@@ -515,6 +563,35 @@ export default function SubmitTab() {
     }
   }
 
+  // ─── Add to the shared order list (Supply Request flow) ───────────────────
+  async function handleAddToOrders() {
+    const name = orderItemText.trim();
+    if (!name || authState !== "authenticated") return;
+    setStep("submitting");
+    setSubmitError("");
+    try {
+      const token = await getToken();
+      const resp = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ itemName: name }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || data.success === false) throw new Error(data.error || "Could not add to the order list");
+      qc.setQueryData<{ success: boolean; items: OrderItem[] }>(["/api/orders"], (old) => ({
+        success: true,
+        items: [...(old?.items ?? []), data.item].filter(Boolean),
+      }));
+      qc.invalidateQueries({ queryKey: ["/api/orders"] });
+      setSubmittedAsOrder(true);
+      setSubmittedCategory("Supply Request");
+      setStep("done");
+    } catch (err: any) {
+      setSubmitError(err.message || "Could not add to the order list. Please try again.");
+      setStep("order-confirm");
+    }
+  }
+
   function reset() {
     setStep("input");
     setInputText("");
@@ -522,6 +599,8 @@ export default function SubmitTab() {
     setFollowUpAnswers([]);
     setSubmitError("");
     setSubmittedCategory("");
+    setOrderItemText("");
+    setSubmittedAsOrder(false);
     setPrefetching(false);
   }
 
@@ -566,17 +645,23 @@ export default function SubmitTab() {
               >
                 <CheckmarkCircle24Filled />
                 <Text weight="semibold" size={400} style={{ color: tokens.colorPaletteGreenForeground1 }}>
-                  Submitted!
+                  {submittedAsOrder ? "Added to orders!" : "Submitted!"}
                 </Text>
               </div>
               <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
-                Your <strong>{submittedCategory}</strong> has been recorded.
+                {submittedAsOrder ? (
+                  <>It's on the team order list below.</>
+                ) : (
+                  <>Your <strong>{submittedCategory}</strong> has been recorded.</>
+                )}
               </Text>
             </div>
 
             <div className={styles.summaryBox}>
               <Text size={300} block>
-                It will appear in the next H&amp;S meeting agenda.
+                {submittedAsOrder
+                  ? "Everyone on the team can see it, and an admin will order it."
+                  : "It will appear in the next H\u0026S meeting agenda."}
               </Text>
             </div>
 
@@ -587,7 +672,7 @@ export default function SubmitTab() {
               icon={<ArrowCounterclockwise20Regular />}
               onClick={reset}
             >
-              Submit another
+              {submittedAsOrder ? "Add another" : "Submit another"}
             </Button>
           </div>
         </Card>
@@ -719,6 +804,54 @@ export default function SubmitTab() {
             </div>
           )}
 
+          {step === "order-confirm" && classifyResult && meta && (
+            <div className={`${styles.group} animate-fade-in-up`}>
+              <div
+                className={styles.banner}
+                style={{ backgroundColor: meta.bg, borderColor: meta.border }}
+              >
+                <div className={styles.bannerHead} style={{ color: meta.fg, marginBottom: tokens.spacingVerticalXS }}>
+                  {meta.icon}
+                  <Text weight="semibold" size={300} style={{ color: meta.fg }}>
+                    Add this to the order list?
+                  </Text>
+                </div>
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
+                  This looks like something to restock. We'll add it to the shared team order list — not the meeting agenda.
+                </Text>
+              </div>
+
+              <Field label="Item to order">
+                <Input
+                  value={orderItemText}
+                  onChange={(_, d) => setOrderItemText(d.value)}
+                  placeholder="e.g. Safety gloves"
+                  size="large"
+                />
+              </Field>
+
+              {submitError && (
+                <MessageBar intent="error" className="animate-fade-in">
+                  <MessageBarBody>{submitError}</MessageBarBody>
+                </MessageBar>
+              )}
+
+              <Button
+                appearance="primary"
+                size="large"
+                className={styles.fullWidth}
+                icon={<Add20Regular />}
+                disabled={!orderItemText.trim()}
+                onClick={handleAddToOrders}
+              >
+                Add to order list
+              </Button>
+              <Button appearance="subtle" className={styles.fullWidth} onClick={reset}>
+                Cancel
+              </Button>
+            </div>
+          )}
+
           {step === "confirm" && classifyResult && meta && (
             <div className={`${styles.group} animate-fade-in-up`}>
               <div
@@ -802,7 +935,14 @@ export default function SubmitTab() {
   return (
     <TeamsPage>
       {step === "input" ? (
-        <TeamsPinned className={styles.inputStack}>{inputEl}</TeamsPinned>
+        <>
+          {/* Input stays pinned (keyboard-safe); the shared team order list
+              scrolls beneath it — this replaces the old standalone Orders tab. */}
+          <TeamsPinned className={styles.inputStack}>{inputEl}</TeamsPinned>
+          <TeamsScroll className={styles.ordersSection}>
+            <OrdersList />
+          </TeamsScroll>
+        </>
       ) : (
         <TeamsScroll className={styles.bodyPad}>{cardEl}</TeamsScroll>
       )}

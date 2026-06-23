@@ -1,11 +1,17 @@
 ---
 name: Teams personal-tab layout shell
-description: Fixed app-shell + top segmented switcher pattern for the Submit/Orders Teams tabs, and what NOT to reintroduce.
+description: Fixed app-shell + top segmented switcher pattern for the Teams tabs (now Submit/Sign), and what NOT to reintroduce.
 ---
 
 # Teams personal-tab layout shell
 
-The two Teams personal tabs (Submit, Orders) share one layout contract. Keep them in lockstep when editing either.
+The Teams personal tabs share one layout contract. Keep them in lockstep when editing.
+
+## Tabs are Submit + Sign only (Orders is NOT its own tab anymore)
+- The standalone **Orders tab was removed**. The shared team order list now lives **beneath the Submit input** (extracted into a reusable `client/src/pages/teams/OrdersList.tsx` — same admin clear dialog + framer-motion swipe-to-delete, NO manual quick-add bar). `OrdersTab.tsx` was deleted.
+- App.tsx `TabList` is Submit + Sign; old `/teams-tab/orders` deep-links resolve to Submit so they don't 404.
+- Supply-request flow: AI classify returns `orderItem`; `applyResult()`/`handleSubmit()` route `category === "Supply Request"` to an `order-confirm` card (one-tap add via `handleAddToOrders` → POST /api/orders, optimistic cache append + invalidate `["/api/orders"]`). **Supply requests go ONLY to the order list — never the SharePoint/Business-Ideas submission path.** DRAFT_KEY is v3 (adds `orderItemText`); `order-confirm` is in RESUMABLE_STEPS and loadDraft normalizes a lost `submitting` step back to `order-confirm` for supply requests.
+- **Layout contract still holds:** Submit's input stays in `TeamsPinned`; the embedded `<OrdersList />` renders in a single `TeamsScroll` below it (only during step==="input"). Still exactly one TeamsScroll per page.
 
 ## Single reusable shell (the standard — use this, don't hand-roll layout)
 - All Teams tabs now compose `client/src/pages/teams/TeamsPageShell.tsx`. **Do not re-create per-tab flex/scroll layout by hand** — import the primitives. This is the permanent fix for the keyboard/focus class of bugs and the foundation for any future tab.

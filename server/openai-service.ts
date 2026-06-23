@@ -194,6 +194,7 @@ export class OpenAIService {
     confidence: number;
     reasoning: string;
     followUpQuestions: string[];
+    orderItem: string;
   }> {
     const systemPrompt = `You are a health & safety and business improvement classifier for Cranfield Glass Christchurch, a glass and glazing company in New Zealand.
 
@@ -216,13 +217,16 @@ For each category, these are the key follow-up questions when confidence < 0.8:
 - Supply Request: "What quantity is needed?", "Is this urgent?", "Which job or area is it for?"
 - Meeting Agenda Item: "Why is this important to discuss?", "Is there a deadline?"
 
+When the category is "Supply Request", also extract a short, plain item name suitable for a team ordering list — just the thing(s) to buy, in everyday words, no full sentence. Examples: "Safety gloves", "Squeegee rubbers", "Masking tape". Leave it as an empty string for every other category.
+
 Respond with valid JSON only:
 {
   "category": "Near Miss" | "Safety Observation" | "Improvement Idea" | "Business Improvement" | "Supply Request" | "Meeting Agenda Item" | "Other",
   "listTarget": "near-miss" | "safety-ideas" | "business-ideas",
   "confidence": 0.0 to 1.0,
   "reasoning": "brief explanation",
-  "followUpQuestions": ["question 1", "question 2"]
+  "followUpQuestions": ["question 1", "question 2"],
+  "orderItem": "short item name when category is Supply Request, otherwise empty string"
 }`;
 
     try {
@@ -252,7 +256,8 @@ Respond with valid JSON only:
         listTarget: parsed.listTarget,
         confidence: parsed.confidence,
         reasoning: parsed.reasoning || '',
-        followUpQuestions
+        followUpQuestions,
+        orderItem: parsed.category === 'Supply Request' && typeof parsed.orderItem === 'string' ? parsed.orderItem.trim() : ''
       };
     } catch (error) {
       logger.error({ err: error }, 'OpenAI classification failed');
@@ -261,7 +266,8 @@ Respond with valid JSON only:
         listTarget: 'business-ideas',
         confidence: 0.5,
         reasoning: 'Classification failed, defaulting to Other',
-        followUpQuestions: ['Can you describe what happened in more detail?', 'Which area of the business does this relate to?']
+        followUpQuestions: ['Can you describe what happened in more detail?', 'Which area of the business does this relate to?'],
+        orderItem: ''
       };
     }
   }

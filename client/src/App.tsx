@@ -14,7 +14,6 @@ import HealthSafetyPolicy from "@/pages/health-safety-policy";
 import EnvironmentPolicy from "@/pages/environment-policy";
 import QualityPolicy from "@/pages/quality-policy";
 import SubmitTab from "@/pages/teams/SubmitTab";
-import OrdersTab from "@/pages/teams/OrdersTab";
 import SignTab from "@/pages/teams/SignTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
@@ -93,12 +92,9 @@ function TeamsTabSwitcher({
 }) {
   const [location, navigate] = useLocation();
   const s = useSwitcherStyles();
-  const selected =
-    location === "/teams-tab/orders"
-      ? "/teams-tab/orders"
-      : location === "/teams-tab/sign"
-      ? "/teams-tab/sign"
-      : "/teams-tab";
+  // Orders is no longer its own tab — the order list now lives under the Submit
+  // box. Any lingering /teams-tab/orders deep-link highlights Submit.
+  const selected = location === "/teams-tab/sign" ? "/teams-tab/sign" : "/teams-tab";
 
   const onTabSelect = (_e: SelectTabEvent, data: SelectTabData) => {
     navigate(data.value as string);
@@ -106,7 +102,7 @@ function TeamsTabSwitcher({
 
   return (
     <div className={s.bar}>
-      {/* Always rendered so the tabs never shift when switching tabs — just invisible on Orders */}
+      {/* Always rendered so the tabs never shift when switching tabs — just invisible on Sign */}
       <Text
         className={s.greeting}
         style={{ visibility: showGreeting && userName ? "visible" : "hidden" }}
@@ -116,7 +112,6 @@ function TeamsTabSwitcher({
       </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab value="/teams-tab">Submit</Tab>
-        <Tab value="/teams-tab/orders">Orders</Tab>
         <Tab value="/teams-tab/sign">Sign</Tab>
       </TabList>
     </div>
@@ -128,7 +123,6 @@ function TeamsRouterContent() {
   const { theme } = useTeamsTheme();
   const styles = useShellStyles();
   const { userName } = useTeamsAuth();
-  const isOrders = location === "/teams-tab/orders";
   const isSign = location === "/teams-tab/sign";
 
   // Both tabs share the default Teams blue brand.
@@ -148,9 +142,9 @@ function TeamsRouterContent() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <TeamsTabSwitcher userName={userName} showGreeting={!isOrders && !isSign} />
+      <TeamsTabSwitcher userName={userName} showGreeting={!isSign} />
       <div className={styles.content}>
-        {isOrders ? <OrdersTab /> : isSign ? <SignTab /> : <SubmitTab />}
+        {isSign ? <SignTab /> : <SubmitTab />}
       </div>
     </FluentProvider>
   );
