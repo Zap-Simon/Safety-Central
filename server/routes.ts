@@ -1504,21 +1504,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let meetingSignatures: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>> | undefined;
       try {
         if (selectedMeeting && selectedMeeting !== 'all') {
-          // Try exact key first, then fallback to all-signatures with date normalization
-          let sigsForDate = await storage.getMeetingSignatures(selectedMeeting);
-          if (Object.keys(sigsForDate).length === 0) {
-            // Try normalizing date to YYYY-MM-DD
-            const normalizedSelected = new Date(selectedMeeting).toISOString().split('T')[0];
-            sigsForDate = await storage.getMeetingSignatures(normalizedSelected);
-          }
-          if (Object.keys(sigsForDate).length === 0) {
-            // Fallback: search all signatures for a date-matching key
-            const allSigs = await storage.getAllMeetingSignatures();
-            const normalizedSelected = new Date(selectedMeeting).toISOString().split('T')[0];
-            const matchingKey = Object.keys(allSigs).find(k => {
-              try { return new Date(k).toISOString().split('T')[0] === normalizedSelected; } catch { return false; }
-            });
-            if (matchingKey) sigsForDate = allSigs[matchingKey];
+          // Signatures may be stored under multiple raw ISO keys for the same
+          // calendar day (the admin page and the Teams Sign tab each pick their
+          // own representative ISO). Merge EVERY key that matches the selected
+          // day so signatures collected anywhere appear in the export; keep the
+          // most recently signed record on conflict.
+          const normalizedSelected = getDateGroupKey(selectedMeeting);
+          const allSigs = await storage.getAllMeetingSignatures();
+          const sigsForDate: Record<string, { status: string; signatureData: string | null; signedAt: string }> = {};
+          for (const [key, sigs] of Object.entries(allSigs)) {
+            if (getDateGroupKey(key) !== normalizedSelected) continue;
+            for (const [name, sig] of Object.entries(sigs)) {
+              const existing = sigsForDate[name];
+              if (!existing || new Date(sig.signedAt).getTime() >= new Date(existing.signedAt).getTime()) {
+                sigsForDate[name] = sig;
+              }
+            }
           }
           meetingSignatures = { [selectedMeeting]: sigsForDate };
         } else {

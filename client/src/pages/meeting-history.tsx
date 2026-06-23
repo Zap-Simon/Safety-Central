@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { authService } from "@/auth/authService";
@@ -960,6 +960,38 @@ export default function MeetingHistory() {
     }
   }, [attendanceResponse]);
 
+  // Signatures/attendance are stored keyed by a raw meeting ISO string. The admin
+  // page and the Teams personal Sign tab can each pick a different representative
+  // ISO for the same calendar day, so a signature collected in Teams may land under
+  // a different ISO than the one this page reads. Merge every ISO entry that shares
+  // a date-group key (YYYY-MM-DD) so signatures collected anywhere show up here.
+  const attendanceByDateKey = useMemo(() => {
+    const out: Record<string, string[]> = {};
+    for (const [iso, names] of Object.entries(meetingAttendance)) {
+      const key = getDateGroupKey(iso);
+      const set = new Set(out[key] ?? []);
+      for (const n of names ?? []) set.add(n);
+      out[key] = Array.from(set);
+    }
+    return out;
+  }, [meetingAttendance]);
+
+  const signaturesByDateKey = useMemo(() => {
+    const out: Record<string, Record<string, { status: 'signed' | 'remote' | 'absent'; signatureData: string | null; signedAt: string }>> = {};
+    for (const [iso, sigs] of Object.entries(meetingSignatures)) {
+      const key = getDateGroupKey(iso);
+      const bucket = out[key] ?? (out[key] = {});
+      for (const [name, sig] of Object.entries(sigs ?? {})) {
+        const existing = bucket[name];
+        // On conflict keep the most recently signed record.
+        if (!existing || new Date(sig.signedAt).getTime() >= new Date(existing.signedAt).getTime()) {
+          bucket[name] = sig;
+        }
+      }
+    }
+    return out;
+  }, [meetingSignatures]);
+
   // Normalise any date to YYYY-MM-DD for consistent lock key matching
   const normaliseLockDate = (raw: string): string => {
     try { return new Date(raw).toISOString().split('T')[0]; } catch { return raw; }
@@ -1396,6 +1428,20 @@ export default function MeetingHistory() {
   // Sort by actual date values
   const meetingDates: string[] = Array.from(meetingDateGroups.values())
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  // Export endpoints look up attendance/signatures by the representative ISO they
+  // are given. Re-key the date-normalised buckets onto each representative ISO so
+  // exports include signatures collected from the Teams Sign tab too.
+  const buildExportMaps = () => {
+    const exportAttendance: Record<string, string[]> = {};
+    const exportSignatures: Record<string, Record<string, { status: 'signed' | 'remote' | 'absent'; signatureData: string | null; signedAt: string }>> = {};
+    for (const iso of meetingDates) {
+      const key = getDateGroupKey(iso);
+      if (attendanceByDateKey[key]) exportAttendance[iso] = attendanceByDateKey[key];
+      if (signaturesByDateKey[key]) exportSignatures[iso] = signaturesByDateKey[key];
+    }
+    return { exportAttendance, exportSignatures };
+  };
   
   const toggleMeetingForExport = (meetingDate: string) => {
     setSelectedMeetingsForExport(prev => {
@@ -1789,8 +1835,10 @@ export default function MeetingHistory() {
       return;
     }
     
-    const currentAttendees = meetingAttendance[meetingDate] || [];
-    const isCurrentlyAttending = currentAttendees.includes(attendeeName);
+    // Derive the current state from the SAME source the checkbox renders from
+    // (date-key merged + signature precedence) so the toggle never flips the
+    // wrong direction when state is spread across multiple same-day ISO keys.
+    const isCurrentlyAttending = isAttending(meetingDate, attendeeName);
     
     // Update database using mutation
     updateMeetingAttendanceMutation.mutate({
@@ -1845,11 +1893,18 @@ export default function MeetingHistory() {
 
 
   const isAttending = (meetingDate: string, attendeeName: string) => {
+    const key = getDateGroupKey(meetingDate);
+    // If a signature exists for this person, it is the source of truth: 'absent'
+    // means not attending, 'signed'/'remote' means attending.
+    const sig = signaturesByDateKey[key]?.[attendeeName];
+    if (sig) {
+      return sig.status !== 'absent';
+    }
     // If no attendance data exists for this meeting, default to everyone present
-    if (!meetingAttendance[meetingDate]) {
+    if (!attendanceByDateKey[key]) {
       return true;
     }
-    return meetingAttendance[meetingDate]?.includes(attendeeName) || false;
+    return attendanceByDateKey[key]?.includes(attendeeName) || false;
   };
 
   // Initialize attendance with everyone present when first opening
@@ -2014,6 +2069,7 @@ export default function MeetingHistory() {
       }
 
       const meetingsToExport = Array.from(selectedMeetingsForExport);
+      const { exportAttendance, exportSignatures } = buildExportMaps();
       
       if (isMultipleMeetings) {
         // Generate separate HTML file for each selected meeting
@@ -2034,8 +2090,8 @@ export default function MeetingHistory() {
               meetingData: meetingItems,
               selectedMeeting: meetingDate,
               selectedType: 'all',
-              meetingAttendance: meetingAttendance,
-              meetingSignatures: meetingSignatures,
+              meetingAttendance: exportAttendance,
+              meetingSignatures: exportSignatures,
             }),
           });
 
@@ -2081,8 +2137,8 @@ export default function MeetingHistory() {
             meetingData: meetingItems,
             selectedMeeting: meetingDate,
             selectedType: 'all',
-            meetingAttendance: meetingAttendance,
-            meetingSignatures: meetingSignatures,
+            meetingAttendance: exportAttendance,
+            meetingSignatures: exportSignatures,
           }),
         });
 
@@ -2795,7 +2851,7 @@ export default function MeetingHistory() {
                         </Button>
 
                         {(() => {
-                          const sigs = meetingSignatures[meetingDate] ?? {};
+                          const sigs = signaturesByDateKey[getDateGroupKey(meetingDate)] ?? {};
                           const sigCount = Object.keys(sigs).length;
                           const isLocked = !!lockedAttendance[normaliseLockDate(meetingDate)];
                           return (
@@ -2866,7 +2922,7 @@ export default function MeetingHistory() {
                           <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-sm">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                               {[...meetingAttendees.management, ...meetingAttendees.glaziers].map((attendee) => {
-                                const sig = (meetingSignatures[meetingDate] ?? {})[attendee.name];
+                                const sig = (signaturesByDateKey[getDateGroupKey(meetingDate)] ?? {})[attendee.name];
                                 const sigBadge = sig
                                   ? sig.status === 'signed' ? { label: '✍️', cls: 'bg-green-100 text-green-700' }
                                   : sig.status === 'remote' ? { label: '🖥️', cls: 'bg-purple-100 text-purple-700' }
@@ -4682,7 +4738,7 @@ export default function MeetingHistory() {
             ...meetingAttendees.management,
             ...meetingAttendees.glaziers
           ].filter(a => isAttending(showSignatureCarousel, a.name));
-          const existingSigs = meetingSignatures[showSignatureCarousel] ?? {};
+          const existingSigs = signaturesByDateKey[getDateGroupKey(showSignatureCarousel)] ?? {};
           const displayDate = (() => { try { return new Date(showSignatureCarousel).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return showSignatureCarousel; } })();
           return (
             <SignatureCarousel

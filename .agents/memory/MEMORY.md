@@ -22,3 +22,4 @@
 - [One-time startup data migrations](startup-data-migrations.md) — run-once "on deploy" data fixes via runOnce(key) recorded in app_migrations; key recorded only after success, once per DB.
 - [Actions page deep-link focus](actions-deeplink-focus.md) — deep-link into Actions must filter to the single item (focusedItemId), not open a detail modal (modal fetches trigger MSAL prompt); strike titles only when Completed, not Ready to Close.
 - [Lock vs closed key normalization](lock-vs-closed-key-normalization.md) — closed-meeting writes DON'T normalize the date key while lock writes do; any reader of meetingLocks must re-normalize via getDateGroupKey and OR the flags.
+- [Signature/attendance cross-ISO key merge](signature-attendance-iso-key-merge.md) — sigs/attendance stored by raw ISO; admin & Teams pick different per-day ISOs, so readers MUST merge by getDateGroupKey (signature status wins) or Teams sign-offs vanish.
