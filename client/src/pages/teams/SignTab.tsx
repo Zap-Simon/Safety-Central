@@ -534,6 +534,12 @@ export default function SignTab() {
   // ─── Read-only meeting minutes viewer ───────────────────────────────────────
   // The minutes HTML is rendered inside a sandboxed iframe (srcDoc) so its own
   // styling can never leak into or be affected by the Teams tab chrome.
+  // NOTE: the sandbox MUST include allow-same-origin. iOS WebKit (the engine
+  // behind Teams mobile on iPhone) renders a srcDoc iframe completely BLANK when
+  // it is sandboxed without allow-same-origin — this was the cause of the blank
+  // meeting-minutes page reported on Teams mobile. allow-scripts is deliberately
+  // omitted, so the document still cannot run any JavaScript; the server-rendered
+  // minutes are pure, escaped HTML/CSS with no scripts.
   if (minutesView) {
     return (
       <TeamsPage>
@@ -568,7 +574,7 @@ export default function SignTab() {
           <iframe
             title={`Meeting minutes ${minutesView.displayDate}`}
             className={styles.minutesFrame}
-            sandbox=""
+            sandbox="allow-same-origin"
             srcDoc={minutesQuery.data?.html ?? ""}
           />
         )}
