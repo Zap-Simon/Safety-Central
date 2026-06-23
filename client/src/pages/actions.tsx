@@ -165,9 +165,27 @@ export default function Actions() {
   const isArchivedStatus = (status?: string) =>
     status === 'Completed' || status === 'Ready to Close';
 
+  // An item whose OVERALL status is "Closed" was finished from Meeting Minutes
+  // (the "bypass actions" path). Closing can leave action data behind (e.g. the
+  // closure-notes prompt writes actionNotes), so we must key off the item's own
+  // status — not the presence of action data — to keep it out of the live list
+  // and workload counts. It stays in `actionItems` so the focused deep-link from
+  // Meeting Minutes can still surface the single closed item for the record.
+  const isClosedItem = (item: ActionableItem) => item.status === 'Closed';
+
+  // Live actions still to manage — closed items are excluded from every count so
+  // the dashboard numbers reflect only open work, consistent with how
+  // Completed / Ready-to-Close are kept out of the live workload.
+  const liveActionItems = actionItems.filter(item => !isClosedItem(item));
+
   const filteredItems = actionItems.filter(item => {
     // Deep link from Minutes focuses a single action — show only that card.
+    // This intentionally runs before the closed-item filter so a closed item
+    // opened from Meeting Minutes still surfaces as its single focused card.
     if (focusedItemId) return item.id === focusedItemId;
+
+    // Outside the focused deep-link, closed items never show as live/open actions.
+    if (isClosedItem(item)) return false;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -410,14 +428,14 @@ export default function Actions() {
   };
 
   const stats = {
-    total: actionItems.length,
-    open: actionItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
-    completed: actionItems.filter(i => i.actionStatus === 'Completed').length,
-    overdue: actionItems.filter(i => {
+    total: liveActionItems.length,
+    open: liveActionItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
+    completed: liveActionItems.filter(i => i.actionStatus === 'Completed').length,
+    overdue: liveActionItems.filter(i => {
       if (!i.actionDueDate || isArchivedStatus(i.actionStatus)) return false;
       return new Date(i.actionDueDate) < new Date();
     }).length,
-    highPriority: actionItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
+    highPriority: liveActionItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
   };
 
   const exportToCSV = async () => {
@@ -731,11 +749,11 @@ export default function Actions() {
             <Target className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Actions Found</h3>
             <p className="text-gray-500 mb-4">
-              {actionItems.length > 0
+              {liveActionItems.length > 0
                 ? 'Try adjusting your filters to find more actions.'
                 : 'Actions will appear here when items are set to "Actioned" status in Meeting History.'}
             </p>
-            {actionItems.length > 0 && (
+            {liveActionItems.length > 0 && (
               <Button
                 variant="outline"
                 onClick={() => {
