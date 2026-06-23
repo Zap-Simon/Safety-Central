@@ -3053,11 +3053,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Attendance ticks are likewise stored under raw ISO keys; merge EVERY key
+      // sharing this date-group so a person ticked present without yet signing is
+      // recognised (mirrors generateAttendanceSection in the official export).
+      const allAtt = await storage.getAllMeetingAttendance();
+      const presentNamesForDay = new Set<string>();
+      let hasAttendanceData = false;
+      for (const [key, list] of Object.entries(allAtt)) {
+        if (getDateGroupKey(key) !== dateKey) continue;
+        hasAttendanceData = true;
+        for (const name of list) presentNamesForDay.add(name);
+      }
+
       // Ready-to-close actions are reviewed against the WHOLE backlog, mirroring
       // the official export, so the same outstanding action surfaces until closed.
       const readyToCloseActions = buildReadyToCloseActions(allItems);
 
-      const html = generateTeamsMinutesHTML(dayItems, displayDate, representativeIso, sigsForDay, readyToCloseActions);
+      const html = generateTeamsMinutesHTML(
+        dayItems,
+        displayDate,
+        sigsForDay,
+        presentNamesForDay,
+        hasAttendanceData,
+        readyToCloseActions,
+      );
       res.json({ success: true, displayDate, html });
     } catch (error) {
       if (error instanceof AuthError) {
@@ -5374,8 +5393,9 @@ async function buildMergedMeetingItems(listsService: SharePointListsService): Pr
 function generateTeamsMinutesHTML(
   items: any[],
   displayDate: string,
-  representativeIso: string,
   meetingSignatures: Record<string, { status: string; signatureData: string | null; signedAt: string }>,
+  presentNames: Set<string>,
+  hasAttendanceData: boolean,
   readyToCloseActions: ReadyToCloseAction[],
 ): string {
   const typeColors: Record<string, string> = {
@@ -5434,17 +5454,35 @@ function generateTeamsMinutesHTML(
       </div>`;
   }).join('');
 
-  // Attendance: a positive (signed/remote) signature implies presence.
+  // Attendance & sign-off — mirror generateAttendanceSection semantics exactly so
+  // the Teams view never diverges from the official admin export:
+  //  • a positive (signed/remote) signature ALWAYS implies presence;
+  //  • otherwise presence comes from the attendance ticks for the day (and when
+  //    there are no ticks at all, everyone defaults to present);
+  //  • present-without-signature people show as "Pending signature";
+  //  • "Not present" = not present OR explicitly marked absent.
   const formatSigDate = (iso: string) => {
     try { return new Date(iso).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' }); } catch { return iso; }
   };
+  const hasPositiveSignature = (name: string): boolean => {
+    const sig = meetingSignatures[name];
+    return !!sig && (sig.status === 'signed' || sig.status === 'remote');
+  };
+  const isPresent = (name: string): boolean => {
+    if (hasPositiveSignature(name)) return true;
+    if (!hasAttendanceData) return true;
+    return presentNames.has(name);
+  };
+
   const present = allRosterMembers.filter((a) => {
     const sig = meetingSignatures[a.name];
     return sig && (sig.status === 'signed' || sig.status === 'remote');
   });
+  const pending = allRosterMembers.filter((a) => isPresent(a.name) && !meetingSignatures[a.name]);
   const absent = allRosterMembers.filter((a) => {
+    if (hasPositiveSignature(a.name)) return false;
     const sig = meetingSignatures[a.name];
-    return sig && sig.status === 'absent';
+    return !isPresent(a.name) || (sig && sig.status === 'absent');
   });
   const hasSigs = Object.keys(meetingSignatures).length > 0;
 
@@ -5460,13 +5498,23 @@ function generateTeamsMinutesHTML(
       </div>`;
   }).join('');
 
+  const pendingHtml = pending.length
+    ? `<div class="pending-label">Pending signature</div><div class="chips">${pending.map((a) => `<span class="chip pending">${esc(a.name)}</span>`).join('')}</div>`
+    : '';
+
   const absentHtml = absent.length
     ? `<div class="absent-label">Not present</div><div class="chips">${absent.map((a) => `<span class="chip">${esc(a.name)}</span>`).join('')}</div>`
     : '';
 
+  // Fallback (no signatures yet): show the present/absent checklist so attendance
+  // captured before any sign-off still renders, matching the official export.
+  const checklistHtml = `<div class="checklist">${allRosterMembers.map((a) =>
+    `<div class="check-row"><span class="tick">${isPresent(a.name) ? '✅' : '⬜'}</span><span>${esc(a.name)} – ${esc(a.role)}</span></div>`
+  ).join('')}</div><div class="muted" style="margin-top:10px;">Signatures not yet collected for this meeting.</div>`;
+
   const attendanceHtml = hasSigs
-    ? `${presentHtml || '<div class="muted">No signatures collected yet.</div>'}${absentHtml}`
-    : '<div class="muted">Signatures not yet collected for this meeting.</div>';
+    ? `${presentHtml || '<div class="muted">No signatures collected yet.</div>'}${pendingHtml}${absentHtml}`
+    : checklistHtml;
 
   const rtcHtml = readyToCloseActions.length === 0 ? '' : `
     <h2>Actions ready to close</h2>
@@ -5523,9 +5571,14 @@ function generateTeamsMinutesHTML(
   .remote { color: #7c3aed; font-weight: 600; }
   .sig { max-width: 200px; max-height: 56px; display: block; border-bottom: 2px solid #374151; margin: 4px 0; }
   .att-date { font-size: 12px; color: #374151; margin-top: 4px; }
+  .pending-label { font-size: 12px; font-weight: 600; color: #92400e; margin: 8px 0 4px; }
   .absent-label { font-size: 12px; font-weight: 600; color: #6b7280; margin: 8px 0 4px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 999px; padding: 3px 10px; font-size: 12px; color: #6b7280; }
+  .chip.pending { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  .checklist { display: grid; grid-template-columns: 1fr; gap: 6px; }
+  .check-row { display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; color: #374151; }
+  .tick { font-size: 16px; }
   .muted { color: #9ca3af; font-size: 13px; }
   .rtc-note { font-size: 13px; color: #166534; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
   .rtc { border-color: #bbf7d0; }

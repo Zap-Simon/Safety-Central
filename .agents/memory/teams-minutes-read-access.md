@@ -12,13 +12,14 @@ never on the roster and never signs, but must still be able to read minutes).
 Tying read access to attendance silently excludes rostered-but-absent staff too.
 
 **How to apply:**
-- Sign permission (POST /api/teams/sign) STILL requires roster match — do not relax that.
-- Read endpoints (GET /api/teams/minutes/meetings and /:dateKey) only validate a
-  valid Microsoft identity via resolveSignerFromRequest; roster match is intentionally NOT checked.
-- Read access is still gated to locked/closed meetings only (buildMeetingLockMap)
-  and to >= SIGN_VISIBLE_FROM_KEY, grouped/merged by getDateGroupKey (UTC).
-- In SignTab, the readable-minutes list loads for EVERY authenticated user (not
-  just non-roster ones), so absent rostered staff can browse minutes they didn't attend.
-- Minutes HTML is rendered via generateTeamsMinutesHTML (lightweight, no
-  Paged.js/@page/print button — distinct from generateMeetingMinutesHTML) inside
-  a sandboxed <iframe srcDoc> so its styles can't leak into the Teams chrome.
+- Sign permission STILL requires roster match — do not relax that. Only the READ
+  path drops the roster requirement (identity validation only).
+- Read access is still gated to locked/closed meetings only and grouped by
+  getDateGroupKey (UTC).
+- The readable-minutes list must load for EVERY authenticated user (not just
+  non-roster ones), so absent rostered staff can browse minutes they didn't attend.
+- A Teams read-only minutes renderer MUST reuse the official export's content +
+  attendance/signature semantics (signed/remote => present; attendance ticks
+  otherwise; no ticks => default present; present-without-signature => pending;
+  absent = not-present or explicit absent). Merge BOTH signatures AND attendance
+  across same-day ISO keys, or present-without-signature attendees vanish.
