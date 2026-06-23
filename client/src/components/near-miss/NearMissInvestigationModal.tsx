@@ -92,6 +92,11 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   const [signingRole, setSigningRole] = useState<"investigator" | "approver" | null>(null);
   const [hasDrawn, setHasDrawn] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  // Hidden escape hatch: while Ctrl is held a "Close without a report" button
+  // appears so an old near miss can be archived without an investigation.
+  const [ctrlHeld, setCtrlHeld] = useState(false);
+  const [confirmingClose, setConfirmingClose] = useState(false);
+  const [isClosingNoReport, setIsClosingNoReport] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
@@ -158,6 +163,55 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
       setLoaded(true);
     }
   }, [existingData, loaded]);
+
+  // Track whether the Ctrl (or ⌘) key is held to reveal the hidden close button.
+  // Reset on key-up, window blur and when the modal closes so it can never get
+  // stuck visible (e.g. if focus leaves the tab while Ctrl is down).
+  useEffect(() => {
+    if (!open) {
+      setCtrlHeld(false);
+      return;
+    }
+    const onKeyDown = (e: KeyboardEvent) => { if (e.ctrlKey || e.metaKey) setCtrlHeld(true); };
+    const onKeyUp = (e: KeyboardEvent) => { if (!e.ctrlKey && !e.metaKey) setCtrlHeld(false); };
+    const reset = () => setCtrlHeld(false);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", reset);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", reset);
+    };
+  }, [open]);
+
+  const closeWithoutReport = async () => {
+    setIsClosingNoReport(true);
+    try {
+      const closerName = authService.getCurrentUser()?.name || data.investigatorName || undefined;
+      const res = await authenticatedFetch(
+        `/api/near-miss-investigations/${encodeURIComponent(item.id)}/close-without-report`,
+        { method: "POST", body: JSON.stringify({ name: closerName }) },
+      );
+      if (res.ok) {
+        // Refresh the Actions workload + meeting history so the card immediately
+        // leaves the live list and shows up under the Archived (Near Miss) view.
+        queryClient.invalidateQueries({ queryKey: ["/api/meeting-history"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/near-miss-investigations", item.id] });
+        toast({ title: "Near miss closed", description: "Archived without a report. It remains on the register." });
+        setConfirmingClose(false);
+        onClose();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "Close failed", description: err.error || "Could not close this near miss.", variant: "destructive" });
+      }
+    } catch (e) {
+      console.error("Close without report failed:", e);
+      toast({ title: "Close failed", description: "Something went wrong closing this near miss.", variant: "destructive" });
+    } finally {
+      setIsClosingNoReport(false);
+    }
+  };
 
   const [newNote, setNewNote] = useState("");
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -877,6 +931,20 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
             )}
           </div>
           <div className="flex items-center gap-2">
+            {/* Hidden escape hatch — only visible while Ctrl/⌘ is held and the
+                investigation isn't already complete. Archives the near miss with
+                no report. */}
+            {ctrlHeld && !isComplete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmingClose(true)}
+                className="text-xs border-red-300 text-red-700 hover:bg-red-50"
+                data-testid="button-close-without-report"
+              >
+                <X className="h-3.5 w-3.5 mr-1" />Close without a report
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -901,6 +969,44 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
             )}
           </div>
         </div>
+
+        {/* Confirmation overlay for the "Close without a report" escape hatch */}
+        {confirmingClose && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm">Close without a report?</h3>
+                  <p className="text-xs text-gray-600 mt-1 leading-snug">
+                    This archives the near miss with <strong>no investigation</strong> and no meeting sign-off. It stays on the register under Near Miss, marked “Closed without investigation”. Are you sure?
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setConfirmingClose(false)}
+                  disabled={isClosingNoReport}
+                  className="text-xs"
+                  data-testid="button-cancel-close-without-report"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={closeWithoutReport}
+                  disabled={isClosingNoReport}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                  data-testid="button-confirm-close-without-report"
+                >
+                  {isClosingNoReport ? <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Closing…</> : "Yes, close it"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

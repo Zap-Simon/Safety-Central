@@ -6560,6 +6560,39 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     }
   });
 
+  // POST /api/near-miss-investigations/:itemId/close-without-report
+  // Sanctioned escape hatch: archives an old Near Miss WITHOUT an investigation or
+  // meeting-minutes sign-off. It sets the linked Action straight to "Completed"
+  // (the archived/closed state) and stamps a short "Closed without investigation"
+  // note so there is a trace of why it has no report. This is the ONLY route
+  // allowed to jump a NearMiss straight to Completed — the workflow guard on
+  // POST /api/action-items stays intact so the normal path is still protected.
+  app.post('/api/near-miss-investigations/:itemId/close-without-report', async (req, res) => {
+    const caller = await requireNearMissAuth(req, res);
+    if (!caller) return;
+    try {
+      const nearMissItemId = decodeURIComponent(req.params.itemId);
+      const { name } = req.body as { name?: string };
+      const closerName = (name && String(name).trim()) || caller.displayName || 'Unknown';
+      const stamp = `Closed without investigation — ${closerName}, ${new Date().toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+      // Append the closure note rather than overwrite any existing notes.
+      const existing = await storage.getActionItem('NearMiss', nearMissItemId);
+      const mergedNotes = existing?.actionNotes ? `${existing.actionNotes}\n${stamp}` : stamp;
+
+      const updated = await storage.upsertActionItem({
+        listType: 'NearMiss',
+        sharePointItemId: nearMissItemId,
+        actionStatus: 'Completed',
+        actionNotes: mergedNotes,
+      });
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      console.error('Close near miss without report error:', error);
+      res.status(500).json({ success: false, error: 'Failed to close near miss without a report' });
+    }
+  });
+
   // GET /api/near-miss-investigations/:itemId/notes — time-stamped progress history
   app.get('/api/near-miss-investigations/:itemId/notes', async (req, res) => {
     if (!await requireNearMissAuth(req, res)) return;
