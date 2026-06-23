@@ -1029,65 +1029,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use clean SharePoint Lists service with delegated permissions
       const listsService = new SharePointListsService(accessToken);
       
-      // Fetch main lists, local action data, and near-miss investigations in parallel
-      const [businessIdeas, safetyIdeas, nearMiss, localActionItems, allInvestigations] = await Promise.all([
-        listsService.getBusinessIdeas(),
-        listsService.getSafetyIdeas(),
-        listsService.getNearMiss(),
-        storage.getAllActionItems().catch((err) => {
-          // A local-DB fault must not take down the whole meeting-history read.
-          // Degrade gracefully: SharePoint data still loads with no local
-          // action overrides merged in, rather than returning a 500.
-          console.error('Error reading local action items for meeting history:', err);
-          return [] as any[];
-        }),
-        storage.getAllInvestigations().catch(() => [] as any[]),
-      ]);
-      
-      // Create a map of local action items by sharePointItemId for quick lookup
-      const actionItemsMap = new Map<string, any>();
-      for (const actionItem of localActionItems) {
-        actionItemsMap.set(actionItem.sharePointItemId, actionItem);
-      }
-
-      // Map investigations by nearMissItemId (prefer Complete over Draft when both exist)
-      const investigationMap = new Map<string, any>();
-      for (const inv of allInvestigations) {
-        const existing = investigationMap.get(inv.nearMissItemId);
-        if (!existing || inv.status === 'Complete') {
-          investigationMap.set(inv.nearMissItemId, {
-            investigationStatus: inv.status,
-            investigatorName: inv.investigatorName,
-            riskLevel: inv.riskLevel,          // schema column is riskLevel (risk_level)
-            resultingActions: inv.resultingActions,
-            directorName: inv.directorName,
-            signedAt: inv.signedAt,
-          });
-        }
-      }
-      
-      // Combine all items into single array and merge local action data
-      // Use nullish coalescing (??) to allow intentional clears (empty strings)
-      const allItems = [...businessIdeas, ...safetyIdeas, ...nearMiss].map(item => {
-        const localAction = actionItemsMap.get(item.id);
-        const investigation = investigationMap.get(item.id);
-        const merged = localAction ? {
-          ...item,
-          actionPriority: localAction.actionPriority ?? item.actionPriority,
-          actionStatus: localAction.actionStatus ?? item.actionStatus,
-          actionAssignedTo: localAction.actionAssignedTo ?? item.actionAssignedTo,
-          actionStartDate: localAction.actionStartDate ?? item.actionStartDate,
-          actionDueDate: localAction.actionDueDate ?? item.actionDueDate,
-          reconsiderDate: localAction.reconsiderDate ?? item.reconsiderDate,
-          actionNotes: localAction.actionNotes ?? item.actionNotes,
-          // Local meeting notes override SharePoint (local is always latest save)
-          meetingNotes: localAction.meetingNotes !== null && localAction.meetingNotes !== undefined
-            ? localAction.meetingNotes
-            : item.meetingNotes
-        } : item;
-        // Attach investigation summary to Near Miss items
-        return investigation ? { ...merged, investigation } : merged;
-      });
+      // Merge SharePoint lists with local action overrides + investigations
+      // (shared with the Teams locked-minutes viewer so both stay identical).
+      const allItems = await buildMergedMeetingItems(listsService);
 
       res.json({
         configured: true,
@@ -2994,6 +2938,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error('Error saving self-signature:', error);
       res.status(500).json({ success: false, error: 'Failed to save your signature' });
+    }
+  });
+
+  // ─── Read-only locked-meeting minutes for the Teams personal app ─────────────
+  // ANY signed-in Cranfield Glass staff member can read the minutes of a LOCKED
+  // (or closed) meeting — they do NOT need to be on the attendee roster, so a
+  // remote worker who never signs can still catch up. We still validate the
+  // Microsoft identity (resolveSignerFromRequest throws on an invalid token); we
+  // simply don't require a roster match. Only locked/closed meetings are exposed.
+
+  // List the locked/closed meetings whose minutes can be read.
+  app.get('/api/teams/minutes/meetings', async (req, res) => {
+    try {
+      // Validate identity only — a roster match is NOT required to read minutes.
+      const { displayName, email } = await resolveSignerFromRequest(req);
+
+      const spToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      const listsService = new SharePointListsService(spToken);
+      const [businessIdeas, safetyIdeas, nearMiss] = await Promise.all([
+        listsService.getBusinessIdeas(),
+        listsService.getSafetyIdeas(),
+        listsService.getNearMiss(),
+      ]);
+      const allItems = [...businessIdeas, ...safetyIdeas, ...nearMiss];
+
+      // One representative ISO per calendar day (mirror the sign tab).
+      const groups = new Map<string, string>();
+      for (const item of allItems) {
+        const key = getDateGroupKey(item.meetingDate);
+        if (key === 'unknown-meeting') continue;
+        if (!groups.has(key)) groups.set(key, item.meetingDate);
+      }
+
+      const lockByKey = await buildMeetingLockMap();
+
+      const meetings = Array.from(groups.entries())
+        // Same visibility window as signing, and only locked/closed meetings.
+        .filter(([key]) => key >= SIGN_VISIBLE_FROM_KEY)
+        .filter(([key]) => {
+          const lock = lockByKey.get(key);
+          return !!(lock?.isLocked || lock?.isClosed);
+        })
+        .map(([key, iso]) => ({
+          meetingDate: iso,
+          dateKey: key,
+          displayDate: formatDisplayDate(iso, 'meeting'),
+        }))
+        .sort((a, b) => new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime());
+
+      res.json({ success: true, userName: displayName || email, meetings });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      console.error('Error loading readable minutes:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const isAuthError = /\b(401|403)\b/.test(message) || /unauthor|forbidden|invalid.*token|token.*expired/i.test(message);
+      res.status(isAuthError ? 401 : 500).json({
+        success: false,
+        error: isAuthError ? 'Authentication expired. Please sign in again.' : 'Failed to load meetings',
+      });
+    }
+  });
+
+  // Return the rendered minutes HTML for one locked/closed meeting (by dateKey).
+  app.get('/api/teams/minutes/:dateKey', async (req, res) => {
+    try {
+      // Validate identity only — any authenticated staff member may read.
+      await resolveSignerFromRequest(req);
+
+      const dateKey = getDateGroupKey(req.params.dateKey);
+      if (dateKey === 'unknown-meeting') {
+        return res.status(400).json({ success: false, error: 'Invalid meeting date' });
+      }
+      if (dateKey < SIGN_VISIBLE_FROM_KEY) {
+        return res.status(404).json({ success: false, error: 'These minutes are not available.' });
+      }
+
+      // The meeting must actually be locked/closed before its minutes are shared.
+      const lockByKey = await buildMeetingLockMap();
+      const lock = lockByKey.get(dateKey);
+      if (!(lock?.isLocked || lock?.isClosed)) {
+        return res.status(403).json({
+          success: false,
+          error: 'These minutes are not available yet — the meeting has not been locked.',
+        });
+      }
+
+      const spToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      const listsService = new SharePointListsService(spToken);
+      const allItems = await buildMergedMeetingItems(listsService);
+
+      // Items for this calendar day (group by UTC date key, never local isSameDay).
+      const dayItems = allItems.filter((item) => getDateGroupKey(item.meetingDate) === dateKey);
+      if (dayItems.length === 0) {
+        return res.status(404).json({ success: false, error: 'No minutes were found for this meeting.' });
+      }
+      const representativeIso = dayItems[0].meetingDate;
+      const displayDate = formatDisplayDate(representativeIso, 'meeting');
+
+      // Signatures are stored under raw ISO keys; merge EVERY key sharing this
+      // date-group so sign-offs collected on the admin page or the Sign tab both
+      // appear, keeping the most recent record on conflict.
+      const allSigs = await storage.getAllMeetingSignatures();
+      const sigsForDay: Record<string, { status: string; signatureData: string | null; signedAt: string }> = {};
+      for (const [key, sigs] of Object.entries(allSigs)) {
+        if (getDateGroupKey(key) !== dateKey) continue;
+        for (const [name, sig] of Object.entries(sigs)) {
+          const existing = sigsForDay[name];
+          if (!existing || new Date(sig.signedAt).getTime() >= new Date(existing.signedAt).getTime()) {
+            sigsForDay[name] = sig;
+          }
+        }
+      }
+
+      // Ready-to-close actions are reviewed against the WHOLE backlog, mirroring
+      // the official export, so the same outstanding action surfaces until closed.
+      const readyToCloseActions = buildReadyToCloseActions(allItems);
+
+      const html = generateTeamsMinutesHTML(dayItems, displayDate, representativeIso, sigsForDay, readyToCloseActions);
+      res.json({ success: true, displayDate, html });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      console.error('Error rendering meeting minutes:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const isAuthError = /\b(401|403)\b/.test(message) || /unauthor|forbidden|invalid.*token|token.*expired/i.test(message);
+      res.status(isAuthError ? 401 : 500).json({
+        success: false,
+        error: isAuthError ? 'Authentication expired. Please sign in again.' : 'Failed to load minutes',
+      });
     }
   });
 
@@ -5223,6 +5299,254 @@ function generateAnalyticsChartsHTML(analytics: any): string {
         </div>
       </div>
     </div>`;
+}
+
+// Merge the three SharePoint lists with local action overrides and Near Miss
+// investigations into the single combined item array the meeting views expect.
+// Extracted from /api/meeting-history so the Teams locked-minutes viewer builds
+// EXACTLY the same dataset (same fields, same merge rules) without duplication.
+async function buildMergedMeetingItems(listsService: SharePointListsService): Promise<any[]> {
+  const [businessIdeas, safetyIdeas, nearMiss, localActionItems, allInvestigations] = await Promise.all([
+    listsService.getBusinessIdeas(),
+    listsService.getSafetyIdeas(),
+    listsService.getNearMiss(),
+    storage.getAllActionItems().catch((err) => {
+      // A local-DB fault must not take down the whole read. Degrade gracefully:
+      // SharePoint data still loads with no local action overrides merged in.
+      console.error('Error reading local action items for meeting data:', err);
+      return [] as any[];
+    }),
+    storage.getAllInvestigations().catch(() => [] as any[]),
+  ]);
+
+  // Create a map of local action items by sharePointItemId for quick lookup
+  const actionItemsMap = new Map<string, any>();
+  for (const actionItem of localActionItems) {
+    actionItemsMap.set(actionItem.sharePointItemId, actionItem);
+  }
+
+  // Map investigations by nearMissItemId (prefer Complete over Draft when both exist)
+  const investigationMap = new Map<string, any>();
+  for (const inv of allInvestigations) {
+    const existing = investigationMap.get(inv.nearMissItemId);
+    if (!existing || inv.status === 'Complete') {
+      investigationMap.set(inv.nearMissItemId, {
+        investigationStatus: inv.status,
+        investigatorName: inv.investigatorName,
+        riskLevel: inv.riskLevel,          // schema column is riskLevel (risk_level)
+        resultingActions: inv.resultingActions,
+        directorName: inv.directorName,
+        signedAt: inv.signedAt,
+      });
+    }
+  }
+
+  // Combine all items into single array and merge local action data
+  // Use nullish coalescing (??) to allow intentional clears (empty strings)
+  return [...businessIdeas, ...safetyIdeas, ...nearMiss].map(item => {
+    const localAction = actionItemsMap.get(item.id);
+    const investigation = investigationMap.get(item.id);
+    const merged = localAction ? {
+      ...item,
+      actionPriority: localAction.actionPriority ?? item.actionPriority,
+      actionStatus: localAction.actionStatus ?? item.actionStatus,
+      actionAssignedTo: localAction.actionAssignedTo ?? item.actionAssignedTo,
+      actionStartDate: localAction.actionStartDate ?? item.actionStartDate,
+      actionDueDate: localAction.actionDueDate ?? item.actionDueDate,
+      reconsiderDate: localAction.reconsiderDate ?? item.reconsiderDate,
+      actionNotes: localAction.actionNotes ?? item.actionNotes,
+      // Local meeting notes override SharePoint (local is always latest save)
+      meetingNotes: localAction.meetingNotes !== null && localAction.meetingNotes !== undefined
+        ? localAction.meetingNotes
+        : item.meetingNotes
+    } : item;
+    // Attach investigation summary to Near Miss items
+    return investigation ? { ...merged, investigation } : merged;
+  });
+}
+
+// Lightweight, mobile-first read-only meeting minutes for the Teams personal app.
+// Deliberately NOT the heavy print export: no Paged.js, no @page A4 geometry, no
+// print button — just a clean scrollable card layout sized for a phone, reusing
+// the SAME content helpers (agenda submission text, action-required lines, status
+// labels, ready-to-close actions, roster attendance) so wording matches the
+// official minutes exactly. Rendered inside an iframe (srcDoc) in the tab.
+function generateTeamsMinutesHTML(
+  items: any[],
+  displayDate: string,
+  representativeIso: string,
+  meetingSignatures: Record<string, { status: string; signatureData: string | null; signedAt: string }>,
+  readyToCloseActions: ReadyToCloseAction[],
+): string {
+  const typeColors: Record<string, string> = {
+    'Business Ideas': '#2563eb',
+    'Safety Ideas': '#dc2626',
+    'Near Miss': '#ea580c',
+    'Actions': '#7c3aed',
+  };
+
+  const esc = (s: string) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>');
+
+  // Sort to match the official minutes: Near Miss → Safety → Business → other.
+  const typeOrder: Record<string, number> = { 'Near Miss': 1, 'Safety Ideas': 2, 'Business Ideas': 3, 'Actions': 4 };
+  const sorted = [...items].sort((a, b) => {
+    const ao = typeOrder[a.type] || 5;
+    const bo = typeOrder[b.type] || 5;
+    if (ao !== bo) return ao - bo;
+    return new Date(b.submittedDate || 0).getTime() - new Date(a.submittedDate || 0).getTime();
+  });
+
+  const itemCards = sorted.map((item) => {
+    const color = typeColors[item.type] || '#6b7280';
+    const submissionText = buildAgendaSubmissionText(item);
+    const discussion = (item.meetingNotes || '').trim();
+    const actionLines = buildActionRequiredLines(item);
+    let submittedOn = '';
+    if (item.submittedDate) {
+      const d = new Date(item.submittedDate);
+      if (!isNaN(d.getTime())) {
+        submittedOn = d.toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      }
+    }
+    const actionHtml = actionLines
+      .map((l) => l.label
+        ? `<div class="kv"><span class="k">${esc(l.label)}:</span> ${nl2br(l.value)}</div>`
+        : `<div class="kv">${nl2br(l.value)}</div>`)
+      .join('');
+
+    return `
+      <div class="card">
+        <span class="badge" style="background:${color};">${esc(item.type || 'Item')}</span>
+        <div class="title">${esc(item.title || `${item.type || 'Item'} Item`)}</div>
+        ${submissionText ? `<div class="body">${nl2br(submissionText)}</div>` : ''}
+        <div class="meta">
+          <div><span class="k">Submitted by:</span> ${esc(item.submittedBy || 'Unknown')}</div>
+          ${submittedOn ? `<div><span class="k">Submitted on:</span> ${esc(submittedOn)}</div>` : ''}
+          <div><span class="k">Status:</span> ${esc(getDisplayItemStatus(item))}</div>
+        </div>
+        ${discussion ? `<div class="section-label">Discussion</div><div class="discussion">${nl2br(discussion)}</div>` : ''}
+        ${actionHtml ? `<div class="section-label">Action required</div><div class="action">${actionHtml}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  // Attendance: a positive (signed/remote) signature implies presence.
+  const formatSigDate = (iso: string) => {
+    try { return new Date(iso).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Pacific/Auckland' }); } catch { return iso; }
+  };
+  const present = allRosterMembers.filter((a) => {
+    const sig = meetingSignatures[a.name];
+    return sig && (sig.status === 'signed' || sig.status === 'remote');
+  });
+  const absent = allRosterMembers.filter((a) => {
+    const sig = meetingSignatures[a.name];
+    return sig && sig.status === 'absent';
+  });
+  const hasSigs = Object.keys(meetingSignatures).length > 0;
+
+  const presentHtml = present.map((a) => {
+    const sig = meetingSignatures[a.name];
+    const remote = sig.status === 'remote';
+    return `
+      <div class="att">
+        <div class="att-name">${esc(a.name)}${remote ? ' <span class="remote">· Remote</span>' : ''}</div>
+        <div class="att-role">${esc(a.role)}</div>
+        ${sig.signatureData && !remote ? `<img class="sig" src="${sig.signatureData}" alt="Signature">` : ''}
+        <div class="att-date">Signed: ${esc(formatSigDate(sig.signedAt))}</div>
+      </div>`;
+  }).join('');
+
+  const absentHtml = absent.length
+    ? `<div class="absent-label">Not present</div><div class="chips">${absent.map((a) => `<span class="chip">${esc(a.name)}</span>`).join('')}</div>`
+    : '';
+
+  const attendanceHtml = hasSigs
+    ? `${presentHtml || '<div class="muted">No signatures collected yet.</div>'}${absentHtml}`
+    : '<div class="muted">Signatures not yet collected for this meeting.</div>';
+
+  const rtcHtml = readyToCloseActions.length === 0 ? '' : `
+    <h2>Actions ready to close</h2>
+    <div class="rtc-note">${readyToCloseActions.length} action${readyToCloseActions.length !== 1 ? 's' : ''} completed and awaiting group sign-off.</div>
+    ${readyToCloseActions.map((a) => `
+      <div class="card rtc">
+        ${a.type ? `<span class="badge" style="background:${typeColors[a.type] || '#6b7280'};">${esc(a.type)}</span>` : ''}
+        <div class="title">${esc(a.title)}</div>
+        <div class="meta">
+          ${a.assignedTo ? `<div><span class="k">Actioned by:</span> ${esc(a.assignedTo)}</div>` : ''}
+          ${a.dueDate ? `<div><span class="k">Due:</span> ${esc(a.dueDate)}</div>` : ''}
+          ${a.submittedBy ? `<div><span class="k">Submitted by:</span> ${esc(a.submittedBy)}</div>` : ''}
+        </div>
+        ${a.outcome ? `<div class="section-label">What was done</div><div class="discussion">${nl2br(a.outcome)}</div>` : ''}
+      </div>`).join('')}`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Meeting Minutes ${esc(displayDate)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #242424;
+    background: #f5f5f5;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 16px 14px 48px; }
+  .head { text-align: center; padding: 4px 0 14px; border-bottom: 2px solid #2563eb; margin-bottom: 18px; }
+  .company { font-size: 18px; font-weight: 700; color: #1f2937; }
+  .doc { font-size: 13px; color: #6b7280; margin-top: 2px; }
+  .date { font-size: 16px; font-weight: 600; color: #2563eb; margin-top: 8px; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.4px; color: #374151; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .badge { display: inline-block; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; margin-bottom: 8px; }
+  .title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .body { white-space: pre-wrap; margin-bottom: 8px; }
+  .meta { font-size: 13px; color: #4b5563; }
+  .meta .k, .kv .k, .att .k { font-weight: 600; color: #374151; }
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; color: #9ca3af; font-weight: 700; margin: 10px 0 4px; }
+  .discussion { white-space: pre-wrap; background: #fff8e1; border-left: 3px solid #f59e0b; padding: 8px 10px; border-radius: 4px; }
+  .action { background: #eff6ff; border-left: 3px solid #3b82f6; padding: 8px 10px; border-radius: 4px; }
+  .kv { margin: 2px 0; }
+  .att { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .att-name { font-weight: 700; }
+  .att-role { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+  .remote { color: #7c3aed; font-weight: 600; }
+  .sig { max-width: 200px; max-height: 56px; display: block; border-bottom: 2px solid #374151; margin: 4px 0; }
+  .att-date { font-size: 12px; color: #374151; margin-top: 4px; }
+  .absent-label { font-size: 12px; font-weight: 600; color: #6b7280; margin: 8px 0 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 999px; padding: 3px 10px; font-size: 12px; color: #6b7280; }
+  .muted { color: #9ca3af; font-size: 13px; }
+  .rtc-note { font-size: 13px; color: #166534; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+  .rtc { border-color: #bbf7d0; }
+  .empty { text-align: center; color: #9ca3af; padding: 30px 0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div class="company">Cranfield Glass Christchurch</div>
+      <div class="doc">Health &amp; Safety Meeting Minutes</div>
+      <div class="date">${esc(displayDate)}</div>
+    </div>
+    <h2>Meeting items</h2>
+    ${itemCards || '<div class="empty">No items were recorded for this meeting.</div>'}
+    ${rtcHtml}
+    <h2>Attendance &amp; sign-off</h2>
+    ${attendanceHtml}
+  </div>
+</body>
+</html>`;
 }
 
 // HTML Meeting Minutes Generator Function

@@ -14,7 +14,6 @@ import {
 import {
   Signature24Regular,
   Shield24Regular,
-  PersonQuestionMark24Regular,
   Edit20Regular,
   Desktop20Regular,
   Dismiss20Regular,
@@ -22,6 +21,8 @@ import {
   CheckmarkCircle24Filled,
   CalendarLtr24Regular,
   ArrowCounterclockwise20Regular,
+  DocumentText24Regular,
+  DocumentText20Regular,
 } from "@fluentui/react-icons";
 import {
   TeamsPage,
@@ -58,6 +59,26 @@ interface MeetingsResponse {
   attendeeName: string | null;
   role?: string;
   meetings: SignMeeting[];
+  error?: string;
+}
+
+interface ReadableMeeting {
+  meetingDate: string;
+  dateKey: string;
+  displayDate: string;
+}
+
+interface MinutesListResponse {
+  success: boolean;
+  userName: string;
+  meetings: ReadableMeeting[];
+  error?: string;
+}
+
+interface MinutesHtmlResponse {
+  success: boolean;
+  displayDate: string;
+  html: string;
   error?: string;
 }
 
@@ -196,6 +217,25 @@ const useStyles = makeStyles({
     textAlign: "center",
     maxWidth: "340px",
   },
+  minutesBar: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    paddingLeft: tokens.spacingHorizontalS,
+    paddingRight: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalS,
+    paddingBottom: tokens.spacingVerticalS,
+    borderBottomWidth: tokens.strokeWidthThin,
+    borderBottomStyle: "solid",
+    borderBottomColor: tokens.colorNeutralStroke2,
+  },
+  minutesFrame: {
+    flexGrow: 1,
+    minHeight: 0,
+    width: "100%",
+    border: "none",
+    display: "block",
+  },
   sigPreview: {
     maxHeight: "56px",
     maxWidth: "100%",
@@ -287,6 +327,9 @@ export default function SignTab() {
   const [hasDrawn, setHasDrawn] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [justSigned, setJustSigned] = useState<SignatureStatus | null>(null);
+  // Which locked meeting's full minutes are being read (transient — tabs remount
+  // on switch, so we intentionally don't persist this).
+  const [minutesView, setMinutesView] = useState<{ dateKey: string; displayDate: string } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -328,6 +371,43 @@ export default function SignTab() {
       qc.invalidateQueries({ queryKey: ["/api/teams/sign/meetings"] });
     },
     onError: (err: any) => setActionError(err?.message || "Failed to save your signature"),
+  });
+
+  // Whether the signed-in user is NOT on the attendee roster. Such staff (e.g. a
+  // remote worker) can't self-sign, but they CAN still read locked minutes, so
+  // we fetch the readable-minutes list for them instead of a dead-end message.
+  const isUnmatched = !!meetingsQuery.data && !meetingsQuery.data.matched;
+
+  // Readable locked/closed meetings. ANY signed-in Cranfield Glass staff member
+  // can read locked minutes — including rostered staff who were absent from a
+  // meeting — so this loads for every authenticated user, not just non-roster ones.
+  const minutesListQuery = useQuery<MinutesListResponse>({
+    queryKey: ["/api/teams/minutes/meetings", teamsToken ? "token" : "none"],
+    enabled: authState === "authenticated",
+    queryFn: async () => {
+      const token = await getToken();
+      const res = await fetch("/api/teams/minutes/meetings", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load meetings");
+      return json as MinutesListResponse;
+    },
+  });
+
+  // The rendered minutes HTML for the meeting currently being read.
+  const minutesQuery = useQuery<MinutesHtmlResponse>({
+    queryKey: ["/api/teams/minutes", minutesView?.dateKey ?? "none"],
+    enabled: !!minutesView,
+    queryFn: async () => {
+      const token = await getToken();
+      const res = await fetch(`/api/teams/minutes/${minutesView!.dateKey}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to load minutes");
+      return json as MinutesHtmlResponse;
+    },
   });
 
   // Derive the selected meeting from fresh query data so its signature status is
@@ -409,6 +489,14 @@ export default function SignTab() {
     setJustSigned(null);
   }
 
+  function openMinutes(dateKey: string, displayDate: string) {
+    setMinutesView({ dateKey, displayDate });
+  }
+
+  function closeMinutes() {
+    setMinutesView(null);
+  }
+
   function submit(status: SignatureStatus, signatureData: string | null) {
     if (!selected) return;
     setActionError(null);
@@ -440,6 +528,51 @@ export default function SignTab() {
         onAction={retry}
         error={authError || undefined}
       />
+    );
+  }
+
+  // ─── Read-only meeting minutes viewer ───────────────────────────────────────
+  // The minutes HTML is rendered inside a sandboxed iframe (srcDoc) so its own
+  // styling can never leak into or be affected by the Teams tab chrome.
+  if (minutesView) {
+    return (
+      <TeamsPage>
+        <TeamsPinned className={styles.minutesBar}>
+          <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={closeMinutes}>
+            Back
+          </Button>
+          <Text size={300} weight="semibold" truncate style={{ minWidth: 0 }}>
+            {minutesView.displayDate}
+          </Text>
+        </TeamsPinned>
+        {minutesQuery.isLoading ? (
+          <TeamsCenter className="animate-fade-in">
+            <Spinner size="large" label="Loading meeting minutes…" />
+          </TeamsCenter>
+        ) : minutesQuery.isError ? (
+          <TeamsCenter className="animate-fade-in">
+            <div className={styles.doneWrap}>
+              <DocumentText24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
+              <Text size={400} weight="semibold" style={{ textAlign: "center" }}>
+                Couldn't load these minutes
+              </Text>
+              <Text size={300} style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
+                {(minutesQuery.error as Error)?.message || "Something went wrong. Please try again."}
+              </Text>
+              <Button appearance="primary" onClick={() => minutesQuery.refetch()} style={{ width: "100%" }}>
+                Try again
+              </Button>
+            </div>
+          </TeamsCenter>
+        ) : (
+          <iframe
+            title={`Meeting minutes ${minutesView.displayDate}`}
+            className={styles.minutesFrame}
+            sandbox=""
+            srcDoc={minutesQuery.data?.html ?? ""}
+          />
+        )}
+      </TeamsPage>
     );
   }
 
@@ -513,6 +646,16 @@ export default function SignTab() {
                   </Text>
                   <img src={existing.signatureData} alt="Your signature" className={styles.sigPreview} />
                 </div>
+              )}
+              {!isUpcoming && (
+                <Button
+                  appearance="primary"
+                  icon={<DocumentText20Regular />}
+                  onClick={() => openMinutes(selected.dateKey, selected.displayDate)}
+                  style={{ width: "100%" }}
+                >
+                  View meeting minutes
+                </Button>
               )}
             </div>
           </TeamsScroll>
@@ -665,17 +808,81 @@ export default function SignTab() {
     );
   }
 
-  if (meetingsQuery.data && !meetingsQuery.data.matched) {
+  // Non-roster staff (e.g. a remote worker) can't self-sign, but any signed-in
+  // Cranfield Glass staff member can still READ locked meeting minutes — so show
+  // them the readable-minutes list instead of a dead-end "not found" message.
+  if (isUnmatched) {
+    const readable = minutesListQuery.data?.meetings ?? [];
     return (
-      <TeamsFullScreen
-        icon={<PersonQuestionMark24Regular />}
-        title="We couldn't find you on the attendee list"
-        description="Only people on the H&S meeting attendee list can self-sign. Please ask an admin to add you, then try again."
-        actionLabel="Try again"
-        onAction={() => meetingsQuery.refetch()}
-      />
+      <TeamsPage>
+        <TeamsPinned className={styles.intro}>
+          <Text size={400} weight="bold">Meeting minutes</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+            You're not on the attendee list, so there's nothing to sign — but you can read the minutes of past meetings here.
+          </Text>
+        </TeamsPinned>
+        <TeamsScroll>
+          {minutesListQuery.isLoading ? (
+            <TeamsCenter className="animate-fade-in">
+              <Spinner size="large" label="Loading meeting minutes…" />
+            </TeamsCenter>
+          ) : minutesListQuery.isError ? (
+            <TeamsCenter className="animate-fade-in">
+              <div className={styles.doneWrap}>
+                <DocumentText24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
+                <Text size={400} weight="semibold" style={{ textAlign: "center" }}>Couldn't load meetings</Text>
+                <Text size={300} style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
+                  {(minutesListQuery.error as Error)?.message || "Something went wrong. Please try again."}
+                </Text>
+                <Button appearance="primary" onClick={() => minutesListQuery.refetch()} style={{ width: "100%" }}>
+                  Try again
+                </Button>
+              </div>
+            </TeamsCenter>
+          ) : readable.length === 0 ? (
+            <TeamsCenter>
+              <div className={styles.doneWrap}>
+                <CalendarLtr24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
+                <Text size={400} weight="semibold" style={{ textAlign: "center" }}>No minutes to read yet</Text>
+                <Text size={300} style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
+                  Once a meeting has been held and locked by an admin, its minutes will appear here.
+                </Text>
+              </div>
+            </TeamsCenter>
+          ) : (
+            <div className={styles.list}>
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
+                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
+                    Meeting minutes
+                  </Text>
+                </div>
+                {readable.map((m) => (
+                  <Card
+                    key={m.dateKey}
+                    className={`${styles.meetingCard} animate-fade-in-up`}
+                    onClick={() => openMinutes(m.dateKey, m.displayDate)}
+                  >
+                    <div className={styles.meetingIcon}>
+                      <DocumentText24Regular />
+                    </div>
+                    <div className={styles.meetingBody}>
+                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
+                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to read minutes</Text>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </TeamsScroll>
+      </TeamsPage>
     );
   }
+
+  // All locked meetings this user may read, regardless of whether they attended.
+  const readableMinutes = minutesListQuery.data?.meetings ?? [];
 
   return (
     <TeamsPage>
@@ -686,7 +893,7 @@ export default function SignTab() {
         </Text>
       </TeamsPinned>
       <TeamsScroll>
-        {openMeetings.length === 0 && upcomingMeetings.length === 0 && pastMeetings.length === 0 ? (
+        {openMeetings.length === 0 && upcomingMeetings.length === 0 && pastMeetings.length === 0 && readableMinutes.length === 0 ? (
           <TeamsCenter>
             <div className={styles.doneWrap}>
               <CalendarLtr24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
@@ -761,6 +968,32 @@ export default function SignTab() {
                       ) : (
                         <Badge appearance="tint" color="success">Attended</Badge>
                       )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {readableMinutes.length > 0 && (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
+                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
+                    Meeting minutes
+                  </Text>
+                </div>
+                {readableMinutes.map((m) => (
+                  <Card
+                    key={m.dateKey}
+                    className={`${styles.meetingCardStatic} animate-fade-in-up`}
+                    onClick={() => openMinutes(m.dateKey, m.displayDate)}
+                  >
+                    <div className={styles.meetingIcon}>
+                      <DocumentText24Regular />
+                    </div>
+                    <div className={styles.meetingBody}>
+                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
+                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to read minutes</Text>
                     </div>
                   </Card>
                 ))}
