@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { SharePointListsService } from "./sharepoint-lists-service";
 import { resolveDownstreamToken, AuthError } from "./teams-obo-auth";
 import { getDateGroupKey, formatDisplayDate, getNZTodayKey } from "../shared/dateUtils";
-import { findRosterMember } from "../shared/meetingRoster";
+import { findRosterMember, allRosterMembers } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
@@ -5825,17 +5825,11 @@ function generateActionRequiredSection(item: any): string {
 
 // Generate attendance section with UI synchronization
 function generateAttendanceSection(meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingDate?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>): string {
-  const allAttendees = [
-    { name: 'Hoani Hunt', role: 'Company Director' },
-    { name: 'Simon Hubbard', role: 'Health & Safety Coordinator' },
-    { name: 'James Waites', role: 'Glazing Supervisor' },
-    { name: 'Emma White', role: 'Administrator' },
-    { name: 'Kevin Young', role: 'Glazier' },
-    { name: 'Ryan Newman', role: 'Glazier' },
-    { name: 'Dan Conlan', role: 'Glazier' },
-    { name: "Struan O'Donnell", role: 'Glazier' },
-    { name: 'Sam Chang', role: 'Glazier' }
-  ];
+  // Use the canonical roster (shared/meetingRoster.ts) so attendee names match
+  // exactly the names signatures/attendance are keyed by. A divergent local list
+  // (e.g. "Dan Conlan" vs the roster's "Daniel Conlan") silently fails the
+  // signature lookup and wrongly shows a signed person as absent.
+  const allAttendees = allRosterMembers;
 
   // Attendance ticks may be stored under multiple raw ISO keys for the same
   // calendar day (the admin page and the Teams Sign tab each pick their own
