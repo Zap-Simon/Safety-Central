@@ -229,25 +229,15 @@ const useStyles = makeStyles({
     borderBottomStyle: "solid",
     borderBottomColor: tokens.colorNeutralStroke2,
   },
-  // The iframe fills this wrapper via absolute positioning instead of being sized
-  // by flex intrinsic sizing. On iOS WebKit (Teams mobile) an iframe sized purely
-  // as a flex item intermittently computes to zero height and only paints after
-  // an unrelated reflow (switching Teams apps / re-entering the card). Giving it a
-  // concrete positioned box makes it render immediately and reliably.
-  minutesFrameWrap: {
-    position: "relative",
+  // Scroll container that hosts the minutes Shadow DOM. Rendering the minutes
+  // inline (in a shadow root) rather than in a srcDoc iframe avoids the iOS Teams
+  // WebKit bug where a srcDoc iframe stays blank after an auth-triggered WebView
+  // resume, while still keeping the minutes' styling isolated from the tab chrome.
+  minutesHost: {
     flexGrow: 1,
     minHeight: 0,
     width: "100%",
-  },
-  minutesFrame: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    border: "none",
-    display: "block",
+    overflowY: "auto",
   },
   sigPreview: {
     maxHeight: "56px",
@@ -327,6 +317,35 @@ function persistSelectedKey(key: string | null) {
   }
 }
 
+// Defensive sanitizer for the server-rendered minutes before they are placed in
+// the LIVE document (Shadow DOM). The old srcDoc iframe had a `sandbox` without
+// allow-scripts that neutralised any unsafe HTML; rendering inline removes that
+// barrier, so we re-create it here. The input is an INERT DOMParser document, so
+// nothing has executed or loaded yet — we strip scripts, inline event handlers,
+// and unsafe URL schemes, then the caller imports the cleaned nodes via DOM APIs
+// (never raw innerHTML), so no malformed stored field (e.g. a crafted signature
+// data URL) can become active markup.
+const SANITIZE_SAFE_URL = /^(https:|data:image\/|mailto:|#|\/)/i;
+function sanitizeMinutesBody(body: HTMLElement) {
+  // Remove element types that can execute or load arbitrary content.
+  body
+    .querySelectorAll("script, iframe, object, embed, base, link, meta, form, style, svg")
+    .forEach((el) => el.remove());
+  body.querySelectorAll("*").forEach((el) => {
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name.toLowerCase();
+      if (name.startsWith("on")) {
+        el.removeAttribute(attr.name); // strip event handlers (onerror, onload, …)
+        continue;
+      }
+      if ((name === "src" || name === "href" || name === "xlink:href" || name === "srcset") &&
+          !SANITIZE_SAFE_URL.test(attr.value.trim())) {
+        el.removeAttribute(attr.name); // drop javascript:/unknown-scheme URLs
+      }
+    }
+  });
+}
+
 export default function SignTab() {
   const styles = useStyles();
   const qc = useQueryClient();
@@ -343,10 +362,7 @@ export default function SignTab() {
   // Which locked meeting's full minutes are being read (transient — tabs remount
   // on switch, so we intentionally don't persist this).
   const [minutesView, setMinutesView] = useState<{ dateKey: string; displayDate: string } | null>(null);
-  const minutesFrameRef = useRef<HTMLIFrameElement>(null);
-  // Bumped to force the minutes iframe element to be fully re-created — the most
-  // reliable way to make iOS WebKit paint it after a resume (see effect below).
-  const [minutesFrameNonce, setMinutesFrameNonce] = useState(0);
+  const minutesHostRef = useRef<HTMLDivElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -514,49 +530,55 @@ export default function SignTab() {
     setMinutesView(null);
   }
 
-  // iOS WebKit (Teams mobile) sometimes leaves the minutes iframe un-painted
-  // when it first mounts — most reliably reproduced right after a sign-in /
-  // sign-out, which is a WebView navigation + resume. The content is present but
-  // isn't composited until an unrelated reflow occurs; users found that tapping
-  // another Teams app and coming back made it appear. The robust cure is to
-  // fully RE-CREATE the iframe element (bumping its key) rather than just nudging
-  // a repaint: a brand-new element forces WebKit to lay it out and paint it.
-  // We do this shortly after the minutes open (covers the post-auth blank) and
-  // whenever the tab regains visibility/focus (mirrors the manual app-switch
-  // workaround). A single immediate repaint nudge handles the common case with
-  // no flicker before the remount lands.
+  // Render the minutes inline via Shadow DOM instead of a srcDoc iframe. The
+  // server returns a full HTML document (its own <style> + body); we lift those
+  // into a shadow root so the minutes styling stays isolated from the Fluent/Teams
+  // chrome (and vice-versa) exactly like the old iframe did — but as an ordinary
+  // element in the same document. This avoids the iOS Teams WebKit bug where a
+  // srcDoc iframe stays blank after an auth-triggered WebView resume, because
+  // there is no separate iframe compositor that can get stuck un-painted.
   useEffect(() => {
-    if (!minutesView || !minutesQuery.data?.html) return;
+    const host = minutesHostRef.current;
+    const html = minutesQuery.data?.html;
+    if (!host || !minutesView || !html) return;
 
-    // Immediate, flicker-free nudge: flush layout + flip a compositing-layer hint.
-    const el = minutesFrameRef.current;
-    if (el) {
-      void el.offsetHeight;
-      el.style.transform = "translateZ(0)";
-      requestAnimationFrame(() => {
-        const node = minutesFrameRef.current;
-        if (node) node.style.transform = "";
-      });
+    // attachShadow can only be called once per element; reuse it on re-render.
+    const shadow = host.shadowRoot ?? host.attachShadow({ mode: "open" });
+
+    // DOMParser produces an INERT document: nothing executes and no resources
+    // load until we move nodes into the live tree, so we can safely collect the
+    // document styles, sanitise the body, and only then import the cleaned nodes.
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    // Only lift the trusted document <head> stylesheet — never <style> tags that
+    // might appear inside the (untrusted) body content.
+    const docStyleText = Array.from(doc.head?.querySelectorAll("style") ?? [])
+      .map((s) => s.textContent ?? "")
+      .join("\n");
+
+    // The document's own CSS targets `body` for its page background/typography;
+    // inside a shadow root that maps onto `:host`, so we restate those essentials
+    // there. The document's <style> still scopes every other rule to this subtree.
+    // textContent (not innerHTML) keeps this a pure stylesheet, never markup.
+    const styleEl = document.createElement("style");
+    styleEl.textContent =
+      ":host{display:block;width:100%;min-height:100%;" +
+      "background:#f5f5f5;-webkit-text-size-adjust:100%;" +
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;' +
+      "color:#242424;font-size:15px;line-height:1.5;}\n" +
+      docStyleText;
+
+    shadow.replaceChildren(styleEl);
+    if (doc.body) {
+      sanitizeMinutesBody(doc.body);
+      // Import the now-sanitised nodes into the live shadow tree via DOM APIs
+      // (not innerHTML), so no string is ever re-parsed in the live context.
+      for (const node of Array.from(doc.body.childNodes)) {
+        shadow.appendChild(document.importNode(node, true));
+      }
     }
 
-    const remount = () => setMinutesFrameNonce((n) => n + 1);
-
-    // Deterministic fallback for the stubborn post-auth case: re-create the
-    // iframe a moment after it opens.
-    const t = window.setTimeout(remount, 250);
-
-    const onVisible = () => {
-      if (document.visibilityState === "visible") remount();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
-    window.addEventListener("pageshow", onVisible);
-
     return () => {
-      window.clearTimeout(t);
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
-      window.removeEventListener("pageshow", onVisible);
+      if (host.shadowRoot) host.shadowRoot.replaceChildren();
     };
   }, [minutesView, minutesQuery.data?.html]);
 
@@ -595,14 +617,12 @@ export default function SignTab() {
   }
 
   // ─── Read-only meeting minutes viewer ───────────────────────────────────────
-  // The minutes HTML is rendered inside a sandboxed iframe (srcDoc) so its own
-  // styling can never leak into or be affected by the Teams tab chrome.
-  // NOTE: the sandbox MUST include allow-same-origin. iOS WebKit (the engine
-  // behind Teams mobile on iPhone) renders a srcDoc iframe completely BLANK when
-  // it is sandboxed without allow-same-origin — this was the cause of the blank
-  // meeting-minutes page reported on Teams mobile. allow-scripts is deliberately
-  // omitted, so the document still cannot run any JavaScript; the server-rendered
-  // minutes are pure, escaped HTML/CSS with no scripts.
+  // The minutes HTML is injected into a Shadow DOM root (see the effect above)
+  // rather than a srcDoc iframe. Shadow DOM keeps the minutes' own styling
+  // isolated from the Teams tab chrome while rendering as a normal in-document
+  // element, which paints reliably on iOS Teams mobile — a srcDoc iframe there
+  // could stay blank after an auth-triggered WebView resume. The server-rendered
+  // minutes are pure, escaped HTML/CSS with no scripts, so nothing executes.
   if (minutesView) {
     return (
       <TeamsPage>
@@ -634,16 +654,11 @@ export default function SignTab() {
             </div>
           </TeamsCenter>
         ) : (
-          <div className={styles.minutesFrameWrap}>
-            <iframe
-              key={`${minutesView.dateKey}-${minutesFrameNonce}`}
-              ref={minutesFrameRef}
-              title={`Meeting minutes ${minutesView.displayDate}`}
-              className={styles.minutesFrame}
-              sandbox="allow-same-origin"
-              srcDoc={minutesQuery.data?.html ?? ""}
-            />
-          </div>
+          <div
+            ref={minutesHostRef}
+            className={styles.minutesHost}
+            aria-label={`Meeting minutes ${minutesView.displayDate}`}
+          />
         )}
       </TeamsPage>
     );
