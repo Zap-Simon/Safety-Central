@@ -229,10 +229,23 @@ const useStyles = makeStyles({
     borderBottomStyle: "solid",
     borderBottomColor: tokens.colorNeutralStroke2,
   },
-  minutesFrame: {
+  // The iframe fills this wrapper via absolute positioning instead of being sized
+  // by flex intrinsic sizing. On iOS WebKit (Teams mobile) an iframe sized purely
+  // as a flex item intermittently computes to zero height and only paints after
+  // an unrelated reflow (switching Teams apps / re-entering the card). Giving it a
+  // concrete positioned box makes it render immediately and reliably.
+  minutesFrameWrap: {
+    position: "relative",
     flexGrow: 1,
     minHeight: 0,
     width: "100%",
+  },
+  minutesFrame: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
     border: "none",
     display: "block",
   },
@@ -571,12 +584,14 @@ export default function SignTab() {
             </div>
           </TeamsCenter>
         ) : (
-          <iframe
-            title={`Meeting minutes ${minutesView.displayDate}`}
-            className={styles.minutesFrame}
-            sandbox="allow-same-origin"
-            srcDoc={minutesQuery.data?.html ?? ""}
-          />
+          <div className={styles.minutesFrameWrap}>
+            <iframe
+              title={`Meeting minutes ${minutesView.displayDate}`}
+              className={styles.minutesFrame}
+              sandbox="allow-same-origin"
+              srcDoc={minutesQuery.data?.html ?? ""}
+            />
+          </div>
         )}
       </TeamsPage>
     );
