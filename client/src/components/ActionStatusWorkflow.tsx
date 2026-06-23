@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Circle, Loader2, ClipboardCheck, CheckCircle2, PauseCircle, CalendarClock } from "lucide-react";
 
 export interface ActionStatusUpdate {
@@ -63,11 +64,22 @@ export default function ActionStatusWorkflow({
   const currentIdx = onHold ? -1 : stageIndex(normalized);
   const activeStage = onHold ? null : STAGES[currentIdx];
 
+  // The "In Progress" icon spins briefly on selection (a quick acknowledgement)
+  // then settles to a static icon, rather than spinning forever.
+  const [spinInProgress, setSpinInProgress] = useState(false);
+  const spinTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (spinTimer.current) clearTimeout(spinTimer.current); }, []);
+
   // Moving to any normal stage clears a leftover reconsider date so it can't
   // silently resurface the item later. Completing is blocked when allowComplete
   // is false (the item is finished elsewhere, e.g. in the meeting minutes).
   const goToStage = (value: string) => {
     if (value === "Completed" && !allowComplete) return;
+    if (value === "In Progress") {
+      setSpinInProgress(true);
+      if (spinTimer.current) clearTimeout(spinTimer.current);
+      spinTimer.current = setTimeout(() => setSpinInProgress(false), 900);
+    }
     onChange({ actionStatus: value, reconsiderDate: "" });
   };
 
@@ -107,7 +119,7 @@ export default function ActionStatusWorkflow({
                 title={isLocked ? "Near Miss items are signed off in the meeting minutes once the investigation is complete." : stage.desc}
                 data-testid={`status-step-${stage.value || "not-started"}`}
               >
-                <Icon className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} ${isCurrent && stage.value === "In Progress" ? "animate-spin" : ""}`} />
+                <Icon className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} ${isCurrent && stage.value === "In Progress" && spinInProgress ? "animate-spin" : ""}`} />
               </button>
               <span
                 className={`mt-1 text-center leading-tight ${compact ? "text-[9px]" : "text-[10px]"} ${
@@ -140,7 +152,7 @@ export default function ActionStatusWorkflow({
       <div className={`rounded-lg border-2 transition-all ${onHold ? "border-orange-400 bg-orange-50" : "border-dashed border-gray-300 bg-white"}`}>
         <button
           type="button"
-          onClick={() => (onHold ? onChange({ actionStatus: "In Progress", reconsiderDate: "" }) : onChange({ actionStatus: "On Hold" }))}
+          onClick={() => (onHold ? goToStage("In Progress") : onChange({ actionStatus: "On Hold" }))}
           className="w-full flex items-center gap-2 px-3 py-2 text-left"
           data-testid="status-step-on-hold"
         >

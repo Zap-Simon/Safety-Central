@@ -5338,10 +5338,25 @@ async function buildMergedMeetingItems(listsService: SharePointListsService): Pr
     storage.getAllInvestigations().catch(() => [] as any[]),
   ]);
 
-  // Create a map of local action items by sharePointItemId for quick lookup
+  // Create a map of local action items by sharePointItemId for quick lookup.
+  // NOTE: a single SharePoint item can have MORE THAN ONE local row when the
+  // listType naming drifted between app versions (e.g. legacy "Safety Ideas"
+  // vs current "SafetyIdeas"). A plain map.set() would let whichever duplicate
+  // is iterated last win non-deterministically, which silently reverts fields
+  // the user just saved (e.g. a priority appearing to "disappear" on reopen).
+  // Resolve this by always keeping the most-recently-updated row, so the newest
+  // save wins wholesale — exactly as if the duplicate didn't exist. This keeps
+  // intentional clears working (a field cleared to null on the latest row wins
+  // and then falls back to the SharePoint value below via ??).
   const actionItemsMap = new Map<string, any>();
   for (const actionItem of localActionItems) {
-    actionItemsMap.set(actionItem.sharePointItemId, actionItem);
+    const existing = actionItemsMap.get(actionItem.sharePointItemId);
+    if (
+      !existing ||
+      new Date(actionItem.updatedAt).getTime() >= new Date(existing.updatedAt).getTime()
+    ) {
+      actionItemsMap.set(actionItem.sharePointItemId, actionItem);
+    }
   }
 
   // Map investigations by nearMissItemId (prefer Complete over Draft when both exist)
