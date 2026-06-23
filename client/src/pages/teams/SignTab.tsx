@@ -343,6 +343,10 @@ export default function SignTab() {
   // Which locked meeting's full minutes are being read (transient — tabs remount
   // on switch, so we intentionally don't persist this).
   const [minutesView, setMinutesView] = useState<{ dateKey: string; displayDate: string } | null>(null);
+  const minutesFrameRef = useRef<HTMLIFrameElement>(null);
+  // Bumped to force the minutes iframe element to be fully re-created — the most
+  // reliable way to make iOS WebKit paint it after a resume (see effect below).
+  const [minutesFrameNonce, setMinutesFrameNonce] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
@@ -510,6 +514,52 @@ export default function SignTab() {
     setMinutesView(null);
   }
 
+  // iOS WebKit (Teams mobile) sometimes leaves the minutes iframe un-painted
+  // when it first mounts — most reliably reproduced right after a sign-in /
+  // sign-out, which is a WebView navigation + resume. The content is present but
+  // isn't composited until an unrelated reflow occurs; users found that tapping
+  // another Teams app and coming back made it appear. The robust cure is to
+  // fully RE-CREATE the iframe element (bumping its key) rather than just nudging
+  // a repaint: a brand-new element forces WebKit to lay it out and paint it.
+  // We do this shortly after the minutes open (covers the post-auth blank) and
+  // whenever the tab regains visibility/focus (mirrors the manual app-switch
+  // workaround). A single immediate repaint nudge handles the common case with
+  // no flicker before the remount lands.
+  useEffect(() => {
+    if (!minutesView || !minutesQuery.data?.html) return;
+
+    // Immediate, flicker-free nudge: flush layout + flip a compositing-layer hint.
+    const el = minutesFrameRef.current;
+    if (el) {
+      void el.offsetHeight;
+      el.style.transform = "translateZ(0)";
+      requestAnimationFrame(() => {
+        const node = minutesFrameRef.current;
+        if (node) node.style.transform = "";
+      });
+    }
+
+    const remount = () => setMinutesFrameNonce((n) => n + 1);
+
+    // Deterministic fallback for the stubborn post-auth case: re-create the
+    // iframe a moment after it opens.
+    const t = window.setTimeout(remount, 250);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") remount();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    window.addEventListener("pageshow", onVisible);
+
+    return () => {
+      window.clearTimeout(t);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+      window.removeEventListener("pageshow", onVisible);
+    };
+  }, [minutesView, minutesQuery.data?.html]);
+
   function submit(status: SignatureStatus, signatureData: string | null) {
     if (!selected) return;
     setActionError(null);
@@ -586,6 +636,8 @@ export default function SignTab() {
         ) : (
           <div className={styles.minutesFrameWrap}>
             <iframe
+              key={`${minutesView.dateKey}-${minutesFrameNonce}`}
+              ref={minutesFrameRef}
               title={`Meeting minutes ${minutesView.displayDate}`}
               className={styles.minutesFrame}
               sandbox="allow-same-origin"

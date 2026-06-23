@@ -12,3 +12,10 @@ A `srcDoc` iframe that is sandboxed WITHOUT `allow-same-origin` renders complete
 Even with `allow-same-origin`, an iframe sized purely as a flex item (`flex-grow:1; min-height:0`) intermittently computes to ZERO height on iOS WebKit and only paints after an unrelated reflow (switching Teams apps, re-entering the card). Symptom: minutes show "after clicking around Teams a few times."
 
 **Fix:** don't size the iframe by flex intrinsic sizing. Wrap it in a `position:relative; flex-grow:1; min-height:0` box and make the iframe `position:absolute; inset:0; width:100%; height:100%`. The concrete positioned box gives it a real pixel size at first layout, so it renders immediately and reliably.
+
+## iOS post-resume blank (sign-out/in) — deterministic iframe remount
+Even with `allow-same-origin` and the positioned wrapper, the minutes go BLANK again specifically AFTER a sign-out/sign-in (a WebView navigation + resume). The freshly-mounted iframe isn't composited until an unrelated reflow; users' reliable workaround was tapping another Teams app and coming back (a visibility change forces the paint).
+
+**Fix:** automate that nudge. The strongest lever is to fully RE-CREATE the iframe, not just nudge a repaint — bump a `nonce` state used in the iframe `key`. Do it (a) once shortly after the minutes open (setTimeout ~250ms) for the stubborn post-auth case, and (b) on `visibilitychange`(visible)/`focus`/`pageshow` to mirror the app-switch workaround. Keep nonce OUT of the effect deps so bumping it remounts the iframe without re-running the effect (no loop). An immediate offsetHeight-read + transform `translateZ(0)`→`''` repaint nudge handles the fast path flicker-free before the remount lands.
+
+**Why:** transform/offsetHeight nudges alone are heuristic and flaky on WKWebView resume; a brand-new DOM element forces WebKit to lay out and paint from scratch.
