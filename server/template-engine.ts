@@ -591,17 +591,7 @@ export class AdvancedWordTemplateEngine {
               color: "1F2937"
             })
           ],
-          spacing: { before: 300, after: 100 }
-        }),
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `${data.readyToCloseActions.length} action${data.readyToCloseActions.length !== 1 ? 's' : ''} ready to close — require group discussion and sign-off to formally close.`,
-              size: 20, // 10pt
-              color: "166534"
-            })
-          ],
-          spacing: { after: 150 }
+          spacing: { before: 300, after: 150 }
         })
       );
       sections.push(this.createReadyToCloseTable(data.readyToCloseActions));

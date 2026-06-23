@@ -394,8 +394,6 @@ ${allAttendees.glaziers.map(attendee => {
       return section;
     }
 
-    section += `**${readyToCloseActions.length} action${readyToCloseActions.length !== 1 ? 's' : ''} ready to close** — require group discussion and sign-off to formally close.\n\n`;
-
     section += `| Item | Type | Actioned By | Due Date | What Was Done |\n`;
     section += `| --- | --- | --- | --- | --- |\n`;
     readyToCloseActions.forEach((action) => {

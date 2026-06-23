@@ -1734,7 +1734,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (readyToCloseActions.length > 0) {
         readyToCloseRows.push('');
         readyToCloseRows.push(csvQuote('ACTIONS READY TO CLOSE'));
-        readyToCloseRows.push(csvQuote(`${readyToCloseActions.length} action(s) ready to close — require group discussion and sign-off to formally close.`));
         readyToCloseRows.push('');
         readyToCloseRows.push(['Item', 'Type', 'Actioned By', 'Due Date', 'What Was Done', 'Submitted By', 'ID Reference'].map(csvQuote).join(','));
         readyToCloseActions.forEach((action) => {
@@ -6324,48 +6323,47 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
       if (readyToCloseActions.length === 0) return '';
       const typeColor = (t: string) => t === 'Safety Ideas' ? '#dc2626' : t === 'Near Miss' ? '#ea580c' : '#2563eb';
       return `
-    <div class="section-header" style="margin-top:24px;">III. Actions Ready to Close – Group Review</div>
-    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px;margin-bottom:16px;">
-      <div style="font-size:10pt;color:#166534;margin-bottom:10px;">
-        <strong>&#10003; ${readyToCloseActions.length} action${readyToCloseActions.length !== 1 ? 's' : ''} ready to close — require group discussion and sign-off to formally close.</strong>
-        This section demonstrates our circular compliance system — actions are completed, reviewed by the group, and officially closed at the meeting.
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:10pt;">
-        <thead>
-          <tr style="background:#dcfce7;">
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:26%;">Item</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:16%;">Actioned By</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:13%;">Due Date</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:27%;">What Was Done</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:18%;">Group Outcome</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${readyToCloseActions.map((action) => `
-          <tr>
-            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${action.type ? `<div style="background:${typeColor(action.type)};color:#fff;font-size:8pt;padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:4px;">${action.type}</div>` : ''}
-              <div style="font-weight:600;font-size:10pt;">${action.title}</div>
-              <div style="font-size:9pt;color:#555;margin-top:2px;">Submitted by: ${action.submittedBy || 'Unknown'}</div>
-            </td>
-            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${action.assignedTo ? `<div style="font-weight:600;">${action.assignedTo}</div>` : '<div style="color:#888;">—</div>'}
-            </td>
-            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${action.dueDate ? `<div>${action.dueDate}</div>` : '<div style="color:#888;">—</div>'}
-            </td>
-            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${action.outcome ? `<div>${action.outcome}</div>` : '<div style="color:#888;">No notes recorded</div>'}
-            </td>
-            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              <div style="background:#dcfce7;border:1px dashed #86efac;border-radius:4px;padding:6px;font-size:9pt;color:#166534;min-height:36px;">
-                Group decision:<br><br>____________________
-              </div>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+    <div class="section-header" style="break-before: page;">III. Actions Ready to Close – Group Review</div>
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;table-layout:fixed;">
+      <colgroup>
+        <col style="width:26%;">
+        <col style="width:16%;">
+        <col style="width:13%;">
+        <col style="width:27%;">
+        <col style="width:18%;">
+      </colgroup>
+      <thead>
+        <tr style="background:#dcfce7;">
+          <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;">Item</th>
+          <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;">Actioned By</th>
+          <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;">Due Date</th>
+          <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;">What Was Done</th>
+          <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;">Group Decision</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${readyToCloseActions.map((action) => `
+        <tr>
+          <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;word-wrap:break-word;">
+            ${action.type ? `<div style="background:${typeColor(action.type)};color:#fff;font-size:8pt;padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:4px;">${action.type}</div>` : ''}
+            <div style="font-weight:600;font-size:10pt;">${action.title}</div>
+            <div style="font-size:9pt;color:#555;margin-top:2px;">Submitted by: ${action.submittedBy || 'Unknown'}</div>
+          </td>
+          <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;word-wrap:break-word;">
+            ${action.assignedTo ? `<div style="font-weight:600;">${action.assignedTo}</div>` : '<div style="color:#888;">—</div>'}
+          </td>
+          <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;word-wrap:break-word;">
+            ${action.dueDate ? `<div>${action.dueDate}</div>` : '<div style="color:#888;">—</div>'}
+          </td>
+          <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;word-wrap:break-word;">
+            ${action.outcome ? `<div>${action.outcome}</div>` : '<div style="color:#888;">No notes recorded</div>'}
+          </td>
+          <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+            <div style="min-height:36px;border-bottom:1px solid #86efac;"></div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
     })()}
 
     <div class="signatures">
