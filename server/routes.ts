@@ -5662,11 +5662,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
         </ul>
     </div>
 
-    <div class="section-header">II. Meeting Minutes</div>
-    ${filteredData.some((item: any) => item.type === 'Near Miss') ? `
-    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:9pt;color:#9a3412;line-height:1.5;">
-      <strong>About Near Miss items:</strong> a Near Miss is often raised early in the meeting so the wider team is informed and information can be gathered, then it is moved to the Actions board for the formal investigation and follow-up. A Near Miss shown as <em>"Moved to Action Board for Investigation"</em> has been picked up for that investigation, even if no further detail is recorded here yet.
-    </div>` : ''}
+    <div class="section-header" style="break-before: page;">II. Meeting Minutes</div>
 
     <table class="items-table">
         <colgroup>
