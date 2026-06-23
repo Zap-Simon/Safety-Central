@@ -5,7 +5,7 @@
  * for PDF export with navigation bookmarks (similar to Typora approach)
  */
 
-import { buildActionRequiredLines } from "./meeting-export-shared";
+import { buildActionRequiredLines, getDisplayItemStatus } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -199,7 +199,7 @@ Date: _________________________
       // Item details in structured format
       section += `**Submitted by:** ${item.submittedBy}  \n`;
       section += `**Date:** ${new Date(item.submittedDate).toLocaleDateString('en-GB')}  \n`;
-      section += `**Status:** ${item.status}  \n`;
+      section += `**Status:** ${getDisplayItemStatus(item)}  \n`;
       if (item.assignedTo) {
         section += `**Assigned to:** ${item.assignedTo}  \n`;
       }

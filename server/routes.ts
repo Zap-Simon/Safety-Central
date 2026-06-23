@@ -8,7 +8,7 @@ import { findRosterMember } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
-import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText } from "./meeting-export-shared";
+import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus } from "./meeting-export-shared";
 import { db } from "./db";
 import { 
   cardOrdering, 
@@ -1763,7 +1763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `"${meetingNotes.replace(/"/g, '""')}"`,
           `"${actionRequired.replace(/"/g, '""')}"`,
           item.type || '',
-          item.status || '',
+          getDisplayItemStatus(item),
           item.submittedBy || '',
           item.meetingDate || '',
           item.priority || 'Standard',
@@ -5663,7 +5663,11 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     </div>
 
     <div class="section-header">II. Meeting Minutes</div>
-    
+    ${filteredData.some((item: any) => item.type === 'Near Miss') ? `
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:9pt;color:#9a3412;line-height:1.5;">
+      <strong>About Near Miss items:</strong> a Near Miss is often raised early in the meeting so the wider team is informed and information can be gathered, then it is moved to the Actions board for the formal investigation and follow-up. A Near Miss shown as <em>"Moved to Action Board for Investigation"</em> has been picked up for that investigation, even if no further detail is recorded here yet.
+    </div>` : ''}
+
     <table class="items-table">
         <colgroup>
             <col style="width: 40%;">
@@ -5707,7 +5711,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
                         <div class="follow-up">
                             <strong>Submitted by:</strong> ${item.submittedBy || 'Unknown'}<br>
                             ${submittedOn ? `<strong>Submitted on:</strong> ${submittedOn}<br>` : ''}
-                            <strong>Status:</strong> ${item.status || 'Submitted'}
+                            <strong>Status:</strong> ${getDisplayItemStatus(item)}
                         </div>
                     </td>
                     <td>

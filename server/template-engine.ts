@@ -1,7 +1,7 @@
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, BorderStyle, WidthType, HeadingLevel, AlignmentType } from "docx";
-import { buildActionRequiredLines, isEmptyActionPlaceholder, type ActionLine } from "./meeting-export-shared";
+import { buildActionRequiredLines, isEmptyActionPlaceholder, getDisplayItemStatus, type ActionLine } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -149,7 +149,7 @@ export class AdvancedWordTemplateEngine {
       title: item.title || 'Untitled Item',
       description: item.description || '',
       type: item.type,
-      status: item.status,
+      status: getDisplayItemStatus(item),
       statusColor: this.getStatusColor(item.status),
       submittedBy: item.submittedBy || 'Unknown',
       submittedDate: new Date(item.submittedDate).toLocaleDateString('en-GB'),

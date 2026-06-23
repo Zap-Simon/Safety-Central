@@ -33,15 +33,40 @@ export function buildAgendaSubmissionText(item: any): string {
  * (HTML divs, Markdown bold, Word runs, CSV separated text) while the wording
  * and rules stay identical everywhere.
  */
+// The status the action tracker writes by default the moment an item is
+// actioned. On its own it is NOT real progress — it just means the item has
+// been picked up to move across to the Actions board. Treating it as progress
+// is what made actioned items read a misleading "Not Started" in the export.
+const PLACEHOLDER_ACTION_STATUS = 'Not Started';
+
+/**
+ * True when the item has been picked up / moved to the Actions board. SharePoint
+ * uses "Actioned" (the local tracker may surface it as "Actions"); the Near Miss
+ * list in particular doesn't always round-trip that status, so the presence of a
+ * local action record (even just the bare placeholder) also counts as actioned.
+ */
+export function isItemActioned(item: any): boolean {
+  const status = item?.status || '';
+  return status === 'Actioned' || status === 'Actions'
+    || !!(item?.actionStatus || item?.actionPriority || item?.actionStartDate);
+}
+
+/**
+ * True when a human has actually recorded action progress: an assignee, a due
+ * date, notes, or a real (non-placeholder) status. The bare "Not Started"
+ * placeholder that actioning writes does NOT count as progress.
+ */
+function hasRealActionProgress(item: any): boolean {
+  const hasRealStatus = !!(item?.actionStatus && item.actionStatus !== PLACEHOLDER_ACTION_STATUS);
+  return !!(item?.actionAssignedTo || item?.actionDueDate || item?.actionNotes || hasRealStatus);
+}
+
 export function buildActionRequiredLines(item: any): ActionLine[] {
   const status = item?.status || '';
   const isClosed = status === 'Closed';
-  // Items that have been picked up for implementation. SharePoint uses
-  // "Actioned"; the local action tracker may surface them as "Actions".
-  const isActioned = status === 'Actioned' || status === 'Actions';
-  const hasActionData = !!(item?.actionAssignedTo || item?.actionStatus || item?.actionDueDate || item?.actionNotes);
+  const isNearMiss = item?.type === 'Near Miss';
 
-  if (hasActionData) {
+  if (hasRealActionProgress(item)) {
     const lines: ActionLine[] = [];
     if (item.actionAssignedTo) lines.push({ label: 'Assigned to', value: String(item.actionAssignedTo) });
     if (item.actionStatus) lines.push({ label: 'Status', value: String(item.actionStatus) });
@@ -59,18 +84,44 @@ export function buildActionRequiredLines(item: any): ActionLine[] {
     return [{ label: '', value: 'Discussed and closed — no action required.' }];
   }
 
-  // Marked as actioned but the detailed action fields were never recorded
-  // (e.g. items actioned before action-tracking was added). Reflect the real
-  // status only — no inferred assignment/outcome text — so the column isn't
-  // blank. Re-actioning the item (move it back to Submitted, then action it
-  // again with the details filled in) replaces this with the full
-  // Assigned to / Status / Due / Action breakdown.
-  if (isActioned) {
-    return [{ label: 'Status', value: 'Actioned' }];
+  // Actioned but no real progress recorded yet — only the default placeholder is
+  // present (e.g. just picked up at the meeting, or actioned before action
+  // tracking existed). Show a meaningful status instead of the misleading
+  // "Not Started". A Near Miss is moved across for its formal investigation;
+  // Safety/Business ideas are simply picked up. Once genuine progress is added
+  // (assignee, due, notes, or a real status) the full breakdown above replaces
+  // this automatically.
+  if (isItemActioned(item)) {
+    return isNearMiss
+      ? [{ label: 'Status', value: 'Moved to Action Board for Investigation' }]
+      : [{ label: 'Status', value: 'Actioned' }];
   }
 
   // Still open / in discussion with no action captured yet.
   return [{ label: '', value: '—' }];
+}
+
+/**
+ * The item's overall status as it should READ in the minutes, kept coherent with
+ * the "Action Required" column. A Near Miss that has been moved to the Actions
+ * board reads "Moved to Action Board for Investigation" instead of a bare
+ * "Actioned" (or a stale "Submitted" when SharePoint didn't round-trip the
+ * status). Terminal statuses (Closed/Completed) and all other types are left
+ * exactly as-is.
+ */
+export function getDisplayItemStatus(item: any): string {
+  const rawStatus = item?.status || 'Submitted';
+  if (item?.type !== 'Near Miss') return rawStatus;
+
+  const isActionedStatus = rawStatus === 'Actioned' || rawStatus === 'Actions';
+  // SharePoint's Near Miss list doesn't always read the "Actioned" status back,
+  // so a still-"Submitted" item that has a local action record was also moved.
+  const movedViaLocalRecord = rawStatus === 'Submitted' && isItemActioned(item);
+
+  if (isActionedStatus || movedViaLocalRecord) {
+    return 'Moved to Action Board for Investigation';
+  }
+  return rawStatus;
 }
 
 /**
