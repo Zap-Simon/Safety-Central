@@ -2745,6 +2745,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return { member, email, displayName };
   }
 
+  // Build a normalised lock/closed map keyed by getDateGroupKey. The lock writer
+  // normalises its date key but the closed-meeting writer does NOT, so a row may
+  // be stored under a raw ISO string. Re-normalise EVERY row and OR the flags so
+  // a locked/closed meeting can never slip through — used by both GET and POST.
+  async function buildMeetingLockMap(): Promise<Map<string, { isLocked: boolean; isClosed: boolean }>> {
+    const lockRows = await db.select().from(meetingLocks);
+    const lockByKey = new Map<string, { isLocked: boolean; isClosed: boolean }>();
+    for (const row of lockRows) {
+      const key = getDateGroupKey(row.meetingDate);
+      const prev = lockByKey.get(key);
+      lockByKey.set(key, {
+        isLocked: (prev?.isLocked ?? false) || row.isLocked,
+        isClosed: (prev?.isClosed ?? false) || row.isClosed,
+      });
+    }
+    return lockByKey;
+  }
+
   // GET signable meetings for the current user (newest first), each annotated
   // with that user's own signature status. Excludes locked/closed meetings and
   // anything dated in the future.
@@ -2780,19 +2798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!groups.has(key)) groups.set(key, item.meetingDate);
       }
 
-      // Locks SHOULD be keyed by normalised YYYY-MM-DD, but the closed-meeting
-      // writer doesn't normalise, so a row may be a raw ISO. Normalise every key
-      // here and OR the flags so a locked/closed meeting can never slip through.
-      const lockRows = await db.select().from(meetingLocks);
-      const lockByKey = new Map<string, { isLocked: boolean; isClosed: boolean }>();
-      for (const row of lockRows) {
-        const key = getDateGroupKey(row.meetingDate);
-        const prev = lockByKey.get(key);
-        lockByKey.set(key, {
-          isLocked: (prev?.isLocked ?? false) || row.isLocked,
-          isClosed: (prev?.isClosed ?? false) || row.isClosed,
-        });
-      }
+      const lockByKey = await buildMeetingLockMap();
 
       const allSigs = await storage.getAllMeetingSignatures();
       const allAtt = await storage.getAllMeetingAttendance();
@@ -2872,10 +2878,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Guard against signing a locked/closed meeting. Locks are keyed by the
-      // normalised date, so look them up that way (not by the raw ISO).
-      const lockKey = meetingKey;
-      const lock = await storage.getMeetingLock(lockKey);
+      // Guard against signing a locked/closed meeting. Use the same normalised
+      // lock map as GET so a closed row stored under a raw ISO key still blocks.
+      const lockByKey = await buildMeetingLockMap();
+      const lock = lockByKey.get(meetingKey);
       if (lock?.isLocked || lock?.isClosed) {
         return res.status(403).json({
           success: false,

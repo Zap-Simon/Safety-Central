@@ -199,12 +199,34 @@ function generateRemoteSignatureImage(name: string, date: string): string {
   return canvas.toDataURL("image/png");
 }
 
+const SELECTED_KEY_STORAGE = "teams-sign-selected-datekey";
+
+function readSelectedKey(): string | null {
+  try {
+    return localStorage.getItem(SELECTED_KEY_STORAGE);
+  } catch {
+    return null;
+  }
+}
+
+function persistSelectedKey(key: string | null) {
+  try {
+    if (key) localStorage.setItem(SELECTED_KEY_STORAGE, key);
+    else localStorage.removeItem(SELECTED_KEY_STORAGE);
+  } catch {
+    /* ignore storage failures */
+  }
+}
+
 export default function SignTab() {
   const styles = useStyles();
   const qc = useQueryClient();
   const { authState, teamsToken, userName, authError, retry, getToken } = useTeamsAuth();
 
-  const [selected, setSelected] = useState<SignMeeting | null>(null);
+  // Teams tabs remount on switch, wiping local state. Persist only the chosen
+  // meeting (by stable dateKey) so a tab switch mid-flow returns the user to the
+  // same meeting; the transient drawing step is intentionally NOT persisted.
+  const [selectedKey, setSelectedKey] = useState<string | null>(() => readSelectedKey());
   const [mode, setMode] = useState<"choose" | "draw">("choose");
   const [hasDrawn, setHasDrawn] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -251,6 +273,11 @@ export default function SignTab() {
     },
     onError: (err: any) => setActionError(err?.message || "Failed to save your signature"),
   });
+
+  // Derive the selected meeting from fresh query data so its signature status is
+  // never stale, even after a remount restores the persisted dateKey.
+  const meetings = meetingsQuery.data?.meetings ?? [];
+  const selected = selectedKey ? meetings.find((m) => m.dateKey === selectedKey) ?? null : null;
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -301,7 +328,8 @@ export default function SignTab() {
   };
 
   function openMeeting(meeting: SignMeeting) {
-    setSelected(meeting);
+    setSelectedKey(meeting.dateKey);
+    persistSelectedKey(meeting.dateKey);
     setMode("choose");
     setHasDrawn(false);
     setActionError(null);
@@ -309,7 +337,8 @@ export default function SignTab() {
   }
 
   function backToList() {
-    setSelected(null);
+    setSelectedKey(null);
+    persistSelectedKey(null);
     setMode("choose");
     setActionError(null);
     setJustSigned(null);
@@ -524,9 +553,7 @@ export default function SignTab() {
     );
   }
 
-  const data = meetingsQuery.data;
-
-  if (data && !data.matched) {
+  if (meetingsQuery.data && !meetingsQuery.data.matched) {
     return (
       <TeamsFullScreen
         icon={<PersonQuestionMark24Regular />}
@@ -537,8 +564,6 @@ export default function SignTab() {
       />
     );
   }
-
-  const meetings = data?.meetings ?? [];
 
   return (
     <TeamsPage>
