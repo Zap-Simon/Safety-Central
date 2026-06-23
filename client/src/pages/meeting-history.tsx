@@ -1892,6 +1892,11 @@ export default function MeetingHistory() {
   };
 
 
+  // NOTE: this powers the "Manage Attendance" checkboxes ONLY. Do NOT use it to
+  // decide who appears in the signature carousel — the attendance list can be
+  // partially populated (e.g. by Teams self-signs) before anyone manages
+  // attendance, which would wrongly hide unsigned people. The carousel builds its
+  // own list from the full roster instead.
   const isAttending = (meetingDate: string, attendeeName: string) => {
     const key = getDateGroupKey(meetingDate);
     // If a signature exists for this person, it is the source of truth: 'absent'
@@ -4734,11 +4739,18 @@ export default function MeetingHistory() {
 
         {/* Signature Carousel Modal */}
         {showSignatureCarousel && (() => {
+          const existingSigs = signaturesByDateKey[getDateGroupKey(showSignatureCarousel)] ?? {};
+          // Show every roster member in the signing carousel so anyone can sign,
+          // even before attendance has been managed for this meeting. We DON'T
+          // filter by the attendance list here: it can be partially populated
+          // (e.g. by Teams self-signs) before anyone opens "Manage Attendance",
+          // which previously hid everyone who hadn't signed yet until you visited
+          // the attendance tab. Only people explicitly marked absent (via their
+          // own signature record) are excluded.
           const presentAttendees = [
             ...meetingAttendees.management,
             ...meetingAttendees.glaziers
-          ].filter(a => isAttending(showSignatureCarousel, a.name));
-          const existingSigs = signaturesByDateKey[getDateGroupKey(showSignatureCarousel)] ?? {};
+          ].filter(a => existingSigs[a.name]?.status !== 'absent');
           const displayDate = (() => { try { return new Date(showSignatureCarousel).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return showSignatureCarousel; } })();
           return (
             <SignatureCarousel
