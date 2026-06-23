@@ -2816,6 +2816,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allAtt = await storage.getAllMeetingAttendance();
       const todayKey = getDateGroupKey(new Date());
 
+      // Signatures/attendance are stored under raw ISO keys, and the meeting page
+      // may write under a different same-day ISO than the one chosen here. Merge
+      // every key sharing a date-group so a signature collected on the meeting
+      // page also shows up (and counts) in the user's Teams Sign tab.
+      const mySigByKey = new Map<string, { status: string; signatureData: string | null; signedAt: string }>();
+      for (const [k, sigs] of Object.entries(allSigs)) {
+        const sig = sigs?.[member.name];
+        if (!sig) continue;
+        const dk = getDateGroupKey(k);
+        const existing = mySigByKey.get(dk);
+        if (!existing || new Date(sig.signedAt).getTime() >= new Date(existing.signedAt).getTime()) {
+          mySigByKey.set(dk, sig);
+        }
+      }
+      const myPresentKeys = new Set<string>();
+      for (const [k, names] of Object.entries(allAtt)) {
+        if ((names ?? []).includes(member.name)) myPresentKeys.add(getDateGroupKey(k));
+      }
+
       const meetings = Array.from(groups.entries())
         .filter(([key]) => key <= todayKey) // never sign a meeting that hasn't happened
         .filter(([key]) => key >= SIGN_VISIBLE_FROM_KEY) // only the 23rd June 2026 onward
@@ -2824,8 +2843,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return !(lock?.isLocked || lock?.isClosed);
         })
         .map(([key, iso]) => {
-          const mySig = allSigs[iso]?.[member.name] ?? null;
-          const isPresent = (allAtt[iso] ?? []).includes(member.name);
+          const mySig = mySigByKey.get(key) ?? null;
+          // A signature is the source of truth for presence; fall back to the
+          // attendance union for people without a signature.
+          const isPresent = mySig ? mySig.status !== 'absent' : myPresentKeys.has(key);
           return {
             meetingDate: iso,
             dateKey: key,
