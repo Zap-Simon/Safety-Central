@@ -701,7 +701,7 @@ export default function SignTab() {
                 <div className={styles.nextIcon}>
                   <CalendarLtr24Regular />
                 </div>
-                <div className={styles.meetingBody}>
+                <div className={styles.meetingBody} style={{ textAlign: "center" }}>
                   <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }} block>
                     Next meeting
                   </Text>
