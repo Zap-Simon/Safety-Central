@@ -2772,6 +2772,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GET signable meetings for the current user (newest first), each annotated
   // with that user's own signature status. Excludes locked/closed meetings and
   // anything dated in the future.
+  // Signing is only available for meetings on or after this date — older
+  // meetings are hidden in GET and rejected in POST so legacy attendance can't
+  // be (re)signed via the Teams personal app.
+  const SIGN_VISIBLE_FROM_KEY = '2026-06-23';
+
   app.get('/api/teams/sign/meetings', async (req, res) => {
     try {
       const { member, email, displayName } = await resolveSignerFromRequest(req);
@@ -2812,6 +2817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const meetings = Array.from(groups.entries())
         .filter(([key]) => key <= todayKey) // never sign a meeting that hasn't happened
+        .filter(([key]) => key >= SIGN_VISIBLE_FROM_KEY) // only the 23rd June 2026 onward
         .filter(([key]) => {
           const lock = lockByKey.get(key);
           return !(lock?.isLocked || lock?.isClosed);
@@ -2881,6 +2887,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({
           success: false,
           error: "You can't sign a meeting that hasn't happened yet.",
+        });
+      }
+      if (meetingKey < SIGN_VISIBLE_FROM_KEY) {
+        return res.status(403).json({
+          success: false,
+          error: 'Signing is no longer available for this meeting.',
         });
       }
 
