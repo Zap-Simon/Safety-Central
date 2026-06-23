@@ -9,6 +9,7 @@ import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
 import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus, buildReadyToCloseActions, type ReadyToCloseAction } from "./meeting-export-shared";
+import { generateActionsReportHTML, generateActionsCSV, generateActionsMarkdown, generateActionsWordDoc, type ActionExportItem, type ActionsStats } from "./actions-export";
 import { db } from "./db";
 import { 
   cardOrdering, 
@@ -1917,6 +1918,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating Word document:', error);
       res.status(500).json({ error: 'Failed to generate Word document' });
+    }
+  });
+
+  // ─── Actions Report exports ──────────────────────────────────────────────
+  // These reuse the same professional export engine as the meeting minutes but
+  // produce an action-centric report. The client posts the actions exactly as
+  // filtered/sorted on the page (so what the user sees is what they get) plus
+  // the on-page summary stats; the server enriches each action with its activity
+  // history and, for Near Miss actions, its investigation details — neither of
+  // which lives on the client's meeting-history dataset.
+  const mapActionListType = (type?: string): string =>
+    type === 'Near Miss' ? 'NearMiss' : String(type || '').replace(' ', '');
+
+  const enrichActionsForExport = async (rawItems: any[]): Promise<ActionExportItem[]> => {
+    if (!Array.isArray(rawItems)) return [];
+    return Promise.all(rawItems.map(async (item) => {
+      const listType = mapActionListType(item.type);
+      const id = String(item.id || '');
+
+      let activity: ActionExportItem['activity'] = [];
+      try {
+        if (id) {
+          const log = await storage.getActivityLog(listType, id);
+          activity = (log || []).map((e: any) => ({
+            entryType: e.entryType,
+            content: e.content,
+            author: e.author ?? null,
+            createdAt: typeof e.createdAt === 'string' ? e.createdAt : new Date(e.createdAt).toISOString(),
+          }));
+        }
+      } catch (err) {
+        console.warn('Could not load activity log for action export:', err);
+      }
+
+      let investigation: ActionExportItem['investigation'] = null;
+      if (item.type === 'Near Miss' && id) {
+        try {
+          const inv = await storage.getNearMissInvestigation(id);
+          if (inv) {
+            investigation = {
+              riskLevel: inv.riskLevel,
+              investigatorName: inv.investigatorName,
+              investigatorSignature: inv.investigatorSignature,
+              investigatorSignedAt: inv.investigatorSignedAt,
+              directorName: inv.directorName,
+              directorSignature: inv.directorSignature,
+              signedAt: inv.signedAt,
+              status: inv.status,
+            };
+          }
+        } catch (err) {
+          console.warn('Could not load near miss investigation for action export:', err);
+        }
+      }
+
+      return { ...item, id, activity, investigation } as ActionExportItem;
+    }));
+  };
+
+  const defaultActionsStats: ActionsStats = { total: 0, open: 0, completed: 0, overdue: 0, highPriority: 0 };
+
+  app.post('/api/generate-actions-html', async (req, res) => {
+    try {
+      const { items, stats } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No actions provided' });
+      }
+
+      const enriched = await enrichActionsForExport(items);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const htmlContent = generateActionsReportHTML(enriched, (stats as ActionsStats) || defaultActionsStats, currentDate);
+
+      // Cache for a shareable URL, mirroring the meeting-minutes export pattern.
+      const shareId = 'actions-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      if (!(global as any).htmlCache) (global as any).htmlCache = {};
+      (global as any).htmlCache[shareId] = { content: htmlContent, expireAt: Date.now() + (7 * 24 * 60 * 60 * 1000) };
+
+      const now = Date.now();
+      Object.keys((global as any).htmlCache).forEach(key => {
+        if ((global as any).htmlCache[key].expireAt < now) delete (global as any).htmlCache[key];
+      });
+      const cacheKeys = Object.keys((global as any).htmlCache);
+      if (cacheKeys.length > 100) cacheKeys.slice(0, -100).forEach(key => delete (global as any).htmlCache[key]);
+
+      const filename = `Cranfield-Glass-Actions-Report-${currentDate.replace(/\s/g, '-')}.html`;
+      const shareUrl = `${req.protocol}://${req.get('host')}/api/view-html/${shareId}`;
+
+      res.json({ success: true, filename, htmlContent, shareUrl, shareId, message: 'Actions report generated successfully' });
+    } catch (error) {
+      console.error('Error generating actions HTML:', error);
+      res.status(500).json({ error: 'Failed to generate actions report' });
+    }
+  });
+
+  app.post('/api/generate-actions-csv', async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No actions provided' });
+      }
+
+      const enriched = await enrichActionsForExport(items);
+      const csv = generateActionsCSV(enriched);
+      const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      const filename = `Cranfield-Glass-Actions-${currentDate}.csv`;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send('\uFEFF' + csv);
+    } catch (error) {
+      console.error('Error generating actions CSV:', error);
+      res.status(500).json({ error: 'Failed to generate actions CSV' });
+    }
+  });
+
+  app.post('/api/generate-actions-markdown', async (req, res) => {
+    try {
+      const { items, stats } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No actions provided' });
+      }
+
+      const enriched = await enrichActionsForExport(items);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const markdown = generateActionsMarkdown(enriched, (stats as ActionsStats) || defaultActionsStats, currentDate);
+      const filename = `Cranfield-Glass-Actions-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.md`;
+
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(markdown);
+    } catch (error) {
+      console.error('Error generating actions markdown:', error);
+      res.status(500).json({ error: 'Failed to generate actions markdown' });
+    }
+  });
+
+  app.post('/api/generate-actions-word', async (req, res) => {
+    try {
+      const { items, stats } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No actions provided' });
+      }
+
+      const enriched = await enrichActionsForExport(items);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const wordBuffer = await generateActionsWordDoc(enriched, (stats as ActionsStats) || defaultActionsStats, currentDate);
+      const filename = `Cranfield-Glass-Actions-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.docx`;
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', wordBuffer.length);
+      res.send(wordBuffer);
+    } catch (error) {
+      console.error('Error generating actions Word document:', error);
+      res.status(500).json({ error: 'Failed to generate actions Word document' });
     }
   });
 

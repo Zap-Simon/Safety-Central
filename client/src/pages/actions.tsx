@@ -5,7 +5,7 @@ import MeetingHeader from "@/components/meeting-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList } from "lucide-react";
+import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
@@ -438,132 +438,54 @@ export default function Actions() {
     highPriority: liveActionItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
   };
 
-  const exportToCSV = async () => {
-    const headers = ['Title', 'Type', 'Priority', 'Status', 'Assigned To', 'Due Date', 'Meeting Date', 'Action Notes', 'Submitted By'];
-    const rows = sortedItems.map(item => [
-      item.title || '',
-      item.type,
-      item.actionPriority || 'Not Set',
-      item.actionStatus || 'Not Started',
-      item.actionAssignedTo || 'Unassigned',
-      item.actionDueDate ? formatDate(item.actionDueDate) : 'Not Set',
-      formatDate(item.meetingDate),
-      (item.actionNotes || '').replace(/"/g, '""'),
-      item.submittedBy || ''
-    ]);
+  // Exports now run on the shared, professional server export engine (the same
+  // one the meeting minutes use) so the Actions report is Cranfield-branded,
+  // A4 print-ready with "Page X of Y" footers, and carries the rich action data
+  // (lifecycle, due-date analytics, investigation details, activity history).
+  // The current filters/sort are honoured by sending `sortedItems` — what the
+  // user sees is exactly what gets exported.
+  const [isExporting, setIsExporting] = useState<string>('');
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Actions_Export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  const exportToHTML = async () => {
-    const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Actions Report - Cranfield Glass Christchurch</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f9fafb; }
-    .header { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; }
-    .header h1 { margin: 0 0 10px 0; font-size: 28px; }
-    .header p { margin: 0; opacity: 0.9; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; }
-    .stat-value { font-size: 32px; font-weight: bold; color: #1e3a5f; }
-    .stat-label { color: #6b7280; font-size: 14px; margin-top: 5px; }
-    .action-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b; }
-    .action-card.high { border-left-color: #ef4444; }
-    .action-card.medium { border-left-color: #f59e0b; }
-    .action-card.low { border-left-color: #22c55e; }
-    .action-card.completed { border-left-color: #10b981; opacity: 0.8; }
-    .action-title { font-size: 18px; font-weight: bold; color: #111827; margin-bottom: 10px; }
-    .action-meta { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; font-size: 14px; color: #6b7280; }
-    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-high { background: #fee2e2; color: #dc2626; }
-    .badge-medium { background: #fef3c7; color: #d97706; }
-    .badge-low { background: #dcfce7; color: #16a34a; }
-    .badge-completed { background: #d1fae5; color: #059669; }
-    .badge-inprogress { background: #dbeafe; color: #2563eb; }
-    .notes { background: #f9fafb; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 14px; color: #374151; }
-    .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 12px; border-top: 1px solid #e5e7eb; margin-top: 30px; }
-    @media print { body { background: white; } .action-card { break-inside: avoid; } }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Actions Report</h1>
-    <p>Cranfield Glass Christchurch - Health & Safety Management</p>
-    <p>Generated: ${format(new Date(), 'dd MMMM yyyy, HH:mm')}</p>
-  </div>
+  const exportActions = async (format: 'html' | 'csv' | 'markdown' | 'word') => {
+    setIsExporting(format);
+    try {
+      const response = await fetch(`/api/generate-actions-${format}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: sortedItems, stats }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-value">${stats.total}</div>
-      <div class="stat-label">Total Actions</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color: #2563eb">${stats.open}</div>
-      <div class="stat-label">Open Actions</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color: #10b981">${stats.completed}</div>
-      <div class="stat-label">Completed</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color: #ef4444">${stats.overdue}</div>
-      <div class="stat-label">Overdue</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" style="color: #f59e0b">${stats.highPriority}</div>
-      <div class="stat-label">High Priority</div>
-    </div>
-  </div>
-
-  ${sortedItems.map(item => `
-    <div class="action-card ${(item.actionPriority || '').toLowerCase()} ${item.actionStatus === 'Completed' ? 'completed' : ''}">
-      <div class="action-title">${item.title || 'Untitled Action'}</div>
-      <div class="action-meta">
-        <span><strong>Type:</strong> ${item.type}</span>
-        <span><strong>Priority:</strong> <span class="badge badge-${(item.actionPriority || 'medium').toLowerCase()}">${item.actionPriority || 'Not Set'}</span></span>
-        <span><strong>Status:</strong> <span class="badge ${item.actionStatus === 'Completed' ? 'badge-completed' : item.actionStatus === 'In Progress' ? 'badge-inprogress' : ''}">${item.actionStatus || 'Not Started'}</span></span>
-        <span><strong>Assigned:</strong> ${item.actionAssignedTo || 'Unassigned'}</span>
-        <span><strong>Due:</strong> ${item.actionDueDate ? formatDate(item.actionDueDate) : 'Not Set'}</span>
-      </div>
-      ${item.actionNotes ? `<div class="notes"><strong>Action Notes:</strong> ${item.actionNotes}</div>` : ''}
-      ${item.meetingNotes ? `<div class="notes" style="margin-top: 10px;"><strong>Meeting Discussion:</strong> ${item.meetingNotes}</div>` : ''}
-    </div>
-  `).join('')}
-
-  <div class="footer">
-    <p>Cranfield Glass Christchurch - Health & Safety Compliance Records</p>
-    <p>Document ID: CG-ACT-${format(new Date(), 'yyyyMMdd-HHmm')}</p>
-  </div>
-</body>
-</html>`;
-
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Actions_Report_${format(new Date(), 'yyyy-MM-dd')}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      if (format === 'html') {
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Failed to generate report');
+        downloadBlob(new Blob([result.htmlContent], { type: 'text/html' }), result.filename || 'Actions-Report.html');
+      } else {
+        const blob = await response.blob();
+        const disposition = response.headers.get('content-disposition');
+        const match = disposition?.match(/filename="(.+)"/);
+        const fallback: Record<string, string> = {
+          csv: 'Actions.csv', markdown: 'Actions.md', word: 'Actions.docx',
+        };
+        downloadBlob(blob, match ? match[1] : fallback[format]);
+      }
+      setShowExportModal(false);
+    } catch (error) {
+      console.error(`Failed to export actions (${format}):`, error);
+    } finally {
+      setIsExporting('');
+    }
   };
 
   if (isLoading && !apiResponse) {
@@ -1096,33 +1018,61 @@ export default function Actions() {
           <div className="space-y-4 py-4">
             <p className="text-sm text-gray-600">
               Export {sortedItems.length} action{sortedItems.length !== 1 ? 's' : ''} to your preferred format.
+              Reflects your current filters and sort order.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                onClick={() => {
-                  exportToHTML();
-                  setShowExportModal(false);
-                }}
+                disabled={!!isExporting}
+                onClick={() => exportActions('html')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >
-                <FileText className="h-8 w-8 text-blue-600" />
-                <span className="text-sm font-medium">HTML Report</span>
-                <span className="text-xs text-gray-500">Professional format</span>
+                {isExporting === 'html'
+                  ? <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-blue-600" />}
+                <span className="text-sm font-medium">HTML / PDF</span>
+                <span className="text-xs text-gray-500">Print-ready report</span>
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  exportToCSV();
-                  setShowExportModal(false);
-                }}
+                disabled={!!isExporting}
+                onClick={() => exportActions('word')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >
-                <FileText className="h-8 w-8 text-green-600" />
+                {isExporting === 'word'
+                  ? <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-indigo-600" />}
+                <span className="text-sm font-medium">Word Document</span>
+                <span className="text-xs text-gray-500">Editable .docx</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!!isExporting}
+                onClick={() => exportActions('csv')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExporting === 'csv'
+                  ? <Loader2 className="h-8 w-8 text-green-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-green-600" />}
                 <span className="text-sm font-medium">CSV Spreadsheet</span>
                 <span className="text-xs text-gray-500">Excel compatible</span>
               </Button>
+              <Button
+                variant="outline"
+                disabled={!!isExporting}
+                onClick={() => exportActions('markdown')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExporting === 'markdown'
+                  ? <Loader2 className="h-8 w-8 text-gray-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-gray-600" />}
+                <span className="text-sm font-medium">Markdown</span>
+                <span className="text-xs text-gray-500">Plain text format</span>
+              </Button>
             </div>
+            <p className="text-xs text-gray-400 text-center">
+              Tip: open the HTML report and use your browser's Print to save as PDF.
+            </p>
           </div>
         </DialogContent>
       </Dialog>
