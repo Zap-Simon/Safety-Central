@@ -89,6 +89,21 @@ export function getDateGroupKey(dateInput: string | Date | null): string {
 }
 
 /**
+ * Get today's date key (YYYY-MM-DD) in New Zealand local time.
+ *
+ * Meeting date keys are the NZ calendar date staff see in MS Lists, so the
+ * "has the meeting day arrived?" check must compare against NZ today — not UTC.
+ * NZ is 12–13 hours ahead of UTC, so a plain getUTCDate() lags behind NZ for the
+ * first half of the day, which would keep a meeting marked "upcoming" until ~noon
+ * NZ time on the meeting morning. Using the Pacific/Auckland calendar date flips
+ * it exactly at NZ midnight (and still never early, since NZ is ahead of UTC).
+ */
+export function getNZTodayKey(): string {
+  // en-CA formats as YYYY-MM-DD, which is exactly our date-key shape.
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
+}
+
+/**
  * Compare two dates to see if they're on the same day (ignoring time)
  */
 export function isSameDay(date1: string | Date | null, date2: string | Date | null): boolean {

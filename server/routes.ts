@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { SharePointListsService } from "./sharepoint-lists-service";
 import { resolveDownstreamToken, AuthError } from "./teams-obo-auth";
-import { getDateGroupKey, formatDisplayDate } from "../shared/dateUtils";
+import { getDateGroupKey, formatDisplayDate, getNZTodayKey } from "../shared/dateUtils";
 import { findRosterMember } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
@@ -2814,7 +2814,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const allSigs = await storage.getAllMeetingSignatures();
       const allAtt = await storage.getAllMeetingAttendance();
-      const todayKey = getDateGroupKey(new Date());
+      const todayKey = getNZTodayKey();
 
       // Signatures/attendance are stored under raw ISO keys, and the meeting page
       // may write under a different same-day ISO than the one chosen here. Merge
@@ -2916,7 +2916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (meetingKey === 'unknown-meeting') {
         return res.status(400).json({ success: false, error: 'Invalid meeting date' });
       }
-      if (meetingKey > getDateGroupKey(new Date())) {
+      if (meetingKey > getNZTodayKey()) {
         return res.status(403).json({
           success: false,
           error: "You can't sign a meeting that hasn't happened yet.",
