@@ -7,9 +7,9 @@ Any signed-in Cranfield Glass staff member may READ locked/closed meeting
 minutes in the Teams personal app (SignTab) — no attendee-roster match and no
 allowlist. Reading is fully decoupled from signing.
 
-**Why:** User-confirmed product rule (e.g. a remote worker like Debra Craig is
-never on the roster and never signs, but must still be able to read minutes).
-Tying read access to attendance silently excludes rostered-but-absent staff too.
+**Why:** User-confirmed product rule (e.g. a remote worker who is never on the
+roster and never signs must still be able to read minutes). Tying read access to
+attendance silently excludes rostered-but-absent staff too.
 
 **How to apply:**
 - Sign permission STILL requires roster match — do not relax that. Only the READ
