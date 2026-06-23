@@ -5830,16 +5830,42 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     { name: 'Sam Chang', role: 'Glazier' }
   ];
 
-  const isPresent = (name: string): boolean => {
-    if (!meetingAttendance || !selectedMeeting || selectedMeeting === 'all') return true;
-    const list = meetingAttendance[selectedMeeting];
-    if (!list) return true;
-    return list.includes(name);
-  };
+  // Attendance ticks may be stored under multiple raw ISO keys for the same
+  // calendar day (the admin page and the Teams Sign tab each pick their own
+  // representative ISO). Merge EVERY key that matches the selected day so a
+  // person ticked present under any same-day key is recognised — mirroring how
+  // signatures are merged for the export.
+  const presentNames = new Set<string>();
+  if (meetingAttendance && selectedMeeting && selectedMeeting !== 'all') {
+    const normalizedSelected = getDateGroupKey(selectedMeeting);
+    for (const [key, list] of Object.entries(meetingAttendance)) {
+      if (getDateGroupKey(key) !== normalizedSelected) continue;
+      for (const name of list) presentNames.add(name);
+    }
+  }
 
   const signaturesForMeeting = meetingSignatures && selectedMeeting && selectedMeeting !== 'all'
     ? (meetingSignatures[selectedMeeting] ?? {})
     : {};
+
+  // A valid (signed/remote) signature always implies the person was present,
+  // even if they were never ticked in the attendance checklist for this day.
+  const hasPositiveSignature = (name: string): boolean => {
+    const sig = signaturesForMeeting[name];
+    return !!sig && (sig.status === 'signed' || sig.status === 'remote');
+  };
+
+  const isPresent = (name: string): boolean => {
+    if (hasPositiveSignature(name)) return true;
+    if (!meetingAttendance || !selectedMeeting || selectedMeeting === 'all') return true;
+    // No attendance ticks at all for this day → default everyone to present
+    // (matches the prior behaviour when the selected meeting had no list).
+    const hasAnyForDay = Object.keys(meetingAttendance).some(
+      key => getDateGroupKey(key) === getDateGroupKey(selectedMeeting)
+    );
+    if (!hasAnyForDay) return true;
+    return presentNames.has(name);
+  };
 
   const hasSigs = Object.keys(signaturesForMeeting).length > 0;
 
@@ -5856,6 +5882,9 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   });
 
   const absentAttendees = allAttendees.filter(a => {
+    // A positive signature always wins: such a person is present and must never
+    // be listed under "Not present", even if they weren't ticked attending.
+    if (hasPositiveSignature(a.name)) return false;
     const sig = signaturesForMeeting[a.name];
     return !isPresent(a.name) || (sig && sig.status === 'absent');
   });
