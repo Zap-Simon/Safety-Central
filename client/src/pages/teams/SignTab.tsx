@@ -93,8 +93,10 @@ const useStyles = makeStyles({
   },
   nextCard: {
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: tokens.spacingHorizontalM,
+    textAlign: "center",
+    gap: tokens.spacingVerticalS,
     padding: tokens.spacingHorizontalL,
     backgroundColor: tokens.colorBrandBackground2,
   },
@@ -701,12 +703,12 @@ export default function SignTab() {
                 <div className={styles.nextIcon}>
                   <CalendarLtr24Regular />
                 </div>
-                <div className={styles.meetingBody} style={{ textAlign: "center" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
                   <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }} block>
                     Next meeting
                   </Text>
-                  <Text size={400} weight="bold" truncate block>{nextMeeting.displayDate}</Text>
-                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                  <Text size={400} weight="bold" block>{nextMeeting.displayDate}</Text>
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
                     {relativeFromToday(nextMeeting.dateKey)} · sign after the meeting
                   </Text>
                 </div>
