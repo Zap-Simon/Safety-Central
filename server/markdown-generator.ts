@@ -5,7 +5,7 @@
  * for PDF export with navigation bookmarks (similar to Typora approach)
  */
 
-import { buildActionRequiredLines, getDisplayItemStatus } from "./meeting-export-shared";
+import { buildActionRequiredLines, getDisplayItemStatus, type ReadyToCloseAction } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -47,7 +47,8 @@ export class MarkdownMeetingGenerator {
     meetingDate: string, 
     currentDate: string,
     meetingAttendance?: Record<string, string[]>,
-    selectedMeeting?: string
+    selectedMeeting?: string,
+    readyToCloseActions: ReadyToCloseAction[] = []
   ): string {
     
     const analytics = this.generateAnalytics(filteredData);
@@ -70,6 +71,7 @@ export class MarkdownMeetingGenerator {
   - [Safety Ideas](#safety-ideas)
   - [Business Ideas](#business-ideas)
   - [Action Items](#action-items)
+- [Actions Ready to Close](#actions-ready-to-close)
 - [Meeting Approval](#meeting-approval)
 
 ---
@@ -142,6 +144,9 @@ The following items were presented for discussion and review during this meeting
     if (groupedItems['Actions']?.length > 0) {
       markdown += this.generateTypeSection('Actions', groupedItems['Actions'], '### ✅ Action Items\n\n*Follow-up actions and implementation tracking*\n\n');
     }
+
+    // Actions Ready to Close — drawn from the whole backlog, not just this meeting
+    markdown += this.generateReadyToCloseSection(readyToCloseActions);
 
     // Meeting Approval Section
     markdown += `
@@ -373,6 +378,33 @@ ${allAttendees.glaziers.map(attendee => {
     return buildActionRequiredLines(item)
       .map(line => (line.label ? `**${line.label}:** ${line.value}` : line.value))
       .join('  \n');
+  }
+
+  /**
+   * Actions parked at "Ready to Close" across the whole backlog (not just this
+   * meeting). They need a group review + sign-off to be formally closed, so the
+   * same action legitimately re-appears in consecutive minutes — the due date is
+   * shown with each so it can be tracked even when it sits in the future.
+   */
+  private static generateReadyToCloseSection(readyToCloseActions: ReadyToCloseAction[]): string {
+    let section = `\n\n---\n\n## Actions Ready to Close\n\n`;
+
+    if (!readyToCloseActions || readyToCloseActions.length === 0) {
+      section += `*No actions are currently ready to close.*\n\n`;
+      return section;
+    }
+
+    section += `**${readyToCloseActions.length} action${readyToCloseActions.length !== 1 ? 's' : ''} ready to close** — require group discussion and sign-off to formally close.\n\n`;
+
+    section += `| Item | Type | Actioned By | Due Date | What Was Done |\n`;
+    section += `| --- | --- | --- | --- | --- |\n`;
+    readyToCloseActions.forEach((action) => {
+      const cell = (v: string) => (v || '—').replace(/\|/g, '\\|').replace(/\n+/g, ' ');
+      section += `| ${cell(action.title)} | ${cell(action.type)} | ${cell(action.assignedTo)} | ${cell(action.dueDate)} | ${cell(action.outcome)} |\n`;
+    });
+    section += `\n`;
+
+    return section;
   }
 
   /**

@@ -1,7 +1,7 @@
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, BorderStyle, WidthType, HeadingLevel, AlignmentType } from "docx";
-import { buildActionRequiredLines, isEmptyActionPlaceholder, getDisplayItemStatus, type ActionLine } from "./meeting-export-shared";
+import { buildActionRequiredLines, isEmptyActionPlaceholder, getDisplayItemStatus, buildReadyToCloseActions, type ActionLine, type ReadyToCloseAction } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -60,6 +60,7 @@ interface TemplateData {
   businessIdeasCount: number;
   safetyIdeasCount: number;
   nearMissCount: number;
+  readyToCloseActions: ReadyToCloseAction[];
 }
 
 export class AdvancedWordTemplateEngine {
@@ -183,7 +184,10 @@ export class AdvancedWordTemplateEngine {
       totalItems: processedItems.length,
       businessIdeasCount,
       safetyIdeasCount,
-      nearMissCount
+      nearMissCount,
+      // Ready-to-Close actions come from the FULL backlog, not just the selected
+      // meeting, so every export lists all outstanding actions awaiting sign-off.
+      readyToCloseActions: buildReadyToCloseActions(data.meetingData)
     };
   }
 
@@ -575,6 +579,34 @@ export class AdvancedWordTemplateEngine {
       sections.push(itemsTable);
     }
 
+    // Actions Ready to Close — drawn from the whole backlog (all meetings)
+    if (data.readyToCloseActions.length > 0) {
+      sections.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Actions Ready to Close",
+              bold: true,
+              size: 32, // 16pt
+              color: "1F2937"
+            })
+          ],
+          spacing: { before: 300, after: 100 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `${data.readyToCloseActions.length} action${data.readyToCloseActions.length !== 1 ? 's' : ''} ready to close — require group discussion and sign-off to formally close.`,
+              size: 20, // 10pt
+              color: "166534"
+            })
+          ],
+          spacing: { after: 150 }
+        })
+      );
+      sections.push(this.createReadyToCloseTable(data.readyToCloseActions));
+    }
+
     // Attendance Section Header
     sections.push(
       new Paragraph({
@@ -602,6 +634,63 @@ export class AdvancedWordTemplateEngine {
     });
 
     return await Packer.toBuffer(doc);
+  }
+
+  /**
+   * Table of actions parked at "Ready to Close" — completed work awaiting a group
+   * review + sign-off. Pulled from the whole backlog and stamped with each due
+   * date, since the same action can recur across consecutive meetings.
+   */
+  private static createReadyToCloseTable(actions: ReadyToCloseAction[]): Table {
+    const headerCell = (text: string, width: number) => new TableCell({
+      children: [new Paragraph({
+        children: [new TextRun({ text, bold: true, size: 20, color: "166534" })],
+      })],
+      width: { size: width, type: WidthType.PERCENTAGE },
+      shading: { fill: "DCFCE7" },
+      margins: { top: 80, bottom: 80, left: 100, right: 100 }
+    });
+
+    const bodyCell = (text: string, width: number, bold = false) => new TableCell({
+      children: [new Paragraph({
+        children: [new TextRun({ text: text || "—", size: 18, color: bold ? "1F2937" : "4B5563", bold })],
+      })],
+      width: { size: width, type: WidthType.PERCENTAGE },
+      margins: { top: 80, bottom: 80, left: 100, right: 100 }
+    });
+
+    return new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.SINGLE, size: 2, color: "86EFAC" },
+        bottom: { style: BorderStyle.SINGLE, size: 2, color: "86EFAC" },
+        left: { style: BorderStyle.SINGLE, size: 2, color: "86EFAC" },
+        right: { style: BorderStyle.SINGLE, size: 2, color: "86EFAC" },
+        insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "BBF7D0" },
+        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "BBF7D0" }
+      },
+      rows: [
+        new TableRow({
+          tableHeader: true,
+          children: [
+            headerCell("Item", 28),
+            headerCell("Type", 14),
+            headerCell("Actioned By", 16),
+            headerCell("Due Date", 13),
+            headerCell("What Was Done", 29),
+          ]
+        }),
+        ...actions.map((action) => new TableRow({
+          children: [
+            bodyCell(action.title, 28, true),
+            bodyCell(action.type, 14),
+            bodyCell(action.assignedTo, 16),
+            bodyCell(action.dueDate, 13),
+            bodyCell(action.outcome, 29),
+          ]
+        }))
+      ]
+    });
   }
 
   /**

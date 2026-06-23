@@ -8,7 +8,7 @@ import { findRosterMember, allRosterMembers } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
-import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus } from "./meeting-export-shared";
+import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus, buildReadyToCloseActions, type ReadyToCloseAction } from "./meeting-export-shared";
 import { db } from "./db";
 import { 
   cardOrdering, 
@@ -1530,7 +1530,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         meetingSignatures = req.body.meetingSignatures;
       }
 
-      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures);
+      // Ready-to-Close actions are reviewed against the WHOLE backlog, not just
+      // the selected meeting, so the same outstanding action surfaces in every
+      // meeting's minutes until it's formally closed.
+      const readyToCloseActions = buildReadyToCloseActions(meetingData);
+
+      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures, readyToCloseActions);
       
       // Generate unique ID for shareable URL
       const shareId = 'meeting-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -1624,12 +1629,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const meetingDate = selectedMeeting === 'all' ? 'All Meetings' : new Date(selectedMeeting).toLocaleDateString('en-GB');
       const currentDate = new Date().toLocaleDateString('en-GB');
       
+      // Ready-to-Close actions span the whole backlog, not just this meeting.
+      const markdownReadyToClose = buildReadyToCloseActions(meetingData);
+
       const markdownContent = MarkdownMeetingGenerator.generateMeetingMarkdown(
         filteredData, 
         meetingDate, 
         currentDate, 
         meetingAttendance, 
-        selectedMeeting
+        selectedMeeting,
+        markdownReadyToClose
       );
       
       // Set appropriate headers for markdown download
@@ -1771,12 +1780,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ];
       });
 
+      // Actions Ready to Close — drawn from the whole backlog (all meetings), not
+      // just the selected meeting, so every export lists all outstanding actions
+      // awaiting group sign-off. Due date included as they can recur across meetings.
+      const csvQuote = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const readyToCloseActions = buildReadyToCloseActions(meetingData);
+      const readyToCloseRows: string[] = [];
+      if (readyToCloseActions.length > 0) {
+        readyToCloseRows.push('');
+        readyToCloseRows.push(csvQuote('ACTIONS READY TO CLOSE'));
+        readyToCloseRows.push(csvQuote(`${readyToCloseActions.length} action(s) ready to close — require group discussion and sign-off to formally close.`));
+        readyToCloseRows.push('');
+        readyToCloseRows.push(['Item', 'Type', 'Actioned By', 'Due Date', 'What Was Done', 'Submitted By', 'ID Reference'].map(csvQuote).join(','));
+        readyToCloseActions.forEach((action) => {
+          readyToCloseRows.push([
+            action.title,
+            action.type,
+            action.assignedTo,
+            action.dueDate,
+            action.outcome,
+            action.submittedBy,
+            action.id,
+          ].map(csvQuote).join(','));
+        });
+      }
+
       const csvContent = [
         // Analytics section first
         ...analyticsRows.map((row: any[]) => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
         // Then headers and meeting data
         csvHeaders.join(','),
-        ...csvRows.map((row: any[]) => row.join(','))
+        ...csvRows.map((row: any[]) => row.join(',')),
+        // Finally the ready-to-close actions backlog
+        ...readyToCloseRows
       ].join('\n');
 
       // Set appropriate headers for CSV download
@@ -5190,7 +5226,7 @@ function generateAnalyticsChartsHTML(analytics: any): string {
 }
 
 // HTML Meeting Minutes Generator Function
-function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>): string {
+function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>, readyToCloseActions: ReadyToCloseAction[] = []): string {
   const typeColors = {
     'Business Ideas': '#2563eb',
     'Safety Ideas': '#dc2626', 
@@ -5734,40 +5770,44 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     </table>
 
     ${(() => {
-      const readyToCloseItems = filteredData.filter((item: any) => item.actionStatus === 'Ready to Close');
-      if (readyToCloseItems.length === 0) return '';
+      // Pulled from the WHOLE backlog (all meetings), not just this meeting, so
+      // every set of minutes lists all outstanding ready-to-close actions until
+      // they are formally signed off and closed.
+      if (readyToCloseActions.length === 0) return '';
+      const typeColor = (t: string) => t === 'Safety Ideas' ? '#dc2626' : t === 'Near Miss' ? '#ea580c' : '#2563eb';
       return `
-    <div class="section-header" style="margin-top:24px;">III. Completed Actions – Group Review</div>
+    <div class="section-header" style="margin-top:24px;">III. Actions Ready to Close – Group Review</div>
     <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:12px;margin-bottom:16px;">
       <div style="font-size:10pt;color:#166534;margin-bottom:10px;">
-        <strong>&#10003; ${readyToCloseItems.length} completed action${readyToCloseItems.length !== 1 ? 's' : ''} require group discussion and sign-off to formally close.</strong>
+        <strong>&#10003; ${readyToCloseActions.length} action${readyToCloseActions.length !== 1 ? 's' : ''} ready to close — require group discussion and sign-off to formally close.</strong>
         This section demonstrates our circular compliance system — actions are completed, reviewed by the group, and officially closed at the meeting.
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:10pt;">
         <thead>
           <tr style="background:#dcfce7;">
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:28%;">Item</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:20%;">Actioned By</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:32%;">What Was Done</th>
-            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:20%;">Group Outcome</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:26%;">Item</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:16%;">Actioned By</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:13%;">Due Date</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:27%;">What Was Done</th>
+            <th style="padding:6px 8px;border:1px solid #86efac;text-align:left;width:18%;">Group Outcome</th>
           </tr>
         </thead>
         <tbody>
-          ${readyToCloseItems.map((item: any) => `
+          ${readyToCloseActions.map((action) => `
           <tr>
             <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              <div style="background:${item.type === 'Safety Ideas' ? '#dc2626' : item.type === 'Near Miss' ? '#ea580c' : '#2563eb'};color:#fff;font-size:8pt;padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:4px;">${item.type}</div>
-              <div style="font-weight:600;font-size:10pt;">${item.title || `${item.type} Item`}</div>
-              <div style="font-size:9pt;color:#555;margin-top:2px;">Submitted by: ${item.submittedBy || 'Unknown'}</div>
+              ${action.type ? `<div style="background:${typeColor(action.type)};color:#fff;font-size:8pt;padding:2px 6px;border-radius:3px;display:inline-block;margin-bottom:4px;">${action.type}</div>` : ''}
+              <div style="font-weight:600;font-size:10pt;">${action.title}</div>
+              <div style="font-size:9pt;color:#555;margin-top:2px;">Submitted by: ${action.submittedBy || 'Unknown'}</div>
             </td>
             <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${item.actionAssignedTo ? `<div style="font-weight:600;">${item.actionAssignedTo}</div>` : '<div style="color:#888;">—</div>'}
-              ${item.actionDueDate ? `<div style="font-size:9pt;color:#555;">Due: ${new Date(item.actionDueDate).toLocaleDateString('en-NZ')}</div>` : ''}
+              ${action.assignedTo ? `<div style="font-weight:600;">${action.assignedTo}</div>` : '<div style="color:#888;">—</div>'}
             </td>
             <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
-              ${item.actionNotes ? `<div>${item.actionNotes}</div>` : ''}
-              ${item.meetingNotes ? `<div style="margin-top:4px;color:#555;font-size:9pt;"><em>Discussion: ${item.meetingNotes}</em></div>` : ''}
-              ${!item.actionNotes && !item.meetingNotes ? '<div style="color:#888;">No notes recorded</div>' : ''}
+              ${action.dueDate ? `<div>${action.dueDate}</div>` : '<div style="color:#888;">—</div>'}
+            </td>
+            <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
+              ${action.outcome ? `<div>${action.outcome}</div>` : '<div style="color:#888;">No notes recorded</div>'}
             </td>
             <td style="padding:6px 8px;border:1px solid #bbf7d0;vertical-align:top;">
               <div style="background:#dcfce7;border:1px dashed #86efac;border-radius:4px;padding:6px;font-size:9pt;color:#166534;min-height:36px;">

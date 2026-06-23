@@ -35,3 +35,15 @@ lines rather than calling `buildAgendaSubmissionText` directly, because its
 `\n\n` separators render literally in those formats. Only the action column is
 literally shared there; submission fields (description + secondaryDescription)
 are the same source, rendered natively.
+
+**"Actions Ready to Close" section (all four formats):** built by
+`buildReadyToCloseActions(meetingData)` and shows every action at
+`actionStatus === 'Ready to Close'`. Two non-negotiable rules:
+- Source it from the FULL unfiltered `meetingData`, NOT the per-meeting
+  `filteredData`. These actions await a group sign-off, so the same one
+  legitimately re-appears in consecutive minutes until it's actually closed.
+  The due date is shown with each (it can sit in the future) precisely so a
+  recurring action stays trackable across meetings.
+- Dedupe on `type + id`, NEVER the bare id. SharePoint ids are list-local — the
+  same numeric id exists in the Near Miss / Safety / Business lists — so a
+  bare-id dedupe silently drops a ready-to-close action from another list.

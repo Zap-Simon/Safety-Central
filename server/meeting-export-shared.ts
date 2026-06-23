@@ -141,3 +141,54 @@ export function actionRequiredPlainText(item: any, separator = ' | '): string {
   if (isEmptyActionPlaceholder(lines)) return '';
   return lines.map((l) => (l.label ? `${l.label}: ${l.value}` : l.value)).join(separator);
 }
+
+/**
+ * The standalone "Ready to Close" actions section shared by every export format.
+ *
+ * These are actions a person has completed and parked at "Ready to Close" — they
+ * still need a group review + sign-off at the meeting to be formally closed. The
+ * same action stays "Ready to Close" until it's actually closed, so it legitimately
+ * re-appears across consecutive meetings; that's why we surface the due date with
+ * each one (it can sit in the future). This section is built from the FULL meeting
+ * dataset, NOT the single selected meeting, so every export shows all outstanding
+ * ready-to-close actions regardless of which meeting is being exported.
+ */
+export interface ReadyToCloseAction {
+  id: string;
+  title: string;
+  type: string;
+  assignedTo: string;
+  dueDate: string;
+  outcome: string;
+  submittedBy: string;
+}
+
+export function isReadyToCloseAction(item: any): boolean {
+  return String(item?.actionStatus || '').trim() === 'Ready to Close';
+}
+
+export function buildReadyToCloseActions(allItems: any[]): ReadyToCloseAction[] {
+  if (!Array.isArray(allItems)) return [];
+  const seen = new Set<string>();
+  const result: ReadyToCloseAction[] = [];
+  for (const item of allItems) {
+    if (!isReadyToCloseAction(item)) continue;
+    const id = String(item?.id || '');
+    // IDs are list-local in SharePoint (the same numeric id can exist in the
+    // Near Miss, Safety and Business lists), so dedupe on type + id, never the
+    // bare id, or a ready-to-close action from another list would be dropped.
+    const dedupeKey = id ? `${item?.type || ''}::${id}` : '';
+    if (dedupeKey && seen.has(dedupeKey)) continue;
+    if (dedupeKey) seen.add(dedupeKey);
+    result.push({
+      id,
+      title: item?.title || `${item?.type || 'Action'} Item`,
+      type: item?.type || '',
+      assignedTo: item?.actionAssignedTo ? String(item.actionAssignedTo) : '',
+      dueDate: item?.actionDueDate ? new Date(item.actionDueDate).toLocaleDateString('en-NZ') : '',
+      outcome: item?.actionNotes ? String(item.actionNotes) : '',
+      submittedBy: item?.submittedBy ? String(item.submittedBy) : '',
+    });
+  }
+  return result.sort((a, b) => a.title.localeCompare(b.title));
+}
