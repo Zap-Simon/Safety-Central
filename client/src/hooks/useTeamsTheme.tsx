@@ -42,6 +42,20 @@ export function TeamsThemeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Drive Tailwind's `.dark` class off the Teams theme so every non-Fluent
+  // element (shadcn inputs, the body background, the safe-area filler) follows
+  // dark/light in lockstep with the Fluent components. Scoped to the Teams app
+  // only: this provider lives under the Teams routes, so the main website never
+  // gets `.dark` and its always-light styling is unaffected. Cleanup on unmount
+  // (e.g. navigating back to a main-site route) removes the class again.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme !== "default");
+    return () => {
+      root.classList.remove("dark");
+    };
+  }, [theme]);
+
   return (
     <TeamsThemeContext.Provider value={{ theme, inTeams, isDark: theme !== "default" }}>
       {children}

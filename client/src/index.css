@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);
   --muted: hsl(60, 4.8%, 95.9%);
@@ -38,6 +39,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);
   --muted: hsl(240, 3.7%, 15.9%);
@@ -362,6 +364,13 @@ html, body {
   background-color: #ffffff;
 }
 
+/* In the Teams app, dark/contrast themes add `.dark` to <html>; match the page
+   and the bottom safe-area filler to the dark background so no white bar shows. */
+.dark,
+.dark body {
+  background-color: var(--background);
+}
+
 /* Render at the app's designed text sizes regardless of the device's system
    font-size / display-size setting. Without this, some Android devices (and the
    Teams mobile WebView) multiply every font size by the user's accessibility
@@ -382,6 +391,10 @@ body::after {
   background-color: #ffffff;
   z-index: 40;
   pointer-events: none;
+}
+
+.dark body::after {
+  background-color: var(--background);
 }
 
 @property --snake-angle {
@@ -419,6 +432,12 @@ body::after {
   border-radius: 5.5px;
   background: #ffffff;
   overflow: hidden;
+}
+
+/* In dark mode the Fluent textarea inside renders near-white text, so the
+   wrapper must go dark too — otherwise it's white text on a white field. */
+.dark .ai-glow-inner {
+  background: var(--background);
 }
 
 .ai-glow-inner .fui-Textarea,
@@ -510,4 +529,25 @@ body::after {
 
 .input-sm option {
   font-size: 12.5px;
+}
+
+/* Dark theme overrides (Teams app): keep the same fields legible without
+   touching the light-mode colours above. */
+.dark .label-sm {
+  color: var(--muted-foreground);
+}
+
+.dark .input-sm {
+  color: var(--foreground);
+  background: var(--background);
+  border-color: var(--border);
+}
+
+.dark .input-sm::placeholder {
+  color: var(--muted-foreground);
+}
+
+.dark .input-sm option {
+  color: var(--foreground);
+  background: var(--background);
 }
