@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { SharePointListsService } from "./sharepoint-lists-service";
 import { resolveDownstreamToken, AuthError } from "./teams-obo-auth";
+import { getDateGroupKey, formatDisplayDate } from "../shared/dateUtils";
+import { findRosterMember } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
@@ -10,6 +12,7 @@ import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlai
 import { db } from "./db";
 import { 
   cardOrdering, 
+  meetingLocks,
   insertCardOrderingSchema,
   insertTrainingClassificationSchema,
   insertTrainingModuleSchema,
@@ -2710,6 +2713,194 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error saving signature:', error);
       res.status(500).json({ success: false, error: 'Failed to save signature' });
+    }
+  });
+
+  // ─── Teams self-sign endpoints ─────────────────────────────────────────────
+  // These power the Teams "Sign" tab where each staff member signs ONLY their
+  // own attendance for recent meetings. The server resolves the signed-in user
+  // from their Microsoft identity (never trusting a client-supplied name), so a
+  // person can never sign on someone else's behalf.
+
+  // Resolve the current Teams/main-app user to a roster member via Graph /me.
+  // Returns { member, email, displayName } or { member: null, ... } when the
+  // signed-in person isn't part of the meeting roster.
+  async function resolveSignerFromRequest(req: any): Promise<{
+    member: ReturnType<typeof findRosterMember>;
+    email: string;
+    displayName: string;
+  }> {
+    const graphToken = await resolveDownstreamToken(req.headers.authorization, 'graph');
+    const meResp = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: `Bearer ${graphToken}`, Accept: 'application/json' },
+    });
+    if (!meResp.ok) {
+      throw new AuthError(401, 'Could not verify your Microsoft identity. Please sign in again.');
+    }
+    const me: any = await meResp.json();
+    const email: string = me.mail || me.userPrincipalName || '';
+    const displayName: string = me.displayName || '';
+    const staff = email ? await storage.getStaffByEmail(email) : undefined;
+    const member = findRosterMember(staff?.name, displayName);
+    return { member, email, displayName };
+  }
+
+  // GET signable meetings for the current user (newest first), each annotated
+  // with that user's own signature status. Excludes locked/closed meetings and
+  // anything dated in the future.
+  app.get('/api/teams/sign/meetings', async (req, res) => {
+    try {
+      const { member, email, displayName } = await resolveSignerFromRequest(req);
+      if (!member) {
+        return res.json({
+          success: true,
+          matched: false,
+          userName: displayName || email,
+          attendeeName: null,
+          meetings: [],
+        });
+      }
+
+      // Meeting dates come from SharePoint — mirror /api/meeting-history exactly
+      // (same list order) so the representative ISO per day matches the admin
+      // view, since attendance/signatures are keyed by that raw ISO string.
+      const spToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      const listsService = new SharePointListsService(spToken);
+      const [businessIdeas, safetyIdeas, nearMiss] = await Promise.all([
+        listsService.getBusinessIdeas(),
+        listsService.getSafetyIdeas(),
+        listsService.getNearMiss(),
+      ]);
+      const allItems = [...businessIdeas, ...safetyIdeas, ...nearMiss];
+
+      const groups = new Map<string, string>(); // dateKey (YYYY-MM-DD) -> representative ISO
+      for (const item of allItems) {
+        const key = getDateGroupKey(item.meetingDate);
+        if (key === 'unknown-meeting') continue;
+        if (!groups.has(key)) groups.set(key, item.meetingDate);
+      }
+
+      // Locks SHOULD be keyed by normalised YYYY-MM-DD, but the closed-meeting
+      // writer doesn't normalise, so a row may be a raw ISO. Normalise every key
+      // here and OR the flags so a locked/closed meeting can never slip through.
+      const lockRows = await db.select().from(meetingLocks);
+      const lockByKey = new Map<string, { isLocked: boolean; isClosed: boolean }>();
+      for (const row of lockRows) {
+        const key = getDateGroupKey(row.meetingDate);
+        const prev = lockByKey.get(key);
+        lockByKey.set(key, {
+          isLocked: (prev?.isLocked ?? false) || row.isLocked,
+          isClosed: (prev?.isClosed ?? false) || row.isClosed,
+        });
+      }
+
+      const allSigs = await storage.getAllMeetingSignatures();
+      const allAtt = await storage.getAllMeetingAttendance();
+      const todayKey = getDateGroupKey(new Date());
+
+      const meetings = Array.from(groups.entries())
+        .filter(([key]) => key <= todayKey) // never sign a meeting that hasn't happened
+        .filter(([key]) => {
+          const lock = lockByKey.get(key);
+          return !(lock?.isLocked || lock?.isClosed);
+        })
+        .map(([key, iso]) => {
+          const mySig = allSigs[iso]?.[member.name] ?? null;
+          const isPresent = (allAtt[iso] ?? []).includes(member.name);
+          return {
+            meetingDate: iso,
+            dateKey: key,
+            displayDate: formatDisplayDate(iso, 'meeting'),
+            isPresent,
+            mySignature: mySig,
+          };
+        })
+        .sort((a, b) => new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime());
+
+      res.json({
+        success: true,
+        matched: true,
+        userName: member.name,
+        attendeeName: member.name,
+        role: member.role,
+        meetings,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      console.error('Error loading signable meetings:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const isAuthError = /\b(401|403)\b/.test(message) || /unauthor|forbidden|invalid.*token|token.*expired/i.test(message);
+      res.status(isAuthError ? 401 : 500).json({
+        success: false,
+        error: isAuthError ? 'Authentication expired. Please sign in again.' : 'Failed to load meetings',
+      });
+    }
+  });
+
+  // POST a self-signature. The server resolves WHO is signing from the token and
+  // signs only that person's row — the client cannot specify the attendee name.
+  app.post('/api/teams/sign', async (req, res) => {
+    try {
+      const { meetingDate, status, signatureData, signedAt } = req.body || {};
+      if (!meetingDate || !status) {
+        return res.status(400).json({ success: false, error: 'meetingDate and status are required' });
+      }
+      if (!['signed', 'remote', 'absent'].includes(status)) {
+        return res.status(400).json({ success: false, error: 'Invalid signature status' });
+      }
+
+      const { member } = await resolveSignerFromRequest(req);
+      if (!member) {
+        return res.status(403).json({
+          success: false,
+          error: "We couldn't match you to the meeting attendee list. Please ask an admin to add you.",
+        });
+      }
+
+      // Never allow signing a meeting that hasn't happened yet — mirror the GET
+      // eligibility rule so a crafted POST can't create a future-dated record.
+      const meetingKey = getDateGroupKey(meetingDate);
+      if (meetingKey === 'unknown-meeting') {
+        return res.status(400).json({ success: false, error: 'Invalid meeting date' });
+      }
+      if (meetingKey > getDateGroupKey(new Date())) {
+        return res.status(403).json({
+          success: false,
+          error: "You can't sign a meeting that hasn't happened yet.",
+        });
+      }
+
+      // Guard against signing a locked/closed meeting. Locks are keyed by the
+      // normalised date, so look them up that way (not by the raw ISO).
+      const lockKey = meetingKey;
+      const lock = await storage.getMeetingLock(lockKey);
+      if (lock?.isLocked || lock?.isClosed) {
+        return res.status(403).json({
+          success: false,
+          error: 'This meeting has been locked by an admin — signatures can no longer be changed.',
+        });
+      }
+
+      // 'absent' clears presence; 'signed'/'remote' mark the person present.
+      const isPresent = status !== 'absent';
+      await storage.updateMeetingAttendance(meetingDate, member.name, isPresent);
+      const record = await storage.updateMeetingSignature(
+        meetingDate,
+        member.name,
+        status,
+        signatureData ?? null,
+        signedAt ?? new Date().toISOString(),
+      );
+
+      res.json({ success: true, attendeeName: member.name, record });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      console.error('Error saving self-signature:', error);
+      res.status(500).json({ success: false, error: 'Failed to save your signature' });
     }
   });
 

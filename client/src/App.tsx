@@ -15,6 +15,7 @@ import EnvironmentPolicy from "@/pages/environment-policy";
 import QualityPolicy from "@/pages/quality-policy";
 import SubmitTab from "@/pages/teams/SubmitTab";
 import OrdersTab from "@/pages/teams/OrdersTab";
+import SignTab from "@/pages/teams/SignTab";
 import NotFound from "@/pages/not-found";
 import { TeamsThemeProvider, useTeamsTheme } from "@/hooks/useTeamsTheme";
 import { TeamsAuthProvider, useTeamsAuth } from "@/hooks/useTeamsAuth";
@@ -31,7 +32,7 @@ import {
 } from "@fluentui/react-components";
 import type { SelectTabEvent, SelectTabData } from "@fluentui/react-components";
 
-const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders"];
+const TEAMS_PATHS = ["/teams-submit-cg7k2x9m", "/teams-tab", "/teams-tab/orders", "/teams-tab/sign"];
 
 const useShellStyles = makeStyles({
   shell: {
@@ -92,7 +93,12 @@ function TeamsTabSwitcher({
 }) {
   const [location, navigate] = useLocation();
   const s = useSwitcherStyles();
-  const selected = location === "/teams-tab/orders" ? "/teams-tab/orders" : "/teams-tab";
+  const selected =
+    location === "/teams-tab/orders"
+      ? "/teams-tab/orders"
+      : location === "/teams-tab/sign"
+      ? "/teams-tab/sign"
+      : "/teams-tab";
 
   const onTabSelect = (_e: SelectTabEvent, data: SelectTabData) => {
     navigate(data.value as string);
@@ -111,6 +117,7 @@ function TeamsTabSwitcher({
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab value="/teams-tab">Submit</Tab>
         <Tab value="/teams-tab/orders">Orders</Tab>
+        <Tab value="/teams-tab/sign">Sign</Tab>
       </TabList>
     </div>
   );
@@ -122,6 +129,7 @@ function TeamsRouterContent() {
   const styles = useShellStyles();
   const { userName } = useTeamsAuth();
   const isOrders = location === "/teams-tab/orders";
+  const isSign = location === "/teams-tab/sign";
 
   // Both tabs share the default Teams blue brand.
   const fluentTheme =
@@ -140,9 +148,9 @@ function TeamsRouterContent() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <TeamsTabSwitcher userName={userName} showGreeting={!isOrders} />
+      <TeamsTabSwitcher userName={userName} showGreeting={!isOrders && !isSign} />
       <div className={styles.content}>
-        {isOrders ? <OrdersTab /> : <SubmitTab />}
+        {isOrders ? <OrdersTab /> : isSign ? <SignTab /> : <SubmitTab />}
       </div>
     </FluentProvider>
   );

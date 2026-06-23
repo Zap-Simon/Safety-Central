@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CalendarClock, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
+import { meetingRoster } from "@shared/meetingRoster";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
 import { predictiveText } from "@/lib/predictiveText";
 import { InlineTextarea } from "@/components/ui/inline-textarea";
@@ -79,21 +80,7 @@ interface ActionItem {
 }
 
 // Meeting attendees data structure
-const meetingAttendees = {
-  management: [
-    { name: 'Hoani Hunt', role: 'Company Director' },
-    { name: 'Simon Hubbard', role: 'Health & Safety Coordinator' },
-    { name: 'James Waites', role: 'Glazing Supervisor' },
-    { name: 'Emma White', role: 'Administrator' }
-  ],
-  glaziers: [
-    { name: 'Kevin Young', role: 'Glazier' },
-    { name: 'Ryan Newman', role: 'Glazier' },
-    { name: 'Daniel Conlan', role: 'Glazier' },
-    { name: 'Struan O\'Donnell', role: 'Glazier' },
-    { name: 'Sam Chang', role: 'Glazier' }
-  ]
-};
+const meetingAttendees = meetingRoster;
 
 export default function MeetingHistory() {
   const queryClient = useQueryClient();
