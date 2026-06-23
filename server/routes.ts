@@ -6890,24 +6890,13 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   });
 
   // ─── Near Miss Investigation endpoints ──────────────────────────────────────
-
-  // Helper: validate a Bearer token by resolving the caller via Graph /me.
-  // Returns the caller object on success, sends 401 and returns null on failure.
-  // Uses the same trust model as all other authenticated endpoints in this app:
-  // tokens are validated by forwarding them to Microsoft Graph — invalid/expired
-  // tokens cause Graph to return 401, which propagates as null here.
-  async function requireNearMissAuth(req: any, res: any): Promise<{ displayName: string; email: string } | null> {
-    const caller = await resolveCallerFromToken(req.headers.authorization);
-    if (!caller) {
-      res.status(401).json({ success: false, error: 'Authentication required. Please sign in with Microsoft 365.' });
-      return null;
-    }
-    return caller;
-  }
+  // These endpoints only read from / write to the app's own database (never
+  // SharePoint or Graph), so they carry no identity check — any signed-in app
+  // user may view investigations, read/add notes, and close without a report.
+  // Attribution is intentionally not recorded for these actions.
 
   // GET /api/near-miss-investigations/:nearMissItemId
   app.get('/api/near-miss-investigations/:nearMissItemId', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const inv = await storage.getNearMissInvestigation(req.params.nearMissItemId);
       res.json({ success: true, data: inv || null });
@@ -6918,7 +6907,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
 
   // GET /api/near-miss-investigations/completed/all
   app.get('/api/near-miss-investigations/completed/all', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const invs = await storage.getAllCompletedInvestigations();
       res.json({ success: true, data: invs });
@@ -6929,7 +6917,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
 
   // POST /api/near-miss-investigations
   app.post('/api/near-miss-investigations', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const inv = await storage.createNearMissInvestigation(req.body);
       res.json({ success: true, data: inv });
@@ -6942,7 +6929,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   // PUT /api/near-miss-investigations/:id
   // Completed investigations are immutable — reject edits after sign-off.
   app.put('/api/near-miss-investigations/:id', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
@@ -6968,7 +6954,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   // role. Once both are present the investigation becomes Complete and the linked
   // Action is auto-advanced to "Ready to Close" (Action lifecycle = source of truth).
   app.post('/api/near-miss-investigations/:id/complete', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) return res.status(400).json({ success: false, error: 'Invalid id' });
@@ -7034,12 +7019,10 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   // allowed to jump a NearMiss straight to Completed — the workflow guard on
   // POST /api/action-items stays intact so the normal path is still protected.
   app.post('/api/near-miss-investigations/:itemId/close-without-report', async (req, res) => {
-    const caller = await requireNearMissAuth(req, res);
-    if (!caller) return;
     try {
       const nearMissItemId = decodeURIComponent(req.params.itemId);
       const { name } = req.body as { name?: string };
-      const closerName = (name && String(name).trim()) || caller.displayName || 'Unknown';
+      const closerName = (name && String(name).trim()) || 'Unknown';
       const stamp = `Closed without investigation — ${closerName}, ${new Date().toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
       // Append the closure note rather than overwrite any existing notes.
@@ -7061,7 +7044,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
 
   // GET /api/near-miss-investigations/:itemId/notes — time-stamped progress history
   app.get('/api/near-miss-investigations/:itemId/notes', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const notes = await storage.getInvestigationProgressNotes(decodeURIComponent(req.params.itemId));
       res.json({ success: true, data: notes });
@@ -7073,7 +7055,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
 
   // POST /api/near-miss-investigations/:itemId/notes — append a progress note
   app.post('/api/near-miss-investigations/:itemId/notes', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const nearMissItemId = decodeURIComponent(req.params.itemId);
       const { content, author } = req.body;
@@ -7098,7 +7079,6 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
 
   // POST /api/ai-near-miss-draft
   app.post('/api/ai-near-miss-draft', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const { section, context } = req.body;
       if (!section || !context) return res.status(400).json({ success: false, error: 'section and context required' });
@@ -7151,7 +7131,6 @@ Existing actions: ${context.existing || ''}`;
 
   // POST /api/generate-near-miss-report
   app.post('/api/generate-near-miss-report', async (req, res) => {
-    if (!await requireNearMissAuth(req, res)) return;
     try {
       const d = req.body;
       const hazards: any[] = typeof d.hazards === 'string' ? JSON.parse(d.hazards) : (d.hazards || []);

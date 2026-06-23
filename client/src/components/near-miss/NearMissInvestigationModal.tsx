@@ -132,11 +132,12 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   const [data, setData] = useState<InvestigationData>(empty);
   const [loaded, setLoaded] = useState(false);
 
+  // These near miss investigation endpoints operate on the app's own database
+  // only and are open to any signed-in user, so no Microsoft token is required.
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
-    const token = await authService.getSharePointToken();
     return fetch(url, {
       ...options,
-      headers: { ...options.headers, Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { ...options.headers, "Content-Type": "application/json" },
     });
   };
 
