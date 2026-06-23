@@ -703,12 +703,12 @@ export default function SignTab() {
                 <div className={styles.nextIcon}>
                   <CalendarLtr24Regular />
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
-                  <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }} block>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "2px", width: "100%" }}>
+                  <Text size={200} weight="semibold" align="center" style={{ color: tokens.colorBrandForeground1, textAlign: "center" }} block>
                     Next meeting
                   </Text>
-                  <Text size={400} weight="bold" block>{nextMeeting.displayDate}</Text>
-                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
+                  <Text size={400} weight="bold" align="center" style={{ textAlign: "center" }} block>{nextMeeting.displayDate}</Text>
+                  <Text size={200} align="center" style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }} block>
                     {relativeFromToday(nextMeeting.dateKey)} · sign after the meeting
                   </Text>
                 </div>
