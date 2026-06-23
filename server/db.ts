@@ -12,4 +12,14 @@ if (!process.env.DATABASE_URL) {
 }
 
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// Neon's serverless Pool emits 'error' on idle clients whose underlying
+// WebSocket drops (e.g. after a failed query or a network blip). If left
+// unhandled this surfaces as an uncaught exception and can leave the pool in a
+// bad state, stalling every later DB-backed request. Logging it lets the pool
+// discard the broken client and hand out a fresh one on the next acquire.
+pool.on('error', (err) => {
+  console.error('Database pool error (idle client):', err);
+});
+
 export const db = drizzle({ client: pool, schema });

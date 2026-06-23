@@ -26,6 +26,21 @@ export default function OverviewTab() {
     queryKey: ['/api/card-ordering']
   });
 
+  // Safety net: never let the grid stay stuck in skeletons. Even if
+  // /api/card-ordering hangs and never settles (e.g. a slow/stalled backend),
+  // reveal the cards in their default order after a short grace period so the
+  // home page can't be permanently gated on a single pending request.
+  useEffect(() => {
+    if (hasLoadedFromDB) return;
+    const fallback = setTimeout(() => {
+      setHasLoadedFromDB((loaded) => {
+        if (!loaded) setCards([...defaultCardOrder]);
+        return true;
+      });
+    }, 4000);
+    return () => clearTimeout(fallback);
+  }, [hasLoadedFromDB]);
+
   // Save card ordering to the database
   const saveCardOrderingMutation = useMutation({
     mutationFn: async (cardOrders: { cardId: string; position: number }[]) => {

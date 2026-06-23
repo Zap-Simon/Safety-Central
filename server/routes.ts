@@ -1034,7 +1034,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         listsService.getBusinessIdeas(),
         listsService.getSafetyIdeas(),
         listsService.getNearMiss(),
-        storage.getAllActionItems(),
+        storage.getAllActionItems().catch((err) => {
+          // A local-DB fault must not take down the whole meeting-history read.
+          // Degrade gracefully: SharePoint data still loads with no local
+          // action overrides merged in, rather than returning a 500.
+          console.error('Error reading local action items for meeting history:', err);
+          return [] as any[];
+        }),
         storage.getAllInvestigations().catch(() => [] as any[]),
       ]);
       
