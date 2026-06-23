@@ -23,3 +23,4 @@
 - [Actions page deep-link focus](actions-deeplink-focus.md) — deep-link into Actions must filter to the single item (focusedItemId), not open a detail modal (modal fetches trigger MSAL prompt); strike titles only when Completed, not Ready to Close.
 - [Lock vs closed key normalization](lock-vs-closed-key-normalization.md) — closed-meeting writes DON'T normalize the date key while lock writes do; any reader of meetingLocks must re-normalize via getDateGroupKey and OR the flags.
 - [Signature/attendance cross-ISO key merge](signature-attendance-iso-key-merge.md) — sigs/attendance stored by raw ISO; admin & Teams pick different per-day ISOs, so readers MUST merge by getDateGroupKey (signature status wins) or Teams sign-offs vanish.
+- [NZ date-arrival checks](nz-date-arrival-checks.md) — "has the meeting day arrived?" must compare against getNZTodayKey (Pacific/Auckland), not UTC, or early-morning meetings stay "upcoming" until ~noon NZ.
