@@ -40,12 +40,15 @@ interface SignatureRecord {
   signedAt: string;
 }
 
+type MeetingState = "open" | "upcoming" | "locked";
+
 interface SignMeeting {
   meetingDate: string;
   dateKey: string;
   displayDate: string;
   isPresent: boolean;
   mySignature: SignatureRecord | null;
+  state: MeetingState;
 }
 
 interface MeetingsResponse {
@@ -71,11 +74,40 @@ const useStyles = makeStyles({
   list: {
     display: "flex",
     flexDirection: "column",
-    gap: tokens.spacingVerticalM,
+    gap: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
     paddingTop: tokens.spacingVerticalS,
     paddingBottom: tokens.spacingVerticalXXL,
+  },
+  section: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+  },
+  sectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    paddingLeft: tokens.spacingHorizontalXS,
+  },
+  nextCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+    padding: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorBrandBackground2,
+  },
+  nextIcon: {
+    width: "44px",
+    height: "44px",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.borderRadiusCircular,
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundOnBrand,
   },
   meetingCard: {
     display: "flex",
@@ -83,6 +115,12 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalM,
     padding: tokens.spacingHorizontalL,
     cursor: "pointer",
+  },
+  meetingCardStatic: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+    padding: tokens.spacingHorizontalL,
   },
   meetingIcon: {
     width: "40px",
@@ -179,6 +217,22 @@ function statusBadge(status: SignatureStatus) {
   if (status === "signed") return <Badge appearance="tint" color="success">Signed</Badge>;
   if (status === "remote") return <Badge appearance="tint" color="brand">Remote</Badge>;
   return <Badge appearance="tint" color="informative">Marked absent</Badge>;
+}
+
+// Friendly relative label for a YYYY-MM-DD date key, computed in local time so
+// "Today"/"Tomorrow" match the user's calendar rather than UTC midnight.
+function relativeFromToday(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  if (!y || !m || !d) return "";
+  const target = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  if (diff > 1) return `In ${diff} days`;
+  if (diff === -1) return "Yesterday";
+  return `${Math.abs(diff)} days ago`;
 }
 
 function generateRemoteSignatureImage(name: string, date: string): string {
@@ -278,6 +332,15 @@ export default function SignTab() {
   // never stale, even after a remount restores the persisted dateKey.
   const meetings = meetingsQuery.data?.meetings ?? [];
   const selected = selectedKey ? meetings.find((m) => m.dateKey === selectedKey) ?? null : null;
+
+  // Group for display: open meetings need action, locked ones are read-only
+  // history, and upcoming ones surface the next meeting date.
+  const openMeetings = meetings.filter((m) => m.state === "open");
+  const pastMeetings = meetings.filter((m) => m.state === "locked");
+  const upcomingMeetings = meetings
+    .filter((m) => m.state === "upcoming")
+    .sort((a, b) => new Date(a.meetingDate).getTime() - new Date(b.meetingDate).getTime());
+  const nextMeeting = upcomingMeetings[0] ?? null;
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -408,6 +471,53 @@ export default function SignTab() {
     }
 
     const existing = selected.mySignature;
+
+    // Upcoming or admin-locked meetings are read-only: there's nothing to sign,
+    // so show the status (or that it hasn't happened yet) instead of the pad.
+    if (selected.state !== "open") {
+      const isUpcoming = selected.state === "upcoming";
+      return (
+        <TeamsPage>
+          <TeamsScroll>
+            <div className={`${styles.signPanel} animate-fade-in`}>
+              <Button
+                appearance="subtle"
+                icon={<ArrowLeft20Regular />}
+                onClick={backToList}
+                style={{ alignSelf: "flex-start" }}
+              >
+                All meetings
+              </Button>
+              <div>
+                <Text size={500} weight="bold" block>{selected.displayDate}</Text>
+                <Text size={200} block style={{ color: tokens.colorNeutralForeground3, marginTop: "2px" }}>
+                  {relativeFromToday(selected.dateKey)}
+                </Text>
+                {existing && (
+                  <div style={{ marginTop: tokens.spacingVerticalS }}>{statusBadge(existing.status)}</div>
+                )}
+              </div>
+              <MessageBar intent={isUpcoming ? "info" : "success"}>
+                <MessageBarBody>
+                  {isUpcoming
+                    ? "This meeting hasn't happened yet. You'll be able to sign your attendance once it has taken place."
+                    : "This meeting has been locked by an admin, so your attendance is now final and can't be changed."}
+                </MessageBarBody>
+              </MessageBar>
+              {existing?.signatureData && (
+                <div>
+                  <Text size={200} block style={{ color: tokens.colorNeutralForeground3, marginBottom: tokens.spacingVerticalXS }}>
+                    Your signature:
+                  </Text>
+                  <img src={existing.signatureData} alt="Your signature" className={styles.sigPreview} />
+                </div>
+              )}
+            </div>
+          </TeamsScroll>
+        </TeamsPage>
+      );
+    }
+
     return (
       <TeamsPage>
         <TeamsScroll>
@@ -570,37 +680,90 @@ export default function SignTab() {
       <TeamsPinned className={styles.intro}>
         <Text size={400} weight="bold">Sign meeting minutes</Text>
         <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-          Confirm your attendance for recent meetings. Newest first.
+          Sign recent meetings and see the ones you've attended.
         </Text>
       </TeamsPinned>
       <TeamsScroll>
-        {meetings.length === 0 ? (
+        {openMeetings.length === 0 && upcomingMeetings.length === 0 && pastMeetings.length === 0 ? (
           <TeamsCenter>
             <div className={styles.doneWrap}>
               <CalendarLtr24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
-              <Text size={400} weight="semibold">You're all caught up</Text>
-              <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
-                There are no open meetings to sign right now. Check back after the next H&amp;S meeting.
+              <Text size={400} weight="semibold" style={{ textAlign: "center" }}>You're all caught up</Text>
+              <Text size={300} style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
+                There are no meetings to sign right now. Once the next H&amp;S meeting is scheduled it will appear here.
               </Text>
             </div>
           </TeamsCenter>
         ) : (
           <div className={styles.list}>
-            {meetings.map((m) => (
-              <Card key={m.dateKey} className={`${styles.meetingCard} animate-fade-in-up`} onClick={() => openMeeting(m)}>
-                <div className={styles.meetingIcon}>
-                  {m.mySignature ? <CheckmarkCircle24Filled /> : <Signature24Regular />}
+            {nextMeeting && (
+              <Card className={`${styles.nextCard} animate-fade-in-up`}>
+                <div className={styles.nextIcon}>
+                  <CalendarLtr24Regular />
                 </div>
                 <div className={styles.meetingBody}>
-                  <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
-                  {m.mySignature ? (
-                    statusBadge(m.mySignature.status)
-                  ) : (
-                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to sign</Text>
-                  )}
+                  <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }} block>
+                    Next meeting
+                  </Text>
+                  <Text size={400} weight="bold" truncate block>{nextMeeting.displayDate}</Text>
+                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                    {relativeFromToday(nextMeeting.dateKey)} · sign after the meeting
+                  </Text>
                 </div>
               </Card>
-            ))}
+            )}
+
+            {openMeetings.length > 0 && (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <Signature24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
+                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
+                    Ready to sign
+                  </Text>
+                </div>
+                {openMeetings.map((m) => (
+                  <Card key={m.dateKey} className={`${styles.meetingCard} animate-fade-in-up`} onClick={() => openMeeting(m)}>
+                    <div className={styles.meetingIcon}>
+                      {m.mySignature ? <CheckmarkCircle24Filled /> : <Signature24Regular />}
+                    </div>
+                    <div className={styles.meetingBody}>
+                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
+                      {m.mySignature ? (
+                        statusBadge(m.mySignature.status)
+                      ) : (
+                        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to sign</Text>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {pastMeetings.length > 0 && (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <CheckmarkCircle24Filled style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
+                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
+                    Meetings you attended
+                  </Text>
+                </div>
+                {pastMeetings.map((m) => (
+                  <Card key={m.dateKey} className={`${styles.meetingCardStatic} animate-fade-in-up`} onClick={() => openMeeting(m)}>
+                    <div className={styles.meetingIcon}>
+                      <CheckmarkCircle24Filled />
+                    </div>
+                    <div className={styles.meetingBody}>
+                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
+                      {m.mySignature ? (
+                        statusBadge(m.mySignature.status)
+                      ) : (
+                        <Badge appearance="tint" color="success">Attended</Badge>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </TeamsScroll>

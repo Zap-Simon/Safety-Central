@@ -2836,25 +2836,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const meetings = Array.from(groups.entries())
-        .filter(([key]) => key <= todayKey) // never sign a meeting that hasn't happened
         .filter(([key]) => key >= SIGN_VISIBLE_FROM_KEY) // only the 23rd June 2026 onward
-        .filter(([key]) => {
-          const lock = lockByKey.get(key);
-          return !(lock?.isLocked || lock?.isClosed);
-        })
         .map(([key, iso]) => {
           const mySig = mySigByKey.get(key) ?? null;
           // A signature is the source of truth for presence; fall back to the
           // attendance union for people without a signature.
           const isPresent = mySig ? mySig.status !== 'absent' : myPresentKeys.has(key);
+          const lock = lockByKey.get(key);
+          const locked = !!(lock?.isLocked || lock?.isClosed);
+          const isFuture = key > todayKey;
+          // open    -> happened, not locked: the user can still sign/update
+          // upcoming-> hasn't happened yet: informational only
+          // locked  -> happened and locked by admin: read-only attendance record
+          const state: 'open' | 'upcoming' | 'locked' = isFuture
+            ? 'upcoming'
+            : locked
+            ? 'locked'
+            : 'open';
           return {
             meetingDate: iso,
             dateKey: key,
             displayDate: formatDisplayDate(iso, 'meeting'),
             isPresent,
             mySignature: mySig,
+            state,
           };
         })
+        // Locked meetings are kept only when this user was actually present, so
+        // the history reflects meetings they attended — meetings they signed as
+        // absent (or never attended) are not surfaced as "attended".
+        .filter((m) => (m.state === 'locked' ? m.isPresent : true))
         .sort((a, b) => new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime());
 
       res.json({
