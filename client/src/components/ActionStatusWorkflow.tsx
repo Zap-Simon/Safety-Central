@@ -92,8 +92,13 @@ export default function ActionStatusWorkflow({
           const isDone = !onHold && i < currentIdx;
           const isCurrent = !onHold && i === currentIdx;
           const isLocked = stage.value === "Completed" && !allowComplete;
+          // "Completed" is a terminal success state — show it green the moment it's
+          // selected (not amber), so it doesn't look "in progress" until reopened.
+          const isCompletedCurrent = isCurrent && stage.value === "Completed";
 
-          const circleClasses = isCurrent
+          const circleClasses = isCompletedCurrent
+            ? "bg-green-500 text-white ring-4 ring-green-200 border-green-500"
+            : isCurrent
             ? "bg-amber-500 text-white ring-4 ring-amber-200 border-amber-500"
             : isDone
             ? "bg-green-500 text-white border-green-500"
@@ -123,7 +128,7 @@ export default function ActionStatusWorkflow({
               </button>
               <span
                 className={`mt-1 text-center leading-tight ${compact ? "text-[9px]" : "text-[10px]"} ${
-                  isCurrent ? "font-bold text-amber-700" : isDone ? "font-medium text-green-700" : "text-gray-500"
+                  isCompletedCurrent ? "font-bold text-green-700" : isCurrent ? "font-bold text-amber-700" : isDone ? "font-medium text-green-700" : "text-gray-500"
                 }`}
               >
                 {stage.short}
@@ -135,10 +140,17 @@ export default function ActionStatusWorkflow({
 
       {/* Active-stage description */}
       {!onHold && activeStage && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          <activeStage.icon className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-amber-900 leading-snug">{activeStage.desc}</p>
-        </div>
+        activeStage.value === "Completed" ? (
+          <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            <activeStage.icon className="h-3.5 w-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-green-900 leading-snug">{activeStage.desc}</p>
+          </div>
+        ) : (
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <activeStage.icon className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-900 leading-snug">{activeStage.desc}</p>
+          </div>
+        )
       )}
 
       {/* Completion is handled in the meeting minutes for these items */}
