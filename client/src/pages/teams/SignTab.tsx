@@ -1131,7 +1131,7 @@ export default function SignTab() {
                         ? statusBadge(m.mySignature.status)
                         : <Badge appearance="tint" color="success">Attended</Badge>
                     }
-                    onClick={() => openMeeting(m)}
+                    onClick={() => openMinutes(m.dateKey, m.displayDate)}
                   />
                 ))}
               </div>
