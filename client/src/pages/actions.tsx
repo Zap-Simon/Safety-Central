@@ -428,14 +428,14 @@ export default function Actions() {
   };
 
   const stats = {
-    total: liveActionItems.length,
-    open: liveActionItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
-    completed: liveActionItems.filter(i => i.actionStatus === 'Completed').length,
-    overdue: liveActionItems.filter(i => {
+    total: filteredItems.length,
+    open: filteredItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
+    completed: filteredItems.filter(i => i.actionStatus === 'Completed').length,
+    overdue: filteredItems.filter(i => {
       if (!i.actionDueDate || isArchivedStatus(i.actionStatus)) return false;
       return new Date(i.actionDueDate) < new Date();
     }).length,
-    highPriority: liveActionItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
+    highPriority: filteredItems.filter(i => i.actionPriority === 'High' && !isArchivedStatus(i.actionStatus)).length
   };
 
   // Exports now run on the shared, professional server export engine (the same
