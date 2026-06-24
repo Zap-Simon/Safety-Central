@@ -133,9 +133,13 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusCircular,
     fontWeight: tokens.fontWeightSemibold,
   },
+  // Pill text uses colorBrandBackground (not colorBrandForeground1): the pill bg
+  // is colorNeutralForegroundOnBrand, and brandBackground↔onBrand is a
+  // guaranteed-contrast pair in every theme. colorBrandForeground1 is a light
+  // lavender in Teams dark mode and turns near-invisible on the white pill.
   heroActionSolid: {
     backgroundColor: tokens.colorNeutralForegroundOnBrand,
-    color: tokens.colorBrandForeground1,
+    color: tokens.colorBrandBackground,
   },
   // On the tint hero the action reads as a link rather than a filled pill, so the
   // solid signing hero stays visually dominant.

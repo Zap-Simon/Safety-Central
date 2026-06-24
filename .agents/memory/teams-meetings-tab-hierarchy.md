@@ -12,3 +12,8 @@ The Teams Meetings tab (`client/src/pages/teams/SignTab.tsx`, shared cards in `M
 **Why:** the boss values agendas, compliance values minutes, but signing is the one thing that *must not be missed*, so it out-weighs everything when pending. Keep this ordering if you add sections.
 
 **How to apply:** `HeroCard` has two tones — `solid` (top action) and `tint` (secondary). Don't give two solid heroes at once; the solid slot is reserved for the single most important thing on screen. Open meetings are sorted newest-first so the hero is deterministic regardless of backend order.
+
+## HeroCard solid-tone contrast (dark mode trap)
+On the solid-brand HeroCard the action pill bg is `colorNeutralForegroundOnBrand` (white). Its text MUST be `colorBrandBackground`, NOT `colorBrandForeground1`.
+**Why:** in `teamsDarkTheme` `colorBrandForeground1` is a light lavender (#7f85f5) and sits ~2.7:1 on the white pill — looks white-on-white. `colorBrandBackground`↔`colorNeutralForegroundOnBrand` is a guaranteed-contrast pair in light/dark/high-contrast (it's the card's own fill vs its text).
+**How to apply:** any "white chip on brand fill" element should take its foreground from `colorBrandBackground`, not the brand *foreground* ramp. Verify hero token pairings against all three teams themes, not just light.
