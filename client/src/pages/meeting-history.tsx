@@ -92,8 +92,11 @@ export default function MeetingHistory() {
   const [expandedActionEditors, setExpandedActionEditors] = useState<Set<string>>(new Set());
   const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set());
   const [meetingAttendance, setMeetingAttendance] = useState<Record<string, string[]>>({});
-  // Per-meeting free-text input for the guest "Add" field (keyed by raw meetingDate).
+  // Per-meeting free-text inputs for the guest "Add" panel (keyed by raw meetingDate).
   const [guestInputs, setGuestInputs] = useState<Record<string, string>>({});
+  const [guestTitleInputs, setGuestTitleInputs] = useState<Record<string, string>>({});
+  // Guest titles fetched from DB: meetingDate → attendeeName → title
+  const [guestTitles, setGuestTitles] = useState<Record<string, Record<string, string>>>({});
   const [showAttendanceSelector, setShowAttendanceSelector] = useState<string>('');
   const [lockedAttendance, setLockedAttendance] = useState<Record<string, boolean>>({});
   const [meetingSignatures, setMeetingSignatures] = useState<Record<string, Record<string, { status: 'signed' | 'remote' | 'absent'; signatureData: string | null; signedAt: string }>>>({});
@@ -936,6 +939,12 @@ export default function MeetingHistory() {
     queryFn: () => fetch('/api/meeting-attendance').then(res => res.json()),
   });
 
+  // Guest titles query (meetingDate → attendeeName → title)
+  const { data: guestTitlesResponse } = useQuery({
+    queryKey: ['/api/meeting-guest-titles'],
+    queryFn: () => fetch('/api/meeting-guest-titles').then(res => res.json()),
+  });
+
   // Meeting signatures query
   const { data: signaturesResponse } = useQuery({
     queryKey: ['/api/meeting-signatures'],
@@ -961,6 +970,13 @@ export default function MeetingHistory() {
       setMeetingAttendance(attendanceResponse.attendance);
     }
   }, [attendanceResponse]);
+
+  // Update guest titles from API response
+  useEffect(() => {
+    if (guestTitlesResponse?.success && guestTitlesResponse.titles) {
+      setGuestTitles(guestTitlesResponse.titles);
+    }
+  }, [guestTitlesResponse]);
 
   // Signatures/attendance are stored keyed by a raw meeting ISO string. The admin
   // page and the Teams personal Sign tab can each pick a different representative
@@ -1043,25 +1059,25 @@ export default function MeetingHistory() {
   });
 
   const updateMeetingAttendanceMutation = useMutation({
-    mutationFn: async ({ meetingDate, attendeeName, isPresent }: { meetingDate: string, attendeeName: string, isPresent: boolean }) => {
+    mutationFn: async ({ meetingDate, attendeeName, isPresent, guestTitle }: { meetingDate: string, attendeeName: string, isPresent: boolean, guestTitle?: string }) => {
       const response = await fetch('/api/meeting-attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           meetingDate,
           attendeeName,
-          isPresent
+          isPresent,
+          guestTitle
         })
       });
       return response.json();
     },
     onSuccess: (data, variables) => {
       if (data.success) {
-        // Update local state immediately for responsive UI
+        // Update local attendance state immediately
         setMeetingAttendance(prev => {
           const current = prev[variables.meetingDate] || [];
           if (variables.isPresent) {
-            // Add attendee if not already present
             if (!current.includes(variables.attendeeName)) {
               return {
                 ...prev,
@@ -1069,7 +1085,6 @@ export default function MeetingHistory() {
               };
             }
           } else {
-            // Remove attendee
             return {
               ...prev,
               [variables.meetingDate]: current.filter(name => name !== variables.attendeeName)
@@ -1077,8 +1092,18 @@ export default function MeetingHistory() {
           }
           return prev;
         });
-        // Invalidate queries to refresh data
+        // Optimistically update guestTitles state so pills show the title immediately
+        if (variables.guestTitle && variables.isPresent) {
+          setGuestTitles(prev => ({
+            ...prev,
+            [variables.meetingDate]: {
+              ...(prev[variables.meetingDate] ?? {}),
+              [variables.attendeeName]: variables.guestTitle!,
+            }
+          }));
+        }
         queryClient.invalidateQueries({ queryKey: ['/api/meeting-attendance'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/meeting-guest-titles'] });
       }
     },
     onError: (error) => {
@@ -2988,9 +3013,26 @@ export default function MeetingHistory() {
                                   .filter(([k]) => getDateGroupKey(k) === getDateGroupKey(meetingDate))
                                   .flatMap(([, names]) => names)
                               )).filter(name => !rosterNameSet.has(name));
+                              // Merge guest titles for this day across all matching raw date keys
+                              const dayTitles = Object.entries(guestTitles)
+                                .filter(([k]) => getDateGroupKey(k) === getDateGroupKey(meetingDate))
+                                .reduce<Record<string, string>>((acc, [, t]) => ({ ...acc, ...t }), {});
                               const guestInput = guestInputs[meetingDate] ?? '';
+                              const guestTitleInput = guestTitleInputs[meetingDate] ?? '';
                               const alreadyInList = guestInput.trim() !== '' &&
                                 isAttending(meetingDate, guestInput.trim());
+                              const addGuest = () => {
+                                const name = guestInput.trim();
+                                if (!name || alreadyInList) return;
+                                updateMeetingAttendanceMutation.mutate({
+                                  meetingDate,
+                                  attendeeName: name,
+                                  isPresent: true,
+                                  guestTitle: guestTitleInput.trim() || undefined,
+                                });
+                                setGuestInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                                setGuestTitleInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                              };
                               return (
                                 <div className="mt-3 pt-3 border-t border-blue-100">
                                   <div className="flex items-center gap-2 mb-2">
@@ -3003,56 +3045,66 @@ export default function MeetingHistory() {
                                   </div>
                                   {guestNames.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-2">
-                                      {guestNames.map(name => (
-                                        <span
-                                          key={name}
-                                          className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-sm text-gray-700"
-                                        >
-                                          {name}
-                                          {!isLocked && (
-                                            <button
-                                              type="button"
-                                              onClick={() => toggleAttendee(meetingDate, name)}
-                                              className="text-gray-400 hover:text-red-500 leading-none ml-0.5"
-                                              aria-label={`Remove ${name}`}
-                                            >
-                                              ×
-                                            </button>
-                                          )}
-                                        </span>
-                                      ))}
+                                      {guestNames.map(name => {
+                                        const title = dayTitles[name];
+                                        return (
+                                          <span
+                                            key={name}
+                                            className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-sm text-gray-700"
+                                          >
+                                            <span>
+                                              {name}
+                                              {title && (
+                                                <span className="text-gray-400 text-xs ml-1">· {title}</span>
+                                              )}
+                                            </span>
+                                            {!isLocked && (
+                                              <button
+                                                type="button"
+                                                onClick={() => toggleAttendee(meetingDate, name)}
+                                                className="text-gray-400 hover:text-red-500 leading-none ml-0.5"
+                                                aria-label={`Remove ${name}`}
+                                              >
+                                                ×
+                                              </button>
+                                            )}
+                                          </span>
+                                        );
+                                      })}
                                     </div>
                                   )}
                                   {!isLocked && (
-                                    <div className="flex gap-2">
-                                      <input
-                                        type="text"
-                                        placeholder="Guest name…"
-                                        value={guestInput}
-                                        onChange={e =>
-                                          setGuestInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
-                                        }
-                                        onKeyDown={e => {
-                                          if (e.key === 'Enter' && guestInput.trim() && !alreadyInList) {
-                                            toggleAttendee(meetingDate, guestInput.trim());
-                                            setGuestInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                                    <div className="flex flex-col gap-1.5">
+                                      <div className="flex gap-2">
+                                        <input
+                                          type="text"
+                                          placeholder="Guest name…"
+                                          value={guestInput}
+                                          onChange={e =>
+                                            setGuestInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
                                           }
-                                        }}
-                                        className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          if (guestInput.trim() && !alreadyInList) {
-                                            toggleAttendee(meetingDate, guestInput.trim());
-                                            setGuestInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                                          onKeyDown={e => { if (e.key === 'Enter') addGuest(); }}
+                                          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <input
+                                          type="text"
+                                          placeholder="Title / company (optional)"
+                                          value={guestTitleInput}
+                                          onChange={e =>
+                                            setGuestTitleInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
                                           }
-                                        }}
-                                        disabled={!guestInput.trim() || alreadyInList}
-                                        className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-                                      >
-                                        Add guest
-                                      </button>
+                                          onKeyDown={e => { if (e.key === 'Enter') addGuest(); }}
+                                          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={addGuest}
+                                          disabled={!guestInput.trim() || alreadyInList}
+                                          className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                                        >
+                                          Add guest
+                                        </button>
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -4845,7 +4897,12 @@ export default function MeetingHistory() {
               .filter(a => existingSigs[a.name]?.status !== 'absent'),
             ..._guestNamesForCarousel
               .filter(n => existingSigs[n]?.status !== 'absent')
-              .map(name => ({ name, role: 'Guest' })),
+              .map(name => {
+                const carouselDayTitles = Object.entries(guestTitles)
+                  .filter(([k]) => getDateGroupKey(k) === getDateGroupKey(showSignatureCarousel))
+                  .reduce<Record<string, string>>((acc, [, t]) => ({ ...acc, ...t }), {});
+                return { name, role: carouselDayTitles[name] || 'Guest' };
+              }),
           ];
           const displayDate = (() => { try { return new Date(showSignatureCarousel).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return showSignatureCarousel; } })();
           return (

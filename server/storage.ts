@@ -86,8 +86,9 @@ export interface IStorage {
   // Meeting attendance methods
   getMeetingAttendance(meetingDate: string): Promise<MeetingAttendance[]>;
   setMeetingAttendance(attendance: InsertMeetingAttendance): Promise<MeetingAttendance>;
-  updateMeetingAttendance(meetingDate: string, attendeeName: string, isPresent: boolean): Promise<MeetingAttendance>;
+  updateMeetingAttendance(meetingDate: string, attendeeName: string, isPresent: boolean, guestTitle?: string): Promise<MeetingAttendance>;
   getAllMeetingAttendance(): Promise<Record<string, string[]>>;
+  getAllGuestTitles(): Promise<Record<string, Record<string, string>>>;
   updateMeetingSignature(meetingDate: string, attendeeName: string, status: string, signatureData: string | null, signedAt: string): Promise<MeetingAttendance>;
   getMeetingSignatures(meetingDate: string): Promise<Record<string, { status: string; signatureData: string | null; signedAt: string }>>;
   getAllMeetingSignatures(): Promise<Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>>;
@@ -348,7 +349,7 @@ export class DatabaseStorage implements IStorage {
     return record;
   }
 
-  async updateMeetingAttendance(meetingDate: string, attendeeName: string, isPresent: boolean): Promise<MeetingAttendance> {
+  async updateMeetingAttendance(meetingDate: string, attendeeName: string, isPresent: boolean, guestTitle?: string): Promise<MeetingAttendance> {
     // Try to find existing record
     const existingRecords = await db
       .select()
@@ -358,15 +359,30 @@ export class DatabaseStorage implements IStorage {
     const existing = existingRecords.find(record => record.attendeeName === attendeeName);
 
     if (existing) {
+      const updateFields: Partial<typeof existing> = { isPresent };
+      if (guestTitle !== undefined) (updateFields as any).guestTitle = guestTitle || null;
       const [updated] = await db
         .update(meetingAttendance)
-        .set({ isPresent })
+        .set(updateFields as any)
         .where(eq(meetingAttendance.id, existing.id))
         .returning();
       return updated;
     } else {
-      return this.setMeetingAttendance({ meetingDate, attendeeName, isPresent });
+      return this.setMeetingAttendance({ meetingDate, attendeeName, isPresent, guestTitle: guestTitle ?? null } as any);
     }
+  }
+
+  async getAllGuestTitles(): Promise<Record<string, Record<string, string>>> {
+    const records = await db.select().from(meetingAttendance);
+    const result: Record<string, Record<string, string>> = {};
+    for (const record of records) {
+      const title = (record as any).guestTitle as string | null | undefined;
+      if (title) {
+        if (!result[record.meetingDate]) result[record.meetingDate] = {};
+        result[record.meetingDate][record.attendeeName] = title;
+      }
+    }
+    return result;
   }
 
   async getAllMeetingAttendance(): Promise<Record<string, string[]>> {

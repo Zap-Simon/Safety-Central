@@ -1480,7 +1480,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // meeting's minutes until it's formally closed.
       const readyToCloseActions = buildReadyToCloseActions(meetingData);
 
-      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures, readyToCloseActions);
+      let guestTitlesForExport: Record<string, string> = {};
+      try {
+        const allGuestTitles = await storage.getAllGuestTitles();
+        if (selectedMeeting && selectedMeeting !== 'all') {
+          const normSel = getDateGroupKey(selectedMeeting);
+          for (const [key, titles] of Object.entries(allGuestTitles)) {
+            if (getDateGroupKey(key) === normSel) Object.assign(guestTitlesForExport, titles);
+          }
+        } else {
+          for (const titles of Object.values(allGuestTitles)) Object.assign(guestTitlesForExport, titles);
+        }
+      } catch (e) {
+        console.warn('Could not fetch guest titles for export:', e);
+      }
+
+      const htmlContent = generateMeetingMinutesHTML(filteredData, meetingDate, currentDate, meetingAttendance, selectedMeeting, meetingSignatures, readyToCloseActions, guestTitlesForExport);
       
       // Generate unique ID for shareable URL
       const shareId = 'meeting-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
@@ -2782,7 +2797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/meeting-attendance', async (req, res) => {
     try {
-      const { meetingDate, attendeeName, isPresent } = req.body;
+      const { meetingDate, attendeeName, isPresent, guestTitle } = req.body;
       
       if (!meetingDate || !attendeeName) {
         return res.status(400).json({
@@ -2800,9 +2815,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const attendanceRecord = await storage.updateMeetingAttendance(
-        meetingDate, 
-        attendeeName, 
-        isPresent !== false
+        meetingDate,
+        attendeeName,
+        isPresent !== false,
+        guestTitle || undefined
       );
       
       res.json({
@@ -2815,6 +2831,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update meeting attendance'
       });
+    }
+  });
+
+  app.get('/api/meeting-guest-titles', async (req, res) => {
+    try {
+      const titles = await storage.getAllGuestTitles();
+      res.json({ success: true, titles });
+    } catch (error) {
+      res.status(500).json({ success: false, error: 'Failed to fetch guest titles' });
     }
   });
 
@@ -3224,6 +3249,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // the official export, so the same outstanding action surfaces until closed.
       const readyToCloseActions = buildReadyToCloseActions(allItems);
 
+      let guestTitlesForDay: Record<string, string> = {};
+      try {
+        const allGuestTitles = await storage.getAllGuestTitles();
+        for (const [key, titles] of Object.entries(allGuestTitles)) {
+          if (getDateGroupKey(key) === dateKey) Object.assign(guestTitlesForDay, titles);
+        }
+      } catch {}
+
       const html = generateTeamsMinutesHTML(
         dayItems,
         displayDate,
@@ -3231,6 +3264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         presentNamesForDay,
         hasAttendanceData,
         readyToCloseActions,
+        guestTitlesForDay,
       );
       res.json({ success: true, displayDate, html });
     } catch (error) {
@@ -3293,6 +3327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         new Set<string>(),
         false,
         readyToCloseActions,
+        {},
         { isAgenda: true },
       );
       res.json({ success: true, displayDate, html });
@@ -5630,6 +5665,7 @@ function generateTeamsMinutesHTML(
   presentNames: Set<string>,
   hasAttendanceData: boolean,
   readyToCloseActions: ReadyToCloseAction[],
+  guestTitles: Record<string, string> = {},
   opts: { isAgenda?: boolean } = {},
 ): string {
   const typeColors: Record<string, string> = {
@@ -5712,7 +5748,7 @@ function generateTeamsMinutesHTML(
   const _rosterNameSet = new Set(allRosterMembers.map(a => a.name));
   const _guestAttendees = Object.keys(meetingSignatures)
     .filter(name => !_rosterNameSet.has(name))
-    .map(name => ({ name, role: 'Guest' }));
+    .map(name => ({ name, role: guestTitles[name] || 'Guest' }));
   const allAttendees = [...allRosterMembers, ..._guestAttendees];
 
   const present = allAttendees.filter((a) => {
@@ -5844,7 +5880,7 @@ function generateTeamsMinutesHTML(
 }
 
 // HTML Meeting Minutes Generator Function
-function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>, readyToCloseActions: ReadyToCloseAction[] = []): string {
+function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, currentDate: string, meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>, readyToCloseActions: ReadyToCloseAction[] = [], guestTitles: Record<string, string> = {}): string {
   const typeColors = {
     'Business Ideas': '#2563eb',
     'Safety Ideas': '#dc2626', 
@@ -6440,7 +6476,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
     <div class="signatures">
         <div class="section-header">IV. Meeting Attendance &amp; Sign-Off</div>
         
-        ${generateAttendanceSection(meetingAttendance, selectedMeeting, meetingDate, meetingSignatures)}
+        ${generateAttendanceSection(meetingAttendance, selectedMeeting, meetingDate, meetingSignatures, guestTitles)}
     </div>
     </div>
 
@@ -6481,7 +6517,7 @@ function generateActionRequiredSection(item: any): string {
 }
 
 // Generate attendance section with UI synchronization
-function generateAttendanceSection(meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingDate?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>): string {
+function generateAttendanceSection(meetingAttendance?: Record<string, string[]>, selectedMeeting?: string, meetingDate?: string, meetingSignatures?: Record<string, Record<string, { status: string; signatureData: string | null; signedAt: string }>>, guestTitles: Record<string, string> = {}): string {
   // Use the canonical roster (shared/meetingRoster.ts) so attendee names match
   // exactly the names signatures/attendance are keyed by. A divergent local list
   // (e.g. "Dan Conlan" vs the roster's "Daniel Conlan") silently fails the
@@ -6513,7 +6549,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
     const _guestFromAttendance = Array.from(presentNames).filter(n => !_rosterSet.has(n));
     const _uniqueGuests = Array.from(new Set([..._guestFromSigs, ..._guestFromAttendance]));
     if (_uniqueGuests.length > 0) {
-      allAttendees = [...allRosterMembers, ..._uniqueGuests.map(name => ({ name, role: 'Guest' }))];
+      allAttendees = [...allRosterMembers, ..._uniqueGuests.map(name => ({ name, role: guestTitles[name] || 'Guest' }))];
     }
   }
 
