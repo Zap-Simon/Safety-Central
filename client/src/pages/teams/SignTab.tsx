@@ -106,6 +106,14 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
   },
+  // The attendance tier gets a little extra breathing room above it so the
+  // tier-1 agenda/sign hero above keeps more visual real estate.
+  attendanceSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+    marginTop: tokens.spacingVerticalM,
+  },
   // Stacks the two tier-1 heroes (signing + agenda) a touch tighter than the
   // gap between full sections so they read as one priority zone.
   heroStack: {
@@ -1103,7 +1111,7 @@ export default function SignTab() {
 
             {/* ─── Tier 2: signing & attendance ──────────────────────────── */}
             {hasAttendance && (
-              <div className={styles.section}>
+              <div className={styles.attendanceSection}>
                 <SectionHeader
                   icon={<CheckmarkCircle24Filled style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
                   label="Your attendance"
