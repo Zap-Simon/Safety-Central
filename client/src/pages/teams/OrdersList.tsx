@@ -217,7 +217,7 @@ export default function OrdersList() {
   });
 
   return (
-    <Accordion collapsible defaultOpenItems="orders" className={styles.wrap}>
+    <Accordion collapsible className={styles.wrap}>
       <AccordionItem value="orders">
         <AccordionHeader icon={<Cart16Regular />} expandIconPosition="end">
           <span className={styles.headerRow}>
