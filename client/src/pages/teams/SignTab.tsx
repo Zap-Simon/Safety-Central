@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
-  Card,
   Text,
   Spinner,
   Badge,
@@ -23,7 +22,6 @@ import {
   ArrowCounterclockwise20Regular,
   DocumentText24Regular,
   DocumentText20Regular,
-  ChevronRight20Regular,
 } from "@fluentui/react-icons";
 import {
   TeamsPage,
@@ -33,7 +31,7 @@ import {
   TeamsFullScreen,
 } from "./TeamsPageShell";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
-import { SectionHeader, MeetingCard } from "./MeetingCards";
+import { SectionHeader, MeetingCard, HeroCard } from "./MeetingCards";
 
 type SignatureStatus = "signed" | "remote" | "absent";
 
@@ -108,37 +106,12 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
   },
-  nextCard: {
+  // Stacks the two tier-1 heroes (signing + agenda) a touch tighter than the
+  // gap between full sections so they read as one priority zone.
+  heroStack: {
     display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalM,
-    padding: tokens.spacingHorizontalL,
-    backgroundColor: tokens.colorBrandBackground2,
-    cursor: "pointer",
-    transitionProperty: "background-color, transform",
-    transitionDuration: tokens.durationFaster,
-    ":hover": { backgroundColor: tokens.colorBrandBackground2Hover },
-    ":active": { transform: "scale(0.99)" },
-  },
-  nextIcon: {
-    width: "44px",
-    height: "44px",
-    flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: tokens.borderRadiusCircular,
-    backgroundColor: tokens.colorBrandBackground,
-    color: tokens.colorNeutralForegroundOnBrand,
-  },
-  nextBody: { flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
-  agendaCue: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalXXS,
-    marginTop: tokens.spacingVerticalXXS,
-    color: tokens.colorBrandForeground1,
-    fontWeight: tokens.fontWeightSemibold,
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
   },
   signPanel: {
     display: "flex",
@@ -437,13 +410,26 @@ export default function SignTab() {
   const selected = selectedKey ? meetings.find((m) => m.dateKey === selectedKey) ?? null : null;
 
   // Group for display: open meetings need action, locked ones are read-only
-  // history, and upcoming ones surface the next meeting date.
-  const openMeetings = meetings.filter((m) => m.state === "open");
+  // history, and upcoming ones surface the next meeting date. Open meetings are
+  // sorted newest-first so the tier-1 hero is deterministically the most recent
+  // meeting awaiting signature regardless of the order the backend returns them.
+  const openMeetings = meetings
+    .filter((m) => m.state === "open")
+    .sort((a, b) => new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime());
   const pastMeetings = meetings.filter((m) => m.state === "locked");
   const upcomingMeetings = meetings
     .filter((m) => m.state === "upcoming")
     .sort((a, b) => new Date(a.meetingDate).getTime() - new Date(b.meetingDate).getTime());
   const nextMeeting = upcomingMeetings[0] ?? null;
+
+  // Split open meetings by whether the user has actually signed yet. Unsigned
+  // ones are the urgent action that drives the tier-1 hero; already-signed open
+  // meetings just await an admin lock, so they sit quietly in the attendance tier.
+  const unsignedOpen = openMeetings.filter((m) => !m.mySignature);
+  const signedOpen = openMeetings.filter((m) => m.mySignature);
+  // The hero takes the most recent unsigned meeting; any extras list below it.
+  const heroSignMeeting = unsignedOpen[0] ?? null;
+  const extraUnsignedOpen = unsignedOpen.slice(1);
 
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -944,6 +930,7 @@ export default function SignTab() {
                   <MeetingCard
                     key={m.dateKey}
                     icon={<DocumentText24Regular />}
+                    iconTone="neutral"
                     title={m.displayDate}
                     subtitle="Tap to read minutes"
                     onClick={() => openMinutes(m.dateKey, m.displayDate)}
@@ -969,16 +956,29 @@ export default function SignTab() {
     (m) => !shownKeys.has(m.dateKey),
   );
 
+  // Attendance tier groups the open-but-already-signed meetings (awaiting an
+  // admin lock) with the locked meetings the user attended — both are "your
+  // attendance is recorded" rows, just at different lifecycle stages.
+  const hasAttendance = signedOpen.length > 0 || pastMeetings.length > 0;
+  const hasAnything =
+    !!heroSignMeeting ||
+    !!nextMeeting ||
+    extraUnsignedOpen.length > 0 ||
+    hasAttendance ||
+    readableMinutes.length > 0;
+
   return (
     <TeamsPage>
       <TeamsPinned className={styles.intro}>
         <Text size={400} weight="bold">Meetings</Text>
         <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-          View the next meeting's agenda, sign recent meetings, and read past minutes.
+          {heroSignMeeting
+            ? "Sign your attendance, view the next agenda, and read past minutes."
+            : "View the next meeting's agenda, sign recent meetings, and read past minutes."}
         </Text>
       </TeamsPinned>
       <TeamsScroll>
-        {openMeetings.length === 0 && upcomingMeetings.length === 0 && pastMeetings.length === 0 && readableMinutes.length === 0 ? (
+        {!hasAnything ? (
           <TeamsCenter>
             <div className={styles.doneWrap}>
               <CalendarLtr24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
@@ -990,66 +990,84 @@ export default function SignTab() {
           </TeamsCenter>
         ) : (
           <div className={styles.list}>
-            {nextMeeting && (
-              <div className={styles.section}>
-                <SectionHeader
-                  icon={<CalendarLtr24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
-                  label="Upcoming meeting · agenda"
-                />
-                <Card
-                  className={`${styles.nextCard} animate-fade-in-up`}
-                  onClick={() => openAgenda(nextMeeting.dateKey, nextMeeting.displayDate)}
-                >
-                  <div className={styles.nextIcon}>
-                    <CalendarLtr24Regular />
-                  </div>
-                  <div className={styles.nextBody}>
-                    <Text size={400} weight="bold" truncate block>{nextMeeting.displayDate}</Text>
-                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
-                      {relativeFromToday(nextMeeting.dateKey)}
-                    </Text>
-                    <span className={styles.agendaCue}>
-                      <DocumentText20Regular />
-                      <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }}>
-                        View the agenda
-                      </Text>
-                    </span>
-                  </div>
-                  <ChevronRight20Regular style={{ flexShrink: 0, color: tokens.colorBrandForeground1 }} />
-                </Card>
+            {/* ─── Tier 1: priority zone ─────────────────────────────────── */}
+            {/* Signing is the highest-importance action, so when something needs
+                signing it takes the solid-brand hero. The agenda still appears,
+                but as the brand-tint hero just beneath it. With nothing to sign,
+                the agenda is promoted to the solid hero. */}
+            {(heroSignMeeting || nextMeeting) && (
+              <div className={styles.heroStack}>
+                {heroSignMeeting && (
+                  <HeroCard
+                    tone="solid"
+                    icon={<Signature24Regular />}
+                    eyebrow="Action needed · sign"
+                    title={heroSignMeeting.displayDate}
+                    subtitle={`${relativeFromToday(heroSignMeeting.dateKey)} · confirm how you attended`}
+                    actionLabel="Sign your attendance"
+                    onClick={() => openMeeting(heroSignMeeting)}
+                  />
+                )}
+                {nextMeeting && (
+                  <HeroCard
+                    tone={heroSignMeeting ? "tint" : "solid"}
+                    icon={<CalendarLtr24Regular />}
+                    eyebrow="Next meeting · agenda"
+                    title={nextMeeting.displayDate}
+                    subtitle={relativeFromToday(nextMeeting.dateKey)}
+                    actionLabel="View the agenda"
+                    onClick={() => openAgenda(nextMeeting.dateKey, nextMeeting.displayDate)}
+                  />
+                )}
               </div>
             )}
 
-            {openMeetings.length > 0 && (
+            {/* Any further unsigned meetings beyond the hero. */}
+            {extraUnsignedOpen.length > 0 && (
               <div className={styles.section}>
                 <SectionHeader
                   icon={<Signature24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
-                  label="Ready to sign"
+                  label="Also ready to sign"
                 />
-                {openMeetings.map((m) => (
+                {extraUnsignedOpen.map((m) => (
                   <MeetingCard
                     key={m.dateKey}
-                    icon={m.mySignature ? <CheckmarkCircle24Filled /> : <Signature24Regular />}
+                    icon={<Signature24Regular />}
+                    iconTone="brand"
                     title={m.displayDate}
-                    subtitle={m.mySignature ? statusBadge(m.mySignature.status) : "Tap to sign"}
+                    subtitle="Tap to sign your attendance"
                     onClick={() => openMeeting(m)}
                   />
                 ))}
               </div>
             )}
 
-            {pastMeetings.length > 0 && (
+            {/* ─── Tier 2: signing & attendance ──────────────────────────── */}
+            {hasAttendance && (
               <div className={styles.section}>
                 <SectionHeader
                   icon={<CheckmarkCircle24Filled style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
-                  label="Meetings you attended"
+                  label="Your attendance"
                 />
+                {signedOpen.map((m) => (
+                  <MeetingCard
+                    key={m.dateKey}
+                    icon={<CheckmarkCircle24Filled />}
+                    iconTone="success"
+                    title={m.displayDate}
+                    subtitle="Awaiting admin lock · tap to update"
+                    trailing={m.mySignature ? statusBadge(m.mySignature.status) : undefined}
+                    onClick={() => openMeeting(m)}
+                  />
+                ))}
                 {pastMeetings.map((m) => (
                   <MeetingCard
                     key={m.dateKey}
                     icon={<CheckmarkCircle24Filled />}
+                    iconTone="success"
                     title={m.displayDate}
-                    subtitle={
+                    subtitle="Tap to view the minutes"
+                    trailing={
                       m.mySignature
                         ? statusBadge(m.mySignature.status)
                         : <Badge appearance="tint" color="success">Attended</Badge>
@@ -1060,16 +1078,18 @@ export default function SignTab() {
               </div>
             )}
 
+            {/* ─── Tier 3: the quiet minutes archive ─────────────────────── */}
             {readableMinutes.length > 0 && (
               <div className={styles.section}>
                 <SectionHeader
                   icon={<DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
-                  label={pastMeetings.length > 0 ? "Other meeting minutes" : "Meeting minutes"}
+                  label={hasAttendance ? "Minutes archive" : "Meeting minutes"}
                 />
                 {readableMinutes.map((m) => (
                   <MeetingCard
                     key={m.dateKey}
                     icon={<DocumentText24Regular />}
+                    iconTone="neutral"
                     title={m.displayDate}
                     subtitle="Tap to read minutes"
                     onClick={() => openMinutes(m.dateKey, m.displayDate)}

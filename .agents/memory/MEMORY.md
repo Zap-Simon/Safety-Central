@@ -28,3 +28,4 @@
 - [Teams locked-minutes read access](teams-minutes-read-access.md) — ANY signed-in staff may READ locked minutes (no roster match/allowlist); read is decoupled from sign (which still needs roster match); list loads for all authed users.
 - [action_items duplicate listType rows](action-items-duplicate-listtype.md) — same SharePoint item can have >1 local row (legacy "Safety Ideas" vs "SafetyIdeas"); readers MUST collapse by greatest updatedAt (latest row wins wholesale), never bare map.set or saved fields revert.
 - [Teams srcDoc iframe blank on iOS](teams-srcdoc-ios-blank.md) — srcDoc iframe must use sandbox="allow-same-origin" or iOS WebKit (Teams mobile) renders it blank; omit allow-scripts.
+- [Teams Meetings tab visual hierarchy](teams-meetings-tab-hierarchy.md) — SignTab is 3 tiers by business importance not chronology: solid-brand hero=pending signing (else agenda), then attendance, then quiet minutes archive.
