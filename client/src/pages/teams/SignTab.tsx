@@ -1036,14 +1036,6 @@ export default function SignTab() {
 
   return (
     <TeamsPage>
-      <TeamsPinned className={styles.intro}>
-        <Text size={400} weight="bold">Meetings</Text>
-        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-          {heroSignMeeting
-            ? "Sign your attendance, view the next agenda, and read past minutes."
-            : "View the next meeting's agenda, sign recent meetings, and read past minutes."}
-        </Text>
-      </TeamsPinned>
       <TeamsScroll>
         {!hasAnything ? (
           <TeamsCenter>
