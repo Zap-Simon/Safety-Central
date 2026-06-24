@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Card, Text, makeStyles, tokens } from "@fluentui/react-components";
+import { Card, Text, makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { ArrowRight20Regular, ChevronRight20Regular } from "@fluentui/react-icons";
 
 // Shared presentational pieces for the Meetings tab lists. Every list (rostered
@@ -21,6 +21,9 @@ const useStyles = makeStyles({
   },
   card: {
     display: "flex",
+    // Fluent's Card defaults to flex-direction:column; set row explicitly so it
+    // actually overrides (an unset property can't win the atomic-class merge).
+    flexDirection: "row",
     alignItems: "center",
     gap: tokens.spacingHorizontalM,
     paddingTop: tokens.spacingVerticalS,
@@ -186,10 +189,10 @@ export function MeetingCard({
     iconTone === "success" ? styles.iconSuccess : iconTone === "neutral" ? styles.iconNeutral : styles.iconBrand;
   return (
     <Card
-      className={`${styles.card}${onClick ? ` ${styles.clickable}` : ""} animate-fade-in-up`}
+      className={mergeClasses(styles.card, onClick && styles.clickable, "animate-fade-in-up")}
       onClick={onClick}
     >
-      <div className={`${styles.icon} ${toneClass}`}>{icon}</div>
+      <div className={mergeClasses(styles.icon, toneClass)}>{icon}</div>
       <div className={styles.body}>
         <Text size={300} weight="semibold" truncate block>
           {title}
@@ -237,11 +240,11 @@ export function HeroCard({
   const mutedColor = isSolid ? tokens.colorNeutralForegroundOnBrand : tokens.colorNeutralForeground3;
   return (
     <Card
-      className={`${styles.hero} ${isSolid ? styles.heroSolid : styles.heroTint} animate-fade-in-up`}
+      className={mergeClasses(styles.hero, isSolid ? styles.heroSolid : styles.heroTint, "animate-fade-in-up")}
       onClick={onClick}
     >
       <div className={styles.heroTop}>
-        <div className={`${styles.heroChip} ${isSolid ? styles.heroChipSolid : styles.heroChipTint}`}>
+        <div className={mergeClasses(styles.heroChip, isSolid ? styles.heroChipSolid : styles.heroChipTint)}>
           {icon}
         </div>
         <div className={styles.heroHeadings}>
@@ -263,7 +266,7 @@ export function HeroCard({
           )}
         </div>
       </div>
-      <span className={`${styles.heroAction} ${isSolid ? styles.heroActionSolid : styles.heroActionTint}`}>
+      <span className={mergeClasses(styles.heroAction, isSolid ? styles.heroActionSolid : styles.heroActionTint)}>
         <Text size={300} weight="semibold" style={{ color: "inherit" }}>
           {actionLabel}
         </Text>
