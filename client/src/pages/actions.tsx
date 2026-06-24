@@ -1094,6 +1094,7 @@ export default function Actions() {
             meetingDate: investigationItem.meetingDate || "",
             meetingNotes: investigationItem.meetingNotes,
             actionNotes: investigationItem.actionNotes,
+            ideaType: investigationItem.ideaType,
           }}
           onClose={() => setInvestigationItem(null)}
         />

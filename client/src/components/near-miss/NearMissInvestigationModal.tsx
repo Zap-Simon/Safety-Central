@@ -20,6 +20,7 @@ interface NearMissItem {
   meetingDate: string;
   meetingNotes?: string;
   actionNotes?: string;
+  ideaType?: string;
 }
 
 interface ResultingAction {
@@ -110,7 +111,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
     siteJob: "",
     eventDate: "",
     eventTime: "",
-    eventType: "Near Miss",
+    eventType: item.ideaType || "Near Miss",
     involvedPersons: item.submittedBy || "",
     witnesses: "",
     eventDescription: item.description || "",
