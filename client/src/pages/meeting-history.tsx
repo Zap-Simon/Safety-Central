@@ -1102,7 +1102,10 @@ export default function MeetingHistory() {
             }
           }));
         }
-        queryClient.invalidateQueries({ queryKey: ['/api/meeting-attendance'] });
+        // Don't invalidate /api/meeting-attendance here — doing so triggers a DB
+        // refetch that overwrites initializeAttendance local state (which isn't
+        // persisted to DB until each member is explicitly toggled). The optimistic
+        // update above is sufficient; the query will refresh on next page load.
         queryClient.invalidateQueries({ queryKey: ['/api/meeting-guest-titles'] });
       }
     },
@@ -3074,7 +3077,7 @@ export default function MeetingHistory() {
                                     </div>
                                   )}
                                   {!isLocked && (
-                                    <div className="flex flex-col gap-1.5">
+                                    <div className="flex flex-col gap-2">
                                       <div className="flex gap-2">
                                         <input
                                           type="text"
@@ -3084,17 +3087,7 @@ export default function MeetingHistory() {
                                             setGuestInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
                                           }
                                           onKeyDown={e => { if (e.key === 'Enter') addGuest(); }}
-                                          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                        <input
-                                          type="text"
-                                          placeholder="Title / company (optional)"
-                                          value={guestTitleInput}
-                                          onChange={e =>
-                                            setGuestTitleInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
-                                          }
-                                          onKeyDown={e => { if (e.key === 'Enter') addGuest(); }}
-                                          className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          className="flex-1 min-w-0 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                         <button
                                           type="button"
@@ -3105,6 +3098,16 @@ export default function MeetingHistory() {
                                           Add guest
                                         </button>
                                       </div>
+                                      <input
+                                        type="text"
+                                        placeholder="Title / company (optional)"
+                                        value={guestTitleInput}
+                                        onChange={e =>
+                                          setGuestTitleInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
+                                        }
+                                        onKeyDown={e => { if (e.key === 'Enter') addGuest(); }}
+                                        className="w-full text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
                                     </div>
                                   )}
                                 </div>
