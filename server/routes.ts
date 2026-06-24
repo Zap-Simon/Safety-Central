@@ -5708,12 +5708,19 @@ function generateTeamsMinutesHTML(
     return presentNames.has(name);
   };
 
-  const present = allRosterMembers.filter((a) => {
+  // Extend the roster with any guests (names in signatures that aren't regular staff).
+  const _rosterNameSet = new Set(allRosterMembers.map(a => a.name));
+  const _guestAttendees = Object.keys(meetingSignatures)
+    .filter(name => !_rosterNameSet.has(name))
+    .map(name => ({ name, role: 'Guest' }));
+  const allAttendees = [...allRosterMembers, ..._guestAttendees];
+
+  const present = allAttendees.filter((a) => {
     const sig = meetingSignatures[a.name];
     return sig && (sig.status === 'signed' || sig.status === 'remote');
   });
-  const pending = allRosterMembers.filter((a) => isPresent(a.name) && !meetingSignatures[a.name]);
-  const absent = allRosterMembers.filter((a) => {
+  const pending = allAttendees.filter((a) => isPresent(a.name) && !meetingSignatures[a.name]);
+  const absent = allAttendees.filter((a) => {
     if (hasPositiveSignature(a.name)) return false;
     const sig = meetingSignatures[a.name];
     return !isPresent(a.name) || (sig && sig.status === 'absent');
@@ -6479,7 +6486,7 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   // exactly the names signatures/attendance are keyed by. A divergent local list
   // (e.g. "Dan Conlan" vs the roster's "Daniel Conlan") silently fails the
   // signature lookup and wrongly shows a signed person as absent.
-  const allAttendees = allRosterMembers;
+  let allAttendees: { name: string; role: string }[] = [...allRosterMembers];
 
   // Attendance ticks may be stored under multiple raw ISO keys for the same
   // calendar day (the admin page and the Teams Sign tab each pick their own
@@ -6498,6 +6505,17 @@ function generateAttendanceSection(meetingAttendance?: Record<string, string[]>,
   const signaturesForMeeting = meetingSignatures && selectedMeeting && selectedMeeting !== 'all'
     ? (meetingSignatures[selectedMeeting] ?? {})
     : {};
+
+  // Extend with guests: names in signatures/attendance that aren't regular roster members.
+  {
+    const _rosterSet = new Set(allRosterMembers.map(a => a.name));
+    const _guestFromSigs = Object.keys(signaturesForMeeting).filter(n => !_rosterSet.has(n));
+    const _guestFromAttendance = Array.from(presentNames).filter(n => !_rosterSet.has(n));
+    const _uniqueGuests = Array.from(new Set([..._guestFromSigs, ..._guestFromAttendance]));
+    if (_uniqueGuests.length > 0) {
+      allAttendees = [...allRosterMembers, ..._uniqueGuests.map(name => ({ name, role: 'Guest' }))];
+    }
+  }
 
   // A valid (signed/remote) signature always implies the person was present,
   // even if they were never ticked in the attendance checklist for this day.

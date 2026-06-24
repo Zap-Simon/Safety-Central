@@ -92,6 +92,8 @@ export default function MeetingHistory() {
   const [expandedActionEditors, setExpandedActionEditors] = useState<Set<string>>(new Set());
   const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set());
   const [meetingAttendance, setMeetingAttendance] = useState<Record<string, string[]>>({});
+  // Per-meeting free-text input for the guest "Add" field (keyed by raw meetingDate).
+  const [guestInputs, setGuestInputs] = useState<Record<string, string>>({});
   const [showAttendanceSelector, setShowAttendanceSelector] = useState<string>('');
   const [lockedAttendance, setLockedAttendance] = useState<Record<string, boolean>>({});
   const [meetingSignatures, setMeetingSignatures] = useState<Record<string, Record<string, { status: 'signed' | 'remote' | 'absent'; signatureData: string | null; signedAt: string }>>>({});
@@ -2973,6 +2975,89 @@ export default function MeetingHistory() {
                                 );
                               })}
                             </div>
+
+                            {/* ── Guest attendees ── */}
+                            {(() => {
+                              const rosterNameSet = new Set(
+                                [...meetingAttendees.management, ...meetingAttendees.glaziers].map(a => a.name)
+                              );
+                              // Collect every name marked present for this meeting day,
+                              // then keep only those not in the regular roster.
+                              const guestNames = Array.from(new Set(
+                                Object.entries(meetingAttendance)
+                                  .filter(([k]) => getDateGroupKey(k) === getDateGroupKey(meetingDate))
+                                  .flatMap(([, names]) => names)
+                              )).filter(name => !rosterNameSet.has(name));
+                              const guestInput = guestInputs[meetingDate] ?? '';
+                              const alreadyInList = guestInput.trim() !== '' &&
+                                isAttending(meetingDate, guestInput.trim());
+                              return (
+                                <div className="mt-3 pt-3 border-t border-blue-100">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                      Guests
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      · anyone not in Microsoft 365
+                                    </span>
+                                  </div>
+                                  {guestNames.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                      {guestNames.map(name => (
+                                        <span
+                                          key={name}
+                                          className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-sm text-gray-700"
+                                        >
+                                          {name}
+                                          {!isLocked && (
+                                            <button
+                                              type="button"
+                                              onClick={() => toggleAttendee(meetingDate, name)}
+                                              className="text-gray-400 hover:text-red-500 leading-none ml-0.5"
+                                              aria-label={`Remove ${name}`}
+                                            >
+                                              ×
+                                            </button>
+                                          )}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {!isLocked && (
+                                    <div className="flex gap-2">
+                                      <input
+                                        type="text"
+                                        placeholder="Guest name…"
+                                        value={guestInput}
+                                        onChange={e =>
+                                          setGuestInputs(prev => ({ ...prev, [meetingDate]: e.target.value }))
+                                        }
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter' && guestInput.trim() && !alreadyInList) {
+                                            toggleAttendee(meetingDate, guestInput.trim());
+                                            setGuestInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                                          }
+                                        }}
+                                        className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (guestInput.trim() && !alreadyInList) {
+                                            toggleAttendee(meetingDate, guestInput.trim());
+                                            setGuestInputs(prev => ({ ...prev, [meetingDate]: '' }));
+                                          }
+                                        }}
+                                        disabled={!guestInput.trim() || alreadyInList}
+                                        className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                                      >
+                                        Add guest
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
@@ -4747,10 +4832,21 @@ export default function MeetingHistory() {
           // which previously hid everyone who hadn't signed yet until you visited
           // the attendance tab. Only people explicitly marked absent (via their
           // own signature record) are excluded.
+          const _rosterNameSetForCarousel = new Set(
+            [...meetingAttendees.management, ...meetingAttendees.glaziers].map(a => a.name)
+          );
+          const _guestNamesForCarousel = Array.from(new Set(
+            Object.entries(meetingAttendance)
+              .filter(([k]) => getDateGroupKey(k) === getDateGroupKey(showSignatureCarousel))
+              .flatMap(([, names]) => names)
+          )).filter(n => !_rosterNameSetForCarousel.has(n));
           const presentAttendees = [
-            ...meetingAttendees.management,
-            ...meetingAttendees.glaziers
-          ].filter(a => existingSigs[a.name]?.status !== 'absent');
+            ...[...meetingAttendees.management, ...meetingAttendees.glaziers]
+              .filter(a => existingSigs[a.name]?.status !== 'absent'),
+            ..._guestNamesForCarousel
+              .filter(n => existingSigs[n]?.status !== 'absent')
+              .map(name => ({ name, role: 'Guest' })),
+          ];
           const displayDate = (() => { try { return new Date(showSignatureCarousel).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return showSignatureCarousel; } })();
           return (
             <SignatureCarousel
