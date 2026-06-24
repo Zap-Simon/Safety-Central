@@ -23,6 +23,7 @@ import {
   ArrowCounterclockwise20Regular,
   DocumentText24Regular,
   DocumentText20Regular,
+  ChevronRight20Regular,
 } from "@fluentui/react-icons";
 import {
   TeamsPage,
@@ -109,12 +110,15 @@ const useStyles = makeStyles({
   },
   nextCard: {
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
-    textAlign: "center",
-    gap: tokens.spacingVerticalS,
+    gap: tokens.spacingHorizontalM,
     padding: tokens.spacingHorizontalL,
     backgroundColor: tokens.colorBrandBackground2,
+    cursor: "pointer",
+    transitionProperty: "background-color, transform",
+    transitionDuration: tokens.durationFaster,
+    ":hover": { backgroundColor: tokens.colorBrandBackground2Hover },
+    ":active": { transform: "scale(0.99)" },
   },
   nextIcon: {
     width: "44px",
@@ -126,6 +130,15 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusCircular,
     backgroundColor: tokens.colorBrandBackground,
     color: tokens.colorNeutralForegroundOnBrand,
+  },
+  nextBody: { flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
+  agendaCue: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXXS,
+    marginTop: tokens.spacingVerticalXXS,
+    color: tokens.colorBrandForeground1,
+    fontWeight: tokens.fontWeightSemibold,
   },
   signPanel: {
     display: "flex",
@@ -705,7 +718,9 @@ export default function SignTab() {
                 <MessageBarBody>
                   {isUpcoming
                     ? "This meeting hasn't happened yet. You'll be able to sign your attendance once it has taken place."
-                    : "This meeting has been locked by an admin, so your attendance is now final and can't be changed."}
+                    : existing
+                    ? "Thanks for signing this meeting. An admin has locked it, and the minutes are now available below."
+                    : "An admin has locked this meeting. The minutes are now available below."}
                 </MessageBarBody>
               </MessageBar>
               {existing?.signatureData && (
@@ -976,24 +991,33 @@ export default function SignTab() {
         ) : (
           <div className={styles.list}>
             {nextMeeting && (
-              <Card
-                className={`${styles.nextCard} animate-fade-in-up`}
-                onClick={() => openAgenda(nextMeeting.dateKey, nextMeeting.displayDate)}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.nextIcon}>
-                  <CalendarLtr24Regular />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "2px", width: "100%" }}>
-                  <Text size={200} weight="semibold" align="center" style={{ color: tokens.colorBrandForeground1, textAlign: "center" }} block>
-                    Next meeting
-                  </Text>
-                  <Text size={400} weight="bold" align="center" style={{ textAlign: "center" }} block>{nextMeeting.displayDate}</Text>
-                  <Text size={200} align="center" style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }} block>
-                    {relativeFromToday(nextMeeting.dateKey)} · tap to view the agenda
-                  </Text>
-                </div>
-              </Card>
+              <div className={styles.section}>
+                <SectionHeader
+                  icon={<CalendarLtr24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
+                  label="Upcoming meeting · agenda"
+                />
+                <Card
+                  className={`${styles.nextCard} animate-fade-in-up`}
+                  onClick={() => openAgenda(nextMeeting.dateKey, nextMeeting.displayDate)}
+                >
+                  <div className={styles.nextIcon}>
+                    <CalendarLtr24Regular />
+                  </div>
+                  <div className={styles.nextBody}>
+                    <Text size={400} weight="bold" truncate block>{nextMeeting.displayDate}</Text>
+                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }} block>
+                      {relativeFromToday(nextMeeting.dateKey)}
+                    </Text>
+                    <span className={styles.agendaCue}>
+                      <DocumentText20Regular />
+                      <Text size={200} weight="semibold" style={{ color: tokens.colorBrandForeground1 }}>
+                        View the agenda
+                      </Text>
+                    </span>
+                  </div>
+                  <ChevronRight20Regular style={{ flexShrink: 0, color: tokens.colorBrandForeground1 }} />
+                </Card>
+              </div>
             )}
 
             {openMeetings.length > 0 && (

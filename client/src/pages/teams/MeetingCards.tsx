@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Card, Text, makeStyles, tokens } from "@fluentui/react-components";
+import { ChevronRight20Regular } from "@fluentui/react-icons";
 
 // Shared presentational pieces for the Meetings tab lists. Every list (rostered
 // open/attended/minutes and the non-rostered minutes list) renders through these
@@ -11,6 +12,7 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: tokens.spacingHorizontalS,
     paddingLeft: tokens.spacingHorizontalXS,
+    paddingBottom: tokens.spacingVerticalXXS,
   },
   card: {
     display: "flex",
@@ -18,7 +20,13 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalM,
     padding: tokens.spacingHorizontalL,
   },
-  clickable: { cursor: "pointer" },
+  clickable: {
+    cursor: "pointer",
+    transitionProperty: "background-color, transform",
+    transitionDuration: tokens.durationFaster,
+    ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover },
+    ":active": { transform: "scale(0.99)" },
+  },
   icon: {
     width: "40px",
     height: "40px",
@@ -31,6 +39,7 @@ const useStyles = makeStyles({
     color: tokens.colorBrandForeground1,
   },
   body: { flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
+  chevron: { flexShrink: 0, color: tokens.colorNeutralForeground4 },
 });
 
 export function SectionHeader({ icon, label }: { icon: ReactNode; label: string }) {
@@ -38,7 +47,7 @@ export function SectionHeader({ icon, label }: { icon: ReactNode; label: string 
   return (
     <div className={styles.sectionHeader}>
       {icon}
-      <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
+      <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3, textTransform: "uppercase", letterSpacing: "0.04em" }}>
         {label}
       </Text>
     </div>
@@ -77,6 +86,7 @@ export function MeetingCard({
           subtitle
         )}
       </div>
+      {onClick && <ChevronRight20Regular className={styles.chevron} />}
     </Card>
   );
 }
