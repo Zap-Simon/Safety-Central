@@ -792,11 +792,17 @@ export default function SignTab() {
                     <Text size={500} weight="bold" truncate block>{selected.displayDate}</Text>
                     <Text size={200} block style={{ color: tokens.colorNeutralForeground3 }}>
                       {`${relativeFromToday(selected.dateKey)} · ${
-                        isUpcoming ? "sign once it has taken place" : "minutes ready below"
+                        isUpcoming ? "sign once it has taken place" : "Meeting locked"
                       }`}
                     </Text>
                   </div>
                 </div>
+
+                {!isUpcoming && (
+                  <Text size={200} block style={{ color: tokens.colorNeutralForeground3 }}>
+                    This meeting has been locked by the admin and the minutes are now ready to view.
+                  </Text>
+                )}
 
                 {existing?.signatureData && (
                   <div className={styles.sigBlock}>
