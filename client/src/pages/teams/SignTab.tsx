@@ -17,6 +17,7 @@ import {
   Desktop20Regular,
   Dismiss20Regular,
   ArrowLeft20Regular,
+  ArrowRight20Regular,
   CheckmarkCircle24Filled,
   CalendarLtr24Regular,
   ArrowCounterclockwise20Regular,
@@ -205,6 +206,9 @@ const useStyles = makeStyles({
     overflowY: "auto",
   },
   sigPreview: {
+    // alignSelf:flex-start prevents the flex-column sigBlock from stretching
+    // the image horizontally (align-items defaults to stretch).
+    alignSelf: "flex-start",
     maxHeight: "56px",
     maxWidth: "100%",
     borderRadius: tokens.borderRadiusMedium,
@@ -805,10 +809,16 @@ export default function SignTab() {
 
                 {!isUpcoming && (
                   <Button
-                    appearance="primary"
-                    icon={<DocumentText20Regular />}
+                    appearance="transparent"
+                    iconPosition="after"
+                    icon={<ArrowRight20Regular />}
                     onClick={() => openMinutes(selected.dateKey, selected.displayDate)}
-                    style={{ width: "100%" }}
+                    style={{
+                      color: tokens.colorBrandForeground1,
+                      fontWeight: tokens.fontWeightSemibold,
+                      paddingLeft: 0,
+                      paddingRight: 0,
+                    }}
                   >
                     View meeting minutes
                   </Button>
