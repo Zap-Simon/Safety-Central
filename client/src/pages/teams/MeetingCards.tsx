@@ -23,7 +23,10 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: tokens.spacingHorizontalM,
-    padding: tokens.spacingHorizontalL,
+    paddingTop: tokens.spacingVerticalS,
+    paddingBottom: tokens.spacingVerticalS,
+    paddingLeft: tokens.spacingHorizontalM,
+    paddingRight: tokens.spacingHorizontalM,
   },
   clickable: {
     cursor: "pointer",
@@ -33,8 +36,8 @@ const useStyles = makeStyles({
     ":active": { transform: "scale(0.99)" },
   },
   icon: {
-    width: "40px",
-    height: "40px",
+    width: "32px",
+    height: "32px",
     flexShrink: 0,
     display: "flex",
     alignItems: "center",
