@@ -32,6 +32,7 @@ import {
   TeamsFullScreen,
 } from "./TeamsPageShell";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
+import { SectionHeader, MeetingCard } from "./MeetingCards";
 
 type SignatureStatus = "signed" | "remote" | "absent";
 
@@ -106,12 +107,6 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
   },
-  sectionHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalS,
-    paddingLeft: tokens.spacingHorizontalXS,
-  },
   nextCard: {
     display: "flex",
     flexDirection: "column",
@@ -132,31 +127,6 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorBrandBackground,
     color: tokens.colorNeutralForegroundOnBrand,
   },
-  meetingCard: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalM,
-    padding: tokens.spacingHorizontalL,
-    cursor: "pointer",
-  },
-  meetingCardStatic: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalM,
-    padding: tokens.spacingHorizontalL,
-  },
-  meetingIcon: {
-    width: "40px",
-    height: "40px",
-    flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: tokens.borderRadiusCircular,
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground1,
-  },
-  meetingBody: { flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
   signPanel: {
     display: "flex",
     flexDirection: "column",
@@ -359,9 +329,13 @@ export default function SignTab() {
   const [hasDrawn, setHasDrawn] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [justSigned, setJustSigned] = useState<SignatureStatus | null>(null);
-  // Which locked meeting's full minutes are being read (transient — tabs remount
-  // on switch, so we intentionally don't persist this).
-  const [minutesView, setMinutesView] = useState<{ dateKey: string; displayDate: string } | null>(null);
+  // Transient — tabs remount on switch, so we intentionally don't persist this.
+  // The read-only document viewer is shared by past-meeting minutes and the
+  // upcoming-meeting agenda — both are the same minutes-style HTML rendered in the
+  // same Shadow DOM host; only the endpoint and a few labels differ by `kind`.
+  const [minutesView, setMinutesView] = useState<
+    { dateKey: string; displayDate: string; kind: "minutes" | "agenda" } | null
+  >(null);
   const minutesHostRef = useRef<HTMLDivElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -430,15 +404,16 @@ export default function SignTab() {
 
   // The rendered minutes HTML for the meeting currently being read.
   const minutesQuery = useQuery<MinutesHtmlResponse>({
-    queryKey: ["/api/teams/minutes", minutesView?.dateKey ?? "none"],
+    queryKey: ["/api/teams/doc", minutesView?.kind ?? "none", minutesView?.dateKey ?? "none"],
     enabled: !!minutesView,
     queryFn: async () => {
       const token = await getToken();
-      const res = await fetch(`/api/teams/minutes/${minutesView!.dateKey}`, {
+      const endpoint = minutesView!.kind === "agenda" ? "agenda" : "minutes";
+      const res = await fetch(`/api/teams/${endpoint}/${minutesView!.dateKey}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to load minutes");
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to load this document");
       return json as MinutesHtmlResponse;
     },
   });
@@ -523,7 +498,11 @@ export default function SignTab() {
   }
 
   function openMinutes(dateKey: string, displayDate: string) {
-    setMinutesView({ dateKey, displayDate });
+    setMinutesView({ dateKey, displayDate, kind: "minutes" });
+  }
+
+  function openAgenda(dateKey: string, displayDate: string) {
+    setMinutesView({ dateKey, displayDate, kind: "agenda" });
   }
 
   function closeMinutes() {
@@ -624,6 +603,8 @@ export default function SignTab() {
   // could stay blank after an auth-triggered WebView resume. The server-rendered
   // minutes are pure, escaped HTML/CSS with no scripts, so nothing executes.
   if (minutesView) {
+    const isAgendaView = minutesView.kind === "agenda";
+    const docNoun = isAgendaView ? "agenda" : "minutes";
     return (
       <TeamsPage>
         <TeamsPinned className={styles.minutesBar}>
@@ -636,14 +617,14 @@ export default function SignTab() {
         </TeamsPinned>
         {minutesQuery.isLoading ? (
           <TeamsCenter className="animate-fade-in">
-            <Spinner size="large" label="Loading meeting minutes…" />
+            <Spinner size="large" label={`Loading meeting ${docNoun}…`} />
           </TeamsCenter>
         ) : minutesQuery.isError ? (
           <TeamsCenter className="animate-fade-in">
             <div className={styles.doneWrap}>
               <DocumentText24Regular style={{ fontSize: "48px", color: tokens.colorNeutralForeground4 }} />
               <Text size={400} weight="semibold" style={{ textAlign: "center" }}>
-                Couldn't load these minutes
+                {isAgendaView ? "Couldn't load the agenda" : "Couldn't load these minutes"}
               </Text>
               <Text size={300} style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }}>
                 {(minutesQuery.error as Error)?.message || "Something went wrong. Please try again."}
@@ -657,7 +638,7 @@ export default function SignTab() {
           <div
             ref={minutesHostRef}
             className={styles.minutesHost}
-            aria-label={`Meeting minutes ${minutesView.displayDate}`}
+            aria-label={`Meeting ${docNoun} ${minutesView.displayDate}`}
           />
         )}
       </TeamsPage>
@@ -940,26 +921,18 @@ export default function SignTab() {
           ) : (
             <div className={styles.list}>
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
-                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
-                    Meeting minutes
-                  </Text>
-                </div>
+                <SectionHeader
+                  icon={<DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
+                  label="Meeting minutes"
+                />
                 {readable.map((m) => (
-                  <Card
+                  <MeetingCard
                     key={m.dateKey}
-                    className={`${styles.meetingCard} animate-fade-in-up`}
+                    icon={<DocumentText24Regular />}
+                    title={m.displayDate}
+                    subtitle="Tap to read minutes"
                     onClick={() => openMinutes(m.dateKey, m.displayDate)}
-                  >
-                    <div className={styles.meetingIcon}>
-                      <DocumentText24Regular />
-                    </div>
-                    <div className={styles.meetingBody}>
-                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to read minutes</Text>
-                    </div>
-                  </Card>
+                  />
                 ))}
               </div>
             </div>
@@ -969,15 +942,24 @@ export default function SignTab() {
     );
   }
 
-  // All locked meetings this user may read, regardless of whether they attended.
-  const readableMinutes = minutesListQuery.data?.meetings ?? [];
+  // Locked meetings this user may read. De-duplicate against the meetings already
+  // shown above (open, attended, and the upcoming next meeting) so a single
+  // meeting is never listed twice on the tab.
+  const shownKeys = new Set<string>([
+    ...openMeetings.map((m) => m.dateKey),
+    ...pastMeetings.map((m) => m.dateKey),
+    ...upcomingMeetings.map((m) => m.dateKey),
+  ]);
+  const readableMinutes = (minutesListQuery.data?.meetings ?? []).filter(
+    (m) => !shownKeys.has(m.dateKey),
+  );
 
   return (
     <TeamsPage>
       <TeamsPinned className={styles.intro}>
-        <Text size={400} weight="bold">Sign meeting minutes</Text>
+        <Text size={400} weight="bold">Meetings</Text>
         <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-          Sign recent meetings and see the ones you've attended.
+          View the next meeting's agenda, sign recent meetings, and read past minutes.
         </Text>
       </TeamsPinned>
       <TeamsScroll>
@@ -994,7 +976,11 @@ export default function SignTab() {
         ) : (
           <div className={styles.list}>
             {nextMeeting && (
-              <Card className={`${styles.nextCard} animate-fade-in-up`}>
+              <Card
+                className={`${styles.nextCard} animate-fade-in-up`}
+                onClick={() => openAgenda(nextMeeting.dateKey, nextMeeting.displayDate)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className={styles.nextIcon}>
                   <CalendarLtr24Regular />
                 </div>
@@ -1004,7 +990,7 @@ export default function SignTab() {
                   </Text>
                   <Text size={400} weight="bold" align="center" style={{ textAlign: "center" }} block>{nextMeeting.displayDate}</Text>
                   <Text size={200} align="center" style={{ color: tokens.colorNeutralForeground3, textAlign: "center" }} block>
-                    {relativeFromToday(nextMeeting.dateKey)} · sign after the meeting
+                    {relativeFromToday(nextMeeting.dateKey)} · tap to view the agenda
                   </Text>
                 </div>
               </Card>
@@ -1012,78 +998,58 @@ export default function SignTab() {
 
             {openMeetings.length > 0 && (
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <Signature24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
-                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
-                    Ready to sign
-                  </Text>
-                </div>
+                <SectionHeader
+                  icon={<Signature24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
+                  label="Ready to sign"
+                />
                 {openMeetings.map((m) => (
-                  <Card key={m.dateKey} className={`${styles.meetingCard} animate-fade-in-up`} onClick={() => openMeeting(m)}>
-                    <div className={styles.meetingIcon}>
-                      {m.mySignature ? <CheckmarkCircle24Filled /> : <Signature24Regular />}
-                    </div>
-                    <div className={styles.meetingBody}>
-                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
-                      {m.mySignature ? (
-                        statusBadge(m.mySignature.status)
-                      ) : (
-                        <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to sign</Text>
-                      )}
-                    </div>
-                  </Card>
+                  <MeetingCard
+                    key={m.dateKey}
+                    icon={m.mySignature ? <CheckmarkCircle24Filled /> : <Signature24Regular />}
+                    title={m.displayDate}
+                    subtitle={m.mySignature ? statusBadge(m.mySignature.status) : "Tap to sign"}
+                    onClick={() => openMeeting(m)}
+                  />
                 ))}
               </div>
             )}
 
             {pastMeetings.length > 0 && (
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <CheckmarkCircle24Filled style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
-                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
-                    Meetings you attended
-                  </Text>
-                </div>
+                <SectionHeader
+                  icon={<CheckmarkCircle24Filled style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
+                  label="Meetings you attended"
+                />
                 {pastMeetings.map((m) => (
-                  <Card key={m.dateKey} className={`${styles.meetingCardStatic} animate-fade-in-up`} onClick={() => openMeeting(m)}>
-                    <div className={styles.meetingIcon}>
-                      <CheckmarkCircle24Filled />
-                    </div>
-                    <div className={styles.meetingBody}>
-                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
-                      {m.mySignature ? (
-                        statusBadge(m.mySignature.status)
-                      ) : (
-                        <Badge appearance="tint" color="success">Attended</Badge>
-                      )}
-                    </div>
-                  </Card>
+                  <MeetingCard
+                    key={m.dateKey}
+                    icon={<CheckmarkCircle24Filled />}
+                    title={m.displayDate}
+                    subtitle={
+                      m.mySignature
+                        ? statusBadge(m.mySignature.status)
+                        : <Badge appearance="tint" color="success">Attended</Badge>
+                    }
+                    onClick={() => openMeeting(m)}
+                  />
                 ))}
               </div>
             )}
 
             {readableMinutes.length > 0 && (
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />
-                  <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground3 }}>
-                    Meeting minutes
-                  </Text>
-                </div>
+                <SectionHeader
+                  icon={<DocumentText24Regular style={{ fontSize: "16px", color: tokens.colorNeutralForeground3 }} />}
+                  label={pastMeetings.length > 0 ? "Other meeting minutes" : "Meeting minutes"}
+                />
                 {readableMinutes.map((m) => (
-                  <Card
+                  <MeetingCard
                     key={m.dateKey}
-                    className={`${styles.meetingCardStatic} animate-fade-in-up`}
+                    icon={<DocumentText24Regular />}
+                    title={m.displayDate}
+                    subtitle="Tap to read minutes"
                     onClick={() => openMinutes(m.dateKey, m.displayDate)}
-                  >
-                    <div className={styles.meetingIcon}>
-                      <DocumentText24Regular />
-                    </div>
-                    <div className={styles.meetingBody}>
-                      <Text size={300} weight="semibold" truncate block>{m.displayDate}</Text>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Tap to read minutes</Text>
-                    </div>
-                  </Card>
+                  />
                 ))}
               </div>
             )}

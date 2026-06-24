@@ -3247,6 +3247,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Return the rendered AGENDA HTML for one upcoming meeting (by dateKey). An
+  // upcoming meeting already has items assigned to its date — the agenda is just
+  // the same minutes-style document generated for that not-yet-locked meeting, so
+  // it reuses the exact same item data and generator as /api/teams/minutes. The
+  // only differences: there is NO lock gate (the meeting hasn't happened), and
+  // signatures/attendance are omitted (none collected yet). An empty agenda is a
+  // valid state, so this returns success with an empty document rather than 404.
+  app.get('/api/teams/agenda/:dateKey', async (req, res) => {
+    try {
+      // Validate identity only — any authenticated staff member may read.
+      await resolveSignerFromRequest(req);
+
+      const dateKey = getDateGroupKey(req.params.dateKey);
+      if (dateKey === 'unknown-meeting') {
+        return res.status(400).json({ success: false, error: 'Invalid meeting date' });
+      }
+
+      // The agenda is only for meetings that have NOT happened yet — the same
+      // "upcoming" rule the meetings list uses (date is strictly after NZ today).
+      // Past/open/locked meetings are served by /api/teams/minutes behind the
+      // lock gate, so rejecting them here stops the agenda route from becoming a
+      // way to read pre-lock content for historical meetings.
+      if (dateKey <= getNZTodayKey()) {
+        return res.status(404).json({ success: false, error: 'No upcoming agenda for this date' });
+      }
+
+      const spToken = await resolveDownstreamToken(req.headers.authorization, 'sharepoint');
+      const listsService = new SharePointListsService(spToken);
+      const allItems = await buildMergedMeetingItems(listsService);
+
+      // Items for this calendar day (group by UTC date key, never local isSameDay).
+      const dayItems = allItems.filter((item) => getDateGroupKey(item.meetingDate) === dateKey);
+      const representativeIso = dayItems[0]?.meetingDate ?? req.params.dateKey;
+      const displayDate = formatDisplayDate(representativeIso, 'meeting');
+
+      // Ready-to-close actions are reviewed against the WHOLE backlog, mirroring
+      // the minutes export, so outstanding actions surface on the agenda too.
+      const readyToCloseActions = buildReadyToCloseActions(allItems);
+
+      const html = generateTeamsMinutesHTML(
+        dayItems,
+        displayDate,
+        {},
+        new Set<string>(),
+        false,
+        readyToCloseActions,
+        { isAgenda: true },
+      );
+      res.json({ success: true, displayDate, html });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return res.status(error.status).json({ success: false, error: error.message });
+      }
+      console.error('Error rendering meeting agenda:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const isAuthError = /\b(401|403)\b/.test(message) || /unauthor|forbidden|invalid.*token|token.*expired/i.test(message);
+      res.status(isAuthError ? 401 : 500).json({
+        success: false,
+        error: isAuthError ? 'Authentication expired. Please sign in again.' : 'Failed to load agenda',
+      });
+    }
+  });
+
   // Card ordering endpoints
   app.get('/api/card-ordering', async (req, res) => {
     try {
@@ -5567,6 +5630,7 @@ function generateTeamsMinutesHTML(
   presentNames: Set<string>,
   hasAttendanceData: boolean,
   readyToCloseActions: ReadyToCloseAction[],
+  opts: { isAgenda?: boolean } = {},
 ): string {
   const typeColors: Record<string, string> = {
     'Business Ideas': '#2563eb',
@@ -5707,7 +5771,7 @@ function generateTeamsMinutesHTML(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<title>Meeting Minutes ${esc(displayDate)}</title>
+<title>${esc(opts.isAgenda ? 'Meeting Agenda' : 'Meeting Minutes')} ${esc(displayDate)}</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -5759,14 +5823,14 @@ function generateTeamsMinutesHTML(
   <div class="wrap">
     <div class="head">
       <div class="company">Cranfield Glass Christchurch</div>
-      <div class="doc">Health &amp; Safety Meeting Minutes</div>
+      <div class="doc">Health &amp; Safety Meeting ${opts.isAgenda ? 'Agenda' : 'Minutes'}</div>
       <div class="date">${esc(displayDate)}</div>
     </div>
-    <h2>Meeting items</h2>
-    ${itemCards || '<div class="empty">No items were recorded for this meeting.</div>'}
+    <h2>${opts.isAgenda ? 'Agenda items' : 'Meeting items'}</h2>
+    ${itemCards || `<div class="empty">${opts.isAgenda ? 'No items have been added to this agenda yet.' : 'No items were recorded for this meeting.'}</div>`}
     ${rtcHtml}
-    <h2>Attendance &amp; sign-off</h2>
-    ${attendanceHtml}
+    ${opts.isAgenda ? '' : `<h2>Attendance &amp; sign-off</h2>
+    ${attendanceHtml}`}
   </div>
 </body>
 </html>`;

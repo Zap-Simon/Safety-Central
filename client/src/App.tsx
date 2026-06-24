@@ -112,7 +112,7 @@ function TeamsTabSwitcher({
       </Text>
       <TabList className={s.tabs} selectedValue={selected} onTabSelect={onTabSelect} size="large">
         <Tab value="/teams-tab">Submit</Tab>
-        <Tab value="/teams-tab/sign">Sign</Tab>
+        <Tab value="/teams-tab/sign">Meetings</Tab>
       </TabList>
     </div>
   );
