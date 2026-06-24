@@ -4,6 +4,11 @@ import {
   Card,
   Spinner,
   Text,
+  Badge,
+  Accordion,
+  AccordionItem,
+  AccordionHeader,
+  AccordionPanel,
   Dialog,
   DialogTrigger,
   DialogSurface,
@@ -41,20 +46,19 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
   },
-  header: {
+  headerRow: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
     gap: tokens.spacingHorizontalS,
   },
-  headerLabel: {
+  countBadge: { flexShrink: 0 },
+  panel: {
     display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalXS,
-    color: tokens.colorNeutralForeground3,
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+    paddingTop: tokens.spacingVerticalS,
   },
+  clearRow: { display: "flex", justifyContent: "flex-end" },
   clearBtn: { color: tokens.colorNeutralForeground3 },
   loadingRow: {
     display: "flex",
@@ -213,120 +217,138 @@ export default function OrdersList() {
   });
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.header}>
-        <div className={styles.headerLabel}>
-          <Cart16Regular />
-          <Text size={200} weight="semibold">
-            Order list
-          </Text>
-        </div>
-        {userIsAdmin && items.length > 0 && (
-          <Dialog>
-            <DialogTrigger disableButtonEnhancement>
-              <Button
-                size="small"
-                appearance="subtle"
-                className={styles.clearBtn}
-                icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete20Regular />}
-                disabled={clearMutation.isPending}
+    <Accordion collapsible defaultOpenItems="orders" className={styles.wrap}>
+      <AccordionItem value="orders">
+        <AccordionHeader icon={<Cart16Regular />} expandIconPosition="end">
+          <span className={styles.headerRow}>
+            <Text size={300} weight="semibold">
+              Order list
+            </Text>
+            {items.length > 0 && (
+              <Badge
+                appearance="filled"
+                color="brand"
+                shape="rounded"
+                size="medium"
+                className={styles.countBadge}
               >
-                Clear list
-              </Button>
-            </DialogTrigger>
-            <DialogSurface style={{ maxWidth: "min(400px, calc(100vw - 48px))" }}>
-              <DialogBody>
-                <DialogTitle>Clear the whole order list?</DialogTitle>
-                <DialogContent>
-                  This removes all {items.length} item{items.length !== 1 ? "s" : ""} for
-                  everyone on the team. Items are archived so nothing is permanently lost.
-                </DialogContent>
-                <DialogActions>
+                {items.length}
+              </Badge>
+            )}
+          </span>
+        </AccordionHeader>
+        <AccordionPanel>
+          <div className={styles.panel}>
+            {userIsAdmin && items.length > 0 && (
+              <div className={styles.clearRow}>
+                <Dialog>
                   <DialogTrigger disableButtonEnhancement>
-                    <Button appearance="secondary">Cancel</Button>
-                  </DialogTrigger>
-                  <DialogTrigger disableButtonEnhancement>
-                    <Button appearance="primary" onClick={() => clearMutation.mutate()}>
+                    <Button
+                      size="small"
+                      appearance="subtle"
+                      className={styles.clearBtn}
+                      icon={clearMutation.isPending ? <Spinner size="tiny" /> : <Delete20Regular />}
+                      disabled={clearMutation.isPending}
+                    >
                       Clear list
                     </Button>
                   </DialogTrigger>
-                </DialogActions>
-              </DialogBody>
-            </DialogSurface>
-          </Dialog>
-        )}
-      </div>
-
-      {isLoading && (
-        <div className={styles.loadingRow}>
-          <Spinner size="small" label="Loading…" />
-        </div>
-      )}
-
-      {!isLoading && items.length === 0 && (
-        <Text size={200} align="center" className={styles.empty} block>
-          No items to order yet. When you describe something to restock, we'll offer to add it here.
-        </Text>
-      )}
-
-      {items.map((item) => {
-        const deleting =
-          removeMutation.isPending && removeMutation.variables?.id === item.id;
-        const cardInner = (
-          <Card appearance="outline" className={styles.itemCard}>
-            <Cart16Regular className={styles.itemIcon} />
-            <div className={styles.itemBody}>
-              <Text size={300} weight="semibold" truncate wrap={false} block>
-                {item.itemName}
-              </Text>
-              <div className={styles.metaRow}>
-                <Person16Regular className={styles.metaIcon} />
-                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                  {item.addedBy}
-                </Text>
-                <span className={styles.dot}>·</span>
-                <Clock16Regular className={styles.metaIcon} />
-                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                  {timeAgo(item.addedAt)}
-                </Text>
+                  <DialogSurface style={{ maxWidth: "min(400px, calc(100vw - 48px))" }}>
+                    <DialogBody>
+                      <DialogTitle>Clear the whole order list?</DialogTitle>
+                      <DialogContent>
+                        This removes all {items.length} item{items.length !== 1 ? "s" : ""} for
+                        everyone on the team. Items are archived so nothing is permanently lost.
+                      </DialogContent>
+                      <DialogActions>
+                        <DialogTrigger disableButtonEnhancement>
+                          <Button appearance="secondary">Cancel</Button>
+                        </DialogTrigger>
+                        <DialogTrigger disableButtonEnhancement>
+                          <Button appearance="primary" onClick={() => clearMutation.mutate()}>
+                            Clear list
+                          </Button>
+                        </DialogTrigger>
+                      </DialogActions>
+                    </DialogBody>
+                  </DialogSurface>
+                </Dialog>
               </div>
-            </div>
-          </Card>
-        );
+            )}
 
-        if (!userIsAdmin) {
-          return <div key={item.id}>{cardInner}</div>;
-        }
+            {isLoading && (
+              <div className={styles.loadingRow}>
+                <Spinner size="small" label="Loading…" />
+              </div>
+            )}
 
-        return (
-          <div key={item.id} className={styles.swipeWrap}>
-            <div className={styles.deleteLayer} aria-hidden>
-              {deleting ? <Spinner size="tiny" /> : <Delete20Regular />}
-            </div>
-            <motion.div
-              className={styles.swipeFront}
-              drag="x"
-              dragDirectionLock
-              dragConstraints={{ left: -96, right: 0 }}
-              dragElastic={{ left: 0.15, right: 0 }}
-              dragSnapToOrigin
-              onDragEnd={(_, info) => {
-                if (!deleting && (info.offset.x < -72 || info.velocity.x < -500)) {
-                  removeMutation.mutate({ id: item.id });
-                }
-              }}
-            >
-              {cardInner}
-            </motion.div>
+            {!isLoading && items.length === 0 && (
+              <Text size={200} align="center" className={styles.empty} block>
+                No items to order yet. When you describe something to restock, we'll offer to add it here.
+              </Text>
+            )}
+
+            {items.map((item) => {
+              const deleting =
+                removeMutation.isPending && removeMutation.variables?.id === item.id;
+              const cardInner = (
+                <Card appearance="outline" className={styles.itemCard}>
+                  <Cart16Regular className={styles.itemIcon} />
+                  <div className={styles.itemBody}>
+                    <Text size={300} weight="semibold" truncate wrap={false} block>
+                      {item.itemName}
+                    </Text>
+                    <div className={styles.metaRow}>
+                      <Person16Regular className={styles.metaIcon} />
+                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                        {item.addedBy}
+                      </Text>
+                      <span className={styles.dot}>·</span>
+                      <Clock16Regular className={styles.metaIcon} />
+                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                        {timeAgo(item.addedAt)}
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+              );
+
+              if (!userIsAdmin) {
+                return <div key={item.id}>{cardInner}</div>;
+              }
+
+              return (
+                <div key={item.id} className={styles.swipeWrap}>
+                  <div className={styles.deleteLayer} aria-hidden>
+                    {deleting ? <Spinner size="tiny" /> : <Delete20Regular />}
+                  </div>
+                  <motion.div
+                    className={styles.swipeFront}
+                    drag="x"
+                    dragDirectionLock
+                    dragConstraints={{ left: -96, right: 0 }}
+                    dragElastic={{ left: 0.15, right: 0 }}
+                    dragSnapToOrigin
+                    onDragEnd={(_, info) => {
+                      if (!deleting && (info.offset.x < -72 || info.velocity.x < -500)) {
+                        removeMutation.mutate({ id: item.id });
+                      }
+                    }}
+                  >
+                    {cardInner}
+                  </motion.div>
+                </div>
+              );
+            })}
+
+            {!isLoading && items.length > 0 && (
+              <Text size={200} align="center" className={styles.footer} style={{ color: tokens.colorNeutralForeground3 }}>
+                {items.length} item{items.length !== 1 ? "s" : ""} to order · shared with your team
+              </Text>
+            )}
           </div>
-        );
-      })}
-
-      {!isLoading && items.length > 0 && (
-        <Text size={200} align="center" className={styles.footer} style={{ color: tokens.colorNeutralForeground3 }}>
-          {items.length} item{items.length !== 1 ? "s" : ""} to order · shared with your team
-        </Text>
-      )}
-    </div>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
   );
 }
