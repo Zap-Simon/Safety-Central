@@ -35,8 +35,29 @@ const useStyles = makeStyles({
     cursor: "pointer",
     transitionProperty: "background-color, transform",
     transitionDuration: tokens.durationFaster,
-    ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover },
+    // Gate hover to real pointers only. iOS WebKit (Teams mobile) keeps :hover
+    // "stuck" on the last-tapped screen position after the DOM swaps, so a card
+    // re-rendered there when you return from the agenda/minutes view looked
+    // permanently focused (text recoloured) until the next tap.
+    "@media (hover: hover)": {
+      ":hover": { backgroundColor: tokens.colorNeutralBackground1Hover },
+    },
     ":active": { transform: "scale(0.99)" },
+  },
+  // Click/keyboard target wrapper. The Fluent Card itself stays NON-interactive
+  // (no onClick) so Fluent doesn't attach its own ungated :hover restyle, which
+  // is what stuck on touch. The wrapper carries the button semantics instead.
+  tapWrap: {
+    display: "flex",
+    flexDirection: "column",
+    outlineStyle: "none",
+    ":focus-visible": {
+      outlineWidth: "2px",
+      outlineStyle: "solid",
+      outlineColor: tokens.colorStrokeFocus2,
+      outlineOffset: "2px",
+      borderRadius: tokens.borderRadiusXLarge,
+    },
   },
   icon: {
     width: "32px",
@@ -89,14 +110,18 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorBrandBackground,
     color: tokens.colorNeutralForegroundOnBrand,
     boxShadow: tokens.shadow8,
-    ":hover": { backgroundColor: tokens.colorBrandBackgroundHover },
+    "@media (hover: hover)": {
+      ":hover": { backgroundColor: tokens.colorBrandBackgroundHover },
+    },
   },
   // Brand tint — the agenda hero (boss priority) when nothing needs signing, or
   // the secondary hero when a signing action is already taking the solid slot.
   heroTint: {
     backgroundColor: tokens.colorBrandBackground2,
     color: tokens.colorNeutralForeground1,
-    ":hover": { backgroundColor: tokens.colorBrandBackground2Hover },
+    "@media (hover: hover)": {
+      ":hover": { backgroundColor: tokens.colorBrandBackground2Hover },
+    },
   },
   heroTop: {
     display: "flex",
@@ -187,11 +212,8 @@ export function MeetingCard({
   const styles = useStyles();
   const toneClass =
     iconTone === "success" ? styles.iconSuccess : iconTone === "neutral" ? styles.iconNeutral : styles.iconBrand;
-  return (
-    <Card
-      className={mergeClasses(styles.card, onClick && styles.clickable, "animate-fade-in-up")}
-      onClick={onClick}
-    >
+  const card = (
+    <Card className={mergeClasses(styles.card, onClick && styles.clickable, "animate-fade-in-up")}>
       <div className={mergeClasses(styles.icon, toneClass)}>{icon}</div>
       <div className={styles.body}>
         <Text size={300} weight="semibold" truncate block>
@@ -208,6 +230,24 @@ export function MeetingCard({
       {trailing && <div className={styles.trailing}>{trailing}</div>}
       {onClick && <ChevronRight20Regular className={styles.chevron} />}
     </Card>
+  );
+  if (!onClick) return card;
+  // The click target is this wrapper, NOT the Fluent Card — see `tapWrap`.
+  return (
+    <div
+      className={styles.tapWrap}
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      {card}
+    </div>
   );
 }
 
@@ -238,10 +278,24 @@ export function HeroCard({
   const styles = useStyles();
   const isSolid = tone === "solid";
   const mutedColor = isSolid ? tokens.colorNeutralForegroundOnBrand : tokens.colorNeutralForeground3;
+  // The click target is this wrapper, NOT the Fluent Card — see `tapWrap`. A bare
+  // Card with onClick gets Fluent's own ungated :hover (text + background recolor)
+  // which sticks on iOS after a tap, leaving the card "focused" on return.
   return (
+    <div
+      className={styles.tapWrap}
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
     <Card
       className={mergeClasses(styles.hero, isSolid ? styles.heroSolid : styles.heroTint, "animate-fade-in-up")}
-      onClick={onClick}
     >
       <div className={styles.heroTop}>
         <div className={mergeClasses(styles.heroChip, isSolid ? styles.heroChipSolid : styles.heroChipTint)}>
@@ -273,5 +327,6 @@ export function HeroCard({
         <ArrowRight20Regular />
       </span>
     </Card>
+    </div>
   );
 }

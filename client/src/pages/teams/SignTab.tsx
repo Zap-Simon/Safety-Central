@@ -32,6 +32,7 @@ import {
 } from "./TeamsPageShell";
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 import { SectionHeader, MeetingCard, HeroCard } from "./MeetingCards";
+import { getNZTodayKey } from "@shared/dateUtils";
 
 type SignatureStatus = "signed" | "remote" | "absent";
 
@@ -290,6 +291,17 @@ function relativeFromToday(dateKey: string): string {
   if (diff > 1) return `In ${diff} days`;
   if (diff === -1) return "Yesterday";
   return `${Math.abs(diff)} days ago`;
+}
+
+// Whole calendar days from a meeting's date to NZ today (the timezone meeting
+// keys use): 0 = the meeting day, 1 = the day after, 2 = two days after, …
+// Used to decide when a signed+locked meeting stops showing the attendance
+// confirmation page and opens its minutes directly.
+function daysSinceMeeting(dateKey: string): number {
+  const meeting = Date.parse(`${dateKey}T00:00:00Z`);
+  const today = Date.parse(`${getNZTodayKey()}T00:00:00Z`);
+  if (Number.isNaN(meeting) || Number.isNaN(today)) return 0;
+  return Math.round((today - meeting) / 86400000);
 }
 
 function generateRemoteSignatureImage(name: string, date: string): string {
@@ -1127,21 +1139,29 @@ export default function SignTab() {
                     onClick={() => openMeeting(m)}
                   />
                 ))}
-                {pastMeetings.map((m) => (
-                  <MeetingCard
-                    key={m.dateKey}
-                    icon={<CheckmarkCircle24Filled />}
-                    iconTone="success"
-                    title={m.displayDate}
-                    subtitle="Tap to view the minutes"
-                    trailing={
-                      m.mySignature
-                        ? statusBadge(m.mySignature.status)
-                        : <Badge appearance="tint" color="success">Attended</Badge>
-                    }
-                    onClick={() => openMinutes(m.dateKey, m.displayDate)}
-                  />
-                ))}
+                {pastMeetings.map((m) => {
+                  // For the meeting day and the day after, keep showing the
+                  // attendance confirmation page (it still has a "View minutes"
+                  // button). Once a full calendar day has passed — two days on,
+                  // e.g. a meeting on the 23rd from the 25th — open the minutes
+                  // directly and skip the confirmation step.
+                  const minutesDirect = daysSinceMeeting(m.dateKey) >= 2;
+                  return (
+                    <MeetingCard
+                      key={m.dateKey}
+                      icon={<CheckmarkCircle24Filled />}
+                      iconTone="success"
+                      title={m.displayDate}
+                      subtitle={minutesDirect ? "Tap to view the minutes" : "Tap to view your signed attendance"}
+                      trailing={
+                        m.mySignature
+                          ? statusBadge(m.mySignature.status)
+                          : <Badge appearance="tint" color="success">Attended</Badge>
+                      }
+                      onClick={() => (minutesDirect ? openMinutes(m.dateKey, m.displayDate) : openMeeting(m))}
+                    />
+                  );
+                })}
               </div>
             )}
 
