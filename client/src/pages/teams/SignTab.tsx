@@ -98,7 +98,7 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalL,
     paddingLeft: tokens.spacingHorizontalL,
     paddingRight: tokens.spacingHorizontalL,
-    paddingTop: tokens.spacingVerticalS,
+    paddingTop: tokens.spacingVerticalM,
     paddingBottom: tokens.spacingVerticalXXL,
   },
   section: {
