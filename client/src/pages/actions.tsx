@@ -142,9 +142,13 @@ export default function Actions() {
 
   const meetingItems: ActionableItem[] = (apiResponse as any)?.data || [];
 
+  const FORMER_EMPLOYEES = ['Wayne', 'Teresa'];
+
   const uniqueNames: string[] = Array.from(new Set(
     meetingItems.flatMap(i => [i.submittedBy, i.actionAssignedTo].filter(Boolean) as string[])
-  )).sort();
+  ))
+    .filter(name => !FORMER_EMPLOYEES.some(ex => name.toLowerCase().includes(ex.toLowerCase())))
+    .sort();
 
   const actionItems = meetingItems.filter(item => {
     const hasActionData = !!(
