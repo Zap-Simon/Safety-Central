@@ -212,6 +212,54 @@ const useStyles = makeStyles({
     borderBottomColor: tokens.colorNeutralStroke2,
     borderLeftColor: tokens.colorNeutralStroke2,
   },
+  // Hero-style status surface for read-only (locked / upcoming) meetings, mirroring
+  // the agenda HeroCard's brand-tint look so the whole tab reads as one family.
+  statusHero: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+    paddingTop: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalL,
+    paddingLeft: tokens.spacingHorizontalL,
+    paddingRight: tokens.spacingHorizontalL,
+    borderRadius: tokens.borderRadiusXLarge,
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorNeutralForeground1,
+  },
+  statusTop: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+  },
+  statusChip: {
+    width: "48px",
+    height: "48px",
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.borderRadiusCircular,
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
+  statusHeadings: { minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
+  statusEyebrow: {
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    color: tokens.colorBrandForeground1,
+  },
+  // Signature sits on its own light panel inside the hero so it stays legible on
+  // the brand tint and reads as "here's what you signed".
+  sigBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXS,
+    paddingTop: tokens.spacingVerticalM,
+    paddingBottom: tokens.spacingVerticalM,
+    paddingLeft: tokens.spacingHorizontalM,
+    paddingRight: tokens.spacingHorizontalM,
+    borderRadius: tokens.borderRadiusLarge,
+    backgroundColor: tokens.colorNeutralBackground1,
+  },
 });
 
 function statusBadge(status: SignatureStatus) {
@@ -679,6 +727,23 @@ export default function SignTab() {
     // so show the status (or that it hasn't happened yet) instead of the pad.
     if (selected.state !== "open") {
       const isUpcoming = selected.state === "upcoming";
+      // Locked meetings must reflect HOW the person attended, not just that a
+      // record exists: an "absent"/"remote" record should never read as "signed".
+      const statusHero = (() => {
+        if (isUpcoming) {
+          return { icon: <CalendarLtr24Regular style={{ color: tokens.colorBrandForeground1 }} />, eyebrow: "Upcoming meeting" };
+        }
+        if (existing?.status === "signed") {
+          return { icon: <CheckmarkCircle24Filled style={{ color: tokens.colorPaletteGreenForeground1 }} />, eyebrow: "Attendance signed" };
+        }
+        if (existing?.status === "remote") {
+          return { icon: <Desktop20Regular style={{ color: tokens.colorBrandForeground1 }} />, eyebrow: "Attended remotely" };
+        }
+        if (existing?.status === "absent") {
+          return { icon: <Dismiss20Regular style={{ color: tokens.colorNeutralForeground3 }} />, eyebrow: "Marked absent" };
+        }
+        return { icon: <Shield24Regular style={{ color: tokens.colorBrandForeground1 }} />, eyebrow: "Meeting locked" };
+      })();
       return (
         <TeamsPage>
           <TeamsScroll>
@@ -691,42 +756,44 @@ export default function SignTab() {
               >
                 All meetings
               </Button>
-              <div>
-                <Text size={500} weight="bold" block>{selected.displayDate}</Text>
-                <Text size={200} block style={{ color: tokens.colorNeutralForeground3, marginTop: "2px" }}>
-                  {relativeFromToday(selected.dateKey)}
-                </Text>
-                {existing && (
-                  <div style={{ marginTop: tokens.spacingVerticalS }}>{statusBadge(existing.status)}</div>
+              <div className={`${styles.statusHero} animate-fade-in`}>
+                <div className={styles.statusTop}>
+                  <div className={styles.statusChip}>
+                    {statusHero.icon}
+                  </div>
+                  <div className={styles.statusHeadings}>
+                    <Text size={200} weight="semibold" className={styles.statusEyebrow}>
+                      {statusHero.eyebrow}
+                    </Text>
+                    <Text size={500} weight="bold" truncate block>{selected.displayDate}</Text>
+                    <Text size={200} block style={{ color: tokens.colorNeutralForeground3 }}>
+                      {`${relativeFromToday(selected.dateKey)} · ${
+                        isUpcoming ? "sign once it has taken place" : "minutes ready below"
+                      }`}
+                    </Text>
+                  </div>
+                </div>
+
+                {existing?.signatureData && (
+                  <div className={styles.sigBlock}>
+                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                      Your signature
+                    </Text>
+                    <img src={existing.signatureData} alt="Your signature" className={styles.sigPreview} />
+                  </div>
+                )}
+
+                {!isUpcoming && (
+                  <Button
+                    appearance="primary"
+                    icon={<DocumentText20Regular />}
+                    onClick={() => openMinutes(selected.dateKey, selected.displayDate)}
+                    style={{ width: "100%" }}
+                  >
+                    View meeting minutes
+                  </Button>
                 )}
               </div>
-              <MessageBar intent={isUpcoming ? "info" : "success"}>
-                <MessageBarBody>
-                  {isUpcoming
-                    ? "This meeting hasn't happened yet. You'll be able to sign your attendance once it has taken place."
-                    : existing
-                    ? "Thanks for signing this meeting. An admin has locked it, and the minutes are now available below."
-                    : "An admin has locked this meeting. The minutes are now available below."}
-                </MessageBarBody>
-              </MessageBar>
-              {existing?.signatureData && (
-                <div>
-                  <Text size={200} block style={{ color: tokens.colorNeutralForeground3, marginBottom: tokens.spacingVerticalXS }}>
-                    Your signature:
-                  </Text>
-                  <img src={existing.signatureData} alt="Your signature" className={styles.sigPreview} />
-                </div>
-              )}
-              {!isUpcoming && (
-                <Button
-                  appearance="primary"
-                  icon={<DocumentText20Regular />}
-                  onClick={() => openMinutes(selected.dateKey, selected.displayDate)}
-                  style={{ width: "100%" }}
-                >
-                  View meeting minutes
-                </Button>
-              )}
             </div>
           </TeamsScroll>
         </TeamsPage>
