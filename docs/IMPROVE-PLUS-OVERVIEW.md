@@ -24,19 +24,47 @@ point of Improve+ isn't the feature list, it's what the business can now do end-
 Everything stays in your Microsoft 365 tenant (SharePoint, Teams, Power Automate).
 No third-party data silo, no per-seat SaaS subscription, no data leaving the business.
 
-### The genuinely elegant part
+### The genuinely elegant part — the information stays alive
 
-The clever part isn't that Improve+ has lots of features. **It's that information never
-gets re-entered.**
+The clever part isn't that Improve+ has lots of features. **It's that the information
+stays alive.** One piece of information is entered once, then *evolves* — it is never
+recreated in another system.
 
-A single submission flows through **engagement → discussion → investigation → action →
-compliance** without anyone copying it into another system. One person reports a
-near-miss once, and that same record becomes the agenda item, the minuted discussion, the
-investigation, the corrective action, and the audited closure — automatically.
+```
+        Staff member submits an idea
+                    ↓
+        Appears on the meeting agenda
+                    ↓
+        Discussion is recorded as the minutes
+                    ↓
+        Actions are created
+                    ↓
+        Investigation (if required)
+                    ↓
+        Linked to the relevant hazard
+                    ↓
+        Completed and signed off
+                    ↓
+        Audit-ready record
+```
 
-That single thread, with zero re-keying, is the part that's genuinely elegant. Every
-off-the-shelf alternative forces a hand-off between separate tools, and every hand-off is
-a chance to lose data, duplicate effort, or drop something on the floor.
+**At no point does someone recreate the same information in another system.**
+
+That's a powerful message because every manager has lived the opposite:
+
+- Someone fills out a form.
+- Someone else copies it into Excel.
+- Then into the meeting agenda.
+- Then into the minutes.
+- Then into an action register.
+- Then into an investigation.
+- Then into a report.
+
+It's the **same information typed five or six times** — slow, error-prone, and a magnet
+for things getting dropped. Improve+ turns that into **one piece of information that
+evolves**: entered once, carried automatically through every stage to an audit-ready
+record. Every off-the-shelf alternative forces a hand-off between separate tools, and
+every hand-off is a chance to lose data, duplicate effort, or drop something on the floor.
 
 ---
 
