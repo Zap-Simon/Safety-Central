@@ -6,61 +6,88 @@
 
 ## 1. System at a Glance
 
-**Improve+** is a lightweight staff-engagement and meeting-management tool that lives
-**inside Microsoft Teams** and runs entirely on Cranfield's own Microsoft 365 data.
+**Improve+** combines **four operational systems** into a single Microsoft Teams
+experience, running entirely on Cranfield's own Microsoft 365 data:
 
-It does three jobs that are normally handled by three separate products:
+1. **Staff engagement** — capturing business improvements, safety observations, and
+   near-miss incidents.
+2. **Meeting management** — transforming submissions into live agendas, minutes,
+   attendance records, and digital sign-off.
+3. **Incident & investigation management** — managing near-misses, investigations,
+   hazard links, and corrective actions.
+4. **Compliance & audit** — maintaining action registers, approvals, exports, and a
+   complete audit trail.
 
-1. **Captures** business ideas, safety improvements, and near-miss incidents from staff.
-2. **Runs the meeting** — turning those submissions into a *live agenda* that becomes the
-   *minutes* in the same screen, with attendance and digital sign-off baked in.
-3. **Tracks the follow-through** — actions, investigations, and closure, with a clear
-   audit trail.
+These are described as **business capabilities, not software categories** — because the
+point of Improve+ isn't the feature list, it's what the business can now do end-to-end.
 
 Everything stays in your Microsoft 365 tenant (SharePoint, Teams, Power Automate).
 No third-party data silo, no per-seat SaaS subscription, no data leaving the business.
+
+### The genuinely elegant part
+
+The clever part isn't that Improve+ has lots of features. **It's that information never
+gets re-entered.**
+
+A single submission flows through **engagement → discussion → investigation → action →
+compliance** without anyone copying it into another system. One person reports a
+near-miss once, and that same record becomes the agenda item, the minuted discussion, the
+investigation, the corrective action, and the audited closure — automatically.
+
+That single thread, with zero re-keying, is the part that's genuinely elegant. Every
+off-the-shelf alternative forces a hand-off between separate tools, and every hand-off is
+a chance to lose data, duplicate effort, or drop something on the floor.
 
 ---
 
 ## 2. How It Works
 
 ```
-Staff submission            Live meeting               Follow-through
-─────────────────           ────────────               ─────────────
-Business idea      ─┐                                  ┌─ Actions tracked
-Safety idea        ─┼─►  Live agenda  ──►  Minutes  ──►┤  Investigations
-Near-miss incident ─┘     (same screen, real time)     └─ Closure + audit
-                                  │
-                          Attendance + digital
-                          signatures (in-meeting)
+ Engagement        Meeting            Investigation        Compliance
+ ──────────        ───────            ─────────────        ──────────
+ One submission ─►  Agenda item   ─►  Investigation   ─►   Action register
+ (idea / safety /   Minuted            + hazard links       + approvals
+  near-miss)        discussion         + corrective         + exports
+                    Attendance         actions              + audit trail
+                    Digital sign-off
+
+        └──────────── the SAME record, never re-entered ───────────┘
 ```
 
-1. **Capture** — Staff submit ideas or report a near-miss from a Teams tab (or Microsoft
-   Forms). Submissions are automatically classified and routed to the right list.
-2. **Live agenda** — At the meeting, open items appear as a working agenda. Notes typed
-   during the meeting *are* the minutes — there's no separate write-up step afterwards.
-3. **Attendance & signatures** — Who attended is recorded and locked; attendees sign off
-   on the minutes digitally, inside Teams, as the meeting closes.
-4. **Actions & investigations** — Items marked for action are tracked to completion.
-   Near-miss incidents carry a formal investigation with dual sign-off before closing.
-5. **Export & audit** — Minutes export to professional PDF/HTML/Word/CSV with Cranfield
-   branding, page numbering, and a full record for compliance.
+The four capabilities are stages of **one continuous thread**, not separate steps a
+person stitches together:
+
+1. **Staff engagement** — Staff submit an idea or report a near-miss from a Teams tab (or
+   Microsoft Forms). Submissions are automatically classified and routed.
+2. **Meeting management** — That same submission appears as a live agenda item. Notes
+   typed during the meeting *are* the minutes; attendance is recorded and locked, and
+   attendees sign off digitally inside Teams.
+3. **Incident & investigation** — Near-miss items carry a formal investigation with hazard
+   links and corrective actions, requiring dual sign-off before closing.
+4. **Compliance & audit** — Actions are tracked in a register through to closure, and
+   minutes export to professional PDF/HTML/Word/CSV with Cranfield branding and a complete
+   audit trail.
+
+At no point does anyone copy the item into another system — the record carries its own
+history from submission to audited closure.
 
 ---
 
 ## 3. What Makes It Distinctive
 
-The individual ingredients all exist somewhere on the market. What's **rare** is the
-combination of all four in one purpose-built, tenant-owned tool:
+The individual ingredients all exist somewhere on the market. What's **rare** is that all
+four capabilities run on **one record, in one tool, with no re-entry between them**:
 
-| # | Capability | Why it matters |
-|---|------------|----------------|
-| 1 | **Domain capture** (ideas + safety + near-miss) with auto-classification | Right item goes to the right list/owner with no manual sorting |
-| 2 | **Live agenda → minutes** in the same surface | No double-handling; the meeting writes its own record |
-| 3 | **In-meeting digital signatures + attendance lock** | Formal, defensible sign-off without a separate e-sign tool |
-| 4 | **Native inside Teams, on your own SharePoint data** | No data silo, no per-seat cost, nothing leaves the tenant |
+| Capability | What it covers | Why it matters |
+|------------|----------------|----------------|
+| **Staff engagement** | Business improvements, safety observations, near-miss reports — auto-classified and routed | Lowers the barrier to speak up; the right item reaches the right owner with no manual sorting |
+| **Meeting management** | Live agendas, minutes, attendance, digital sign-off | The meeting writes its own defensible record — no separate write-up or e-sign tool |
+| **Incident & investigation** | Near-misses, investigations, hazard links, corrective actions | Safety events are driven to a controlled, dual-signed closure |
+| **Compliance & audit** | Action registers, approvals, exports, full audit trail | Evidence is always ready, without assembling it from scattered systems |
 
-Most vendors own **one column** of this table and sell it as a standalone product.
+Most vendors own **one row** of this table and sell it as a standalone product. The rare
+part isn't having all four — it's that a single submission flows through every one of them
+**without ever being copied into another system.**
 
 ---
 
@@ -106,13 +133,17 @@ SharePoint the way one purpose-built tool does.
 Improve+ is **not technologically revolutionary** — every individual feature exists
 somewhere on the market.
 
-What *is* rare and valuable is the **integration and fit**: a single lightweight,
-M365-native tool that collapses three product categories into one workflow for one team,
-with **zero data leaving the tenant** and **zero per-seat SaaS bills**.
+What *is* rare and valuable is the **continuous thread**: a single lightweight,
+M365-native tool that carries one record across staff engagement, meeting management,
+investigation, and compliance — with **no re-entry between stages**, **zero data leaving
+the tenant**, and **zero per-seat SaaS bills**.
 
-That "right-sized, fully-owned, fused" quality is exactly what off-the-shelf vendors
-**can't** easily deliver — because their business model depends on selling each column of
-the comparison table separately.
+The elegance isn't the feature count; it's the absence of hand-offs. Every off-the-shelf
+alternative would force you to copy the same item between a meeting tool, a board portal,
+and an EHS platform — and each hand-off is a chance to lose data or drop something. That
+"right-sized, fully-owned, single-thread" quality is exactly what off-the-shelf vendors
+**can't** easily deliver, because their business model depends on selling each capability
+separately.
 
 ---
 
