@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import pino from 'pino';
+import { CATEGORY_RULES, getCategoryRule, type ListTarget } from '../shared/classification-rules';
 
 // Use same logger configuration as server
 const logger = pino({
@@ -196,32 +197,39 @@ export class OpenAIService {
     followUpQuestions: string[];
     orderItem: string;
   }> {
+    // Build the prompt from the shared classification rules so the categories,
+    // routing, and follow-up questions can never drift from the client.
+    const categoryLines = CATEGORY_RULES
+      .map((rule) => `- "${rule.name}" → ${rule.listTarget} list (${rule.aiDescription})`)
+      .join('\n');
+
+    const followUpLines = CATEGORY_RULES
+      .filter((rule) => rule.followUpQuestions.length > 0)
+      .map((rule) => `- ${rule.name}: ${rule.followUpQuestions.map((q) => `"${q}"`).join(', ')}`)
+      .join('\n');
+
+    const categoryUnion = CATEGORY_RULES.map((rule) => `"${rule.name}"`).join(' | ');
+
     const systemPrompt = `You are a health & safety and business improvement classifier for Cranfield Glass Christchurch, a glass and glazing company in New Zealand.
 
 Given a staff member's free-text description, classify it into exactly one of these categories and provide follow-up questions if confidence is low.
 
 Categories and their SharePoint list targets:
-- "Near Miss" → near-miss list (something that almost caused injury/damage but didn't)
-- "Safety Observation" → safety-ideas list (a hazard, unsafe condition, or safety concern observed)
-- "Improvement Idea" → safety-ideas list (an idea to improve safety processes, equipment, or procedures)
-- "Business Improvement" → business-ideas list (an idea to improve business processes, efficiency, or operations)
-- "Supply Request" → business-ideas list (need for supplies, equipment, or materials)
-- "Meeting Agenda Item" → business-ideas list (something to discuss at the next H&S meeting)
-- "Other" → business-ideas list (doesn't fit the above)
+${categoryLines}
+
+When the submission is something to raise or discuss at the next H&S meeting (an agenda item), pick the agenda category that matches the TOPIC, not the format:
+- "Near Miss Meeting Agenda Item" when it's about a specific incident, accident, or near-miss event/investigation.
+- "Safety Meeting Agenda Item" when it's about a safety topic such as the safety/hazard register, PPE, hazards, or safety processes. Example: "Talk about the updates to our safety hazard register, how it works and continuous improvement" → "Safety Meeting Agenda Item".
+- "Business Meeting Agenda Item" only for business/operational topics such as rosters, pricing, customers, or scheduling.
 
 For each category, these are the key follow-up questions when confidence < 0.8:
-- Near Miss: "Where did this happen?", "What task were you doing?", "What was the potential injury or damage?", "What caused it?", "Was any PPE being worn?"
-- Safety Observation: "Where is the hazard located?", "How serious is the risk?", "Who could be affected?"
-- Improvement Idea: "Which area or process does this improve?", "What is the expected benefit?"
-- Business Improvement: "Which area or process does this improve?", "What problem does it solve?"
-- Supply Request: "What quantity is needed?", "Is this urgent?", "Which job or area is it for?"
-- Meeting Agenda Item: "Why is this important to discuss?", "Is there a deadline?"
+${followUpLines}
 
 When the category is "Supply Request", also extract a short, plain item name suitable for a team ordering list — just the thing(s) to buy, in everyday words, no full sentence. Examples: "Safety gloves", "Squeegee rubbers", "Masking tape". Leave it as an empty string for every other category.
 
 Respond with valid JSON only:
 {
-  "category": "Near Miss" | "Safety Observation" | "Improvement Idea" | "Business Improvement" | "Supply Request" | "Meeting Agenda Item" | "Other",
+  "category": ${categoryUnion},
   "listTarget": "near-miss" | "safety-ideas" | "business-ideas",
   "confidence": 0.0 to 1.0,
   "reasoning": "brief explanation",
@@ -251,9 +259,19 @@ Respond with valid JSON only:
 
       const followUpQuestions = parsed.confidence < 0.8 ? (parsed.followUpQuestions || []) : [];
 
+      // The category's rule is authoritative for routing — derive the list
+      // target from it so the AI can't file a category into the wrong list.
+      // Fall back to the AI's listTarget (then business-ideas) for an unknown
+      // category.
+      const rule = getCategoryRule(parsed.category);
+      const validTargets: ListTarget[] = ['near-miss', 'safety-ideas', 'business-ideas'];
+      const listTarget: ListTarget = rule
+        ? rule.listTarget
+        : validTargets.includes(parsed.listTarget) ? parsed.listTarget : 'business-ideas';
+
       return {
         category: parsed.category,
-        listTarget: parsed.listTarget,
+        listTarget,
         confidence: parsed.confidence,
         reasoning: parsed.reasoning || '',
         followUpQuestions,

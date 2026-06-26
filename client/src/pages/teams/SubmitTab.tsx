@@ -40,17 +40,14 @@ import {
 import { useTeamsAuth } from "@/hooks/useTeamsAuth";
 import OrdersList from "./OrdersList";
 import type { OrderItem } from "@shared/schema";
-
-type Category =
-  | "Near Miss"
-  | "Safety Observation"
-  | "Improvement Idea"
-  | "Business Improvement"
-  | "Supply Request"
-  | "Meeting Agenda Item"
-  | "Other";
-
-type ListTarget = "near-miss" | "safety-ideas" | "business-ideas";
+import {
+  CATEGORY_NAMES,
+  LIST_TARGETS,
+  LIST_TARGET_LIST_TYPE,
+  getCategoryRule,
+  type Category,
+  type ListTarget,
+} from "@shared/classification-rules";
 
 interface ClassifyResult {
   category: Category;
@@ -89,16 +86,8 @@ interface SubmitDraft {
 // additionally require a fully-formed classification (see isValidClassifyResult).
 const RESUMABLE_STEPS: SubmitStep[] = ["input", "followup", "confirm", "order-confirm"];
 
-const VALID_CATEGORIES: Category[] = [
-  "Near Miss",
-  "Safety Observation",
-  "Improvement Idea",
-  "Business Improvement",
-  "Supply Request",
-  "Meeting Agenda Item",
-  "Other",
-];
-const VALID_LIST_TARGETS: ListTarget[] = ["near-miss", "safety-ideas", "business-ideas"];
+const VALID_CATEGORIES = CATEGORY_NAMES;
+const VALID_LIST_TARGETS = LIST_TARGETS;
 
 // A restored classification is only safe to render in stage 2 if every field the
 // confirm/followup UI reads is present and the right type. A draft from an older
@@ -162,66 +151,71 @@ function loadDraft(): SubmitDraft | null {
   }
 }
 
+// React-specific presentation only (icons + Fluent colour tokens). The
+// destination label ("Goes to: ...") comes from the shared rule's listLabel so
+// routing copy stays in one place. Keys must cover every Category in
+// shared/classification-rules.ts.
 const CATEGORY_META: Record<
   Category,
-  { icon: React.ReactNode; fg: string; bg: string; border: string; listLabel: string }
+  { icon: React.ReactNode; fg: string; bg: string; border: string }
 > = {
   "Near Miss": {
     icon: <Warning24Regular />,
     fg: tokens.colorPaletteRedForeground1,
     bg: tokens.colorPaletteRedBackground1,
     border: tokens.colorPaletteRedBorder1,
-    listLabel: "Near Miss Register",
   },
   "Safety Observation": {
     icon: <Shield24Regular />,
     fg: tokens.colorPaletteDarkOrangeForeground1,
     bg: tokens.colorPaletteDarkOrangeBackground1,
     border: tokens.colorPaletteDarkOrangeBorder1,
-    listLabel: "Safety Ideas List",
   },
   "Improvement Idea": {
     icon: <Shield24Regular />,
     fg: tokens.colorPaletteGreenForeground1,
     bg: tokens.colorPaletteGreenBackground1,
     border: tokens.colorPaletteGreenBorder1,
-    listLabel: "Safety Ideas List",
   },
   "Business Improvement": {
     icon: <Lightbulb24Regular />,
     fg: tokens.colorPaletteMarigoldForeground1,
     bg: tokens.colorPaletteMarigoldBackground1,
     border: tokens.colorPaletteMarigoldBorder1,
-    listLabel: "Business Ideas List",
   },
   "Supply Request": {
     icon: <Cart24Regular />,
     fg: tokens.colorPaletteBerryForeground1,
     bg: tokens.colorPaletteBerryBackground1,
     border: tokens.colorPaletteBerryBorder1,
-    listLabel: "Business Ideas List",
   },
-  "Meeting Agenda Item": {
+  "Near Miss Meeting Agenda Item": {
+    icon: <Chat24Regular />,
+    fg: tokens.colorPaletteRedForeground1,
+    bg: tokens.colorPaletteRedBackground1,
+    border: tokens.colorPaletteRedBorder1,
+  },
+  "Safety Meeting Agenda Item": {
+    icon: <Chat24Regular />,
+    fg: tokens.colorPaletteDarkOrangeForeground1,
+    bg: tokens.colorPaletteDarkOrangeBackground1,
+    border: tokens.colorPaletteDarkOrangeBorder1,
+  },
+  "Business Meeting Agenda Item": {
     icon: <Chat24Regular />,
     fg: tokens.colorPaletteLightGreenForeground1,
     bg: tokens.colorPaletteLightGreenBackground1,
     border: tokens.colorPaletteLightGreenBorder1,
-    listLabel: "Business Ideas List",
   },
   Other: {
     icon: <QuestionCircle24Regular />,
     fg: tokens.colorNeutralForeground2,
     bg: tokens.colorNeutralBackground3,
     border: tokens.colorNeutralStroke2,
-    listLabel: "Business Ideas List",
   },
 };
 
-const LIST_TYPE_MAP: Record<ListTarget, string> = {
-  "near-miss": "Near Miss",
-  "safety-ideas": "Safety Ideas",
-  "business-ideas": "Business Ideas",
-};
+const LIST_TYPE_MAP = LIST_TARGET_LIST_TYPE;
 
 const EXAMPLES = [
   "I nearly cut my hand on a broken panel near the cutting table…",
@@ -683,6 +677,7 @@ export default function SubmitTab() {
 
   // ─── Main form ────────────────────────────────────────────────────────────
   const meta = classifyResult ? CATEGORY_META[classifyResult.category] : null;
+  const rule = classifyResult ? getCategoryRule(classifyResult.category) : null;
 
   // Input step mirrors Orders: a pinned, keyboard-safe textarea (suggestions
   // stay inside as the cycling placeholder) with the tagline + descriptor below.
@@ -865,7 +860,7 @@ export default function SubmitTab() {
                   </Text>
                 </div>
                 <Text size={200} style={{ color: tokens.colorNeutralForeground3, display: "block" }}>
-                  → Goes to: <strong>{meta.listLabel}</strong>
+                  → Goes to: <strong>{rule?.listLabel}</strong>
                 </Text>
               </div>
 

@@ -144,14 +144,17 @@ flowchart TD
 
    | Field | Meaning |
    |-------|---------|
-   | `category` | One of: *Near Miss*, *Safety Observation*, *Improvement Idea*, *Business Improvement*, *Supply Request*, *Meeting Agenda Item*, *Other* |
+   | `category` | One of: *Near Miss*, *Safety Observation*, *Improvement Idea*, *Business Improvement*, *Supply Request*, *Near Miss Meeting Agenda Item*, *Safety Meeting Agenda Item*, *Business Meeting Agenda Item*, *Other* |
    | `listTarget` | The destination bucket: `near-miss`, `safety-ideas`, or `business-ideas` |
    | `confidence` | `0.0`–`1.0` — how sure the AI is |
    | `reasoning` | A short plain-English explanation (shown for transparency) |
    | `followUpQuestions` | Extra questions to ask **only when the AI is unsure** |
 
-4. **How the seven categories collapse into three lists.** Several categories share a
-   list — staff never see the SharePoint plumbing:
+4. **How the categories collapse into three lists.** Several categories share a
+   list — staff never see the SharePoint plumbing. Categories, routing, and the
+   follow-up questions all live in one place — `shared/classification-rules.ts` —
+   which both the AI prompt (server) and the Submit cards (client) read from, so
+   they can never drift apart:
 
    | AI `category` | `listTarget` | SharePoint list |
    |---------------|--------------|-----------------|
@@ -160,7 +163,9 @@ flowchart TD
    | Improvement Idea | `safety-ideas` | Safety Ideas |
    | Business Improvement | `business-ideas` | Business Ideas |
    | Supply Request | `business-ideas` | Business Ideas |
-   | Meeting Agenda Item | `business-ideas` | Business Ideas |
+   | Near Miss Meeting Agenda Item | `near-miss` | Near Miss – Accident Safety Register |
+   | Safety Meeting Agenda Item | `safety-ideas` | Safety Ideas |
+   | Business Meeting Agenda Item | `business-ideas` | Business Ideas |
    | Other | `business-ideas` | Business Ideas |
 
 5. **Confidence gate (the `followup` step).** If `confidence` is **below 0.8** (or the
