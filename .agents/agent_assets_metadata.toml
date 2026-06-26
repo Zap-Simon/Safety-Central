@@ -6,3 +6,9 @@ id = "u03riVDO9A006gGn5ECeS"
 uri = "file://improve-plus.zip"
 type = "unspecified"
 title = "Improve+ Teams app package (v1.0.1)"
+
+[[outputs]]
+id = "3gsjGEO85dqDz6Bqdri3E"
+uri = "file://docs/IMPROVE-PLUS-OVERVIEW.md"
+type = "text"
+title = "Improve+ — System Overview & Competitive Landscape"
