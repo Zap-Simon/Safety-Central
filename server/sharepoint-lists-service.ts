@@ -446,6 +446,9 @@ export class SharePointListsService {
    */
   private formatMeetingDateForWrite(displayDate: string): string {
     const d = new Date(displayDate);
+    if (isNaN(d.getTime())) {
+      throw new Error(`Invalid meeting date provided for SharePoint write: ${displayDate}`);
+    }
     const year = d.getUTCFullYear();
     const month = d.getUTCMonth();
     const day = d.getUTCDate();
