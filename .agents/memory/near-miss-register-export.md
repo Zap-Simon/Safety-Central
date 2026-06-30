@@ -46,3 +46,20 @@ register, with old ones marked closed but still visible for the record.
 
 **Note:** "Closed" here is display-only; it does NOT write a Closed status back to
 SharePoint. A real bulk write-back would be a separate, confirmed operation.
+
+## Optional From/To date band on the register export
+
+The register export modal has an optional From/To date band. The client filters
+`nearMissItems` by `getDateGroupKey(item.submittedDate)` (a NZ-aligned yyyy-mm-dd key)
+vs the date-input strings via plain string compare — inclusive of both ends and
+timezone-proof. Empty band = all near misses. Filtered `registerItems` (not
+`nearMissItems`) drive the modal count and the buttons' disabled state.
+
+Server: HTML/Markdown/Word generators take an optional `dateRangeLabel` and render a
+"Period covered" line; routes build it from dateFrom/dateTo via buildNearMissRangeLabel.
+**CSV is intentionally label-free** (raw tabular data) — the date band still applies to
+CSV because filtering happens client-side before POST. So the "4 formats in lockstep"
+rule has ONE exception: the period label is on 3 of 4, the filtered data is on all 4.
+
+**Why:** all formats receive the already-filtered `items` array, so data stays
+consistent; only the human-readable period caption differs by format.

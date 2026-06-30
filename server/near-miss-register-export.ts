@@ -193,6 +193,7 @@ export function generateNearMissRegisterHTML(
   items: NearMissRegisterItem[],
   stats: NearMissRegisterStats,
   currentDate: string,
+  dateRangeLabel?: string,
 ): string {
   const statusBreakdown = countBy(items, (i) => meetingStatusLabel(i));
   const typeBreakdown = countBy(items, (i) => eventTypeOf(i));
@@ -341,6 +342,10 @@ export function generateNearMissRegisterHTML(
         <div class="info-label">Generated:</div>
         <div>${esc(currentDate)}</div>
       </div>
+      ${dateRangeLabel ? `<div class="info-block">
+        <div class="info-label">Period covered:</div>
+        <div>${esc(dateRangeLabel)}</div>
+      </div>` : ''}
       <div class="info-block">
         <div class="info-label">Near misses in register:</div>
         <div>${items.length}</div>
@@ -554,12 +559,13 @@ export function generateNearMissRegisterMarkdown(
   items: NearMissRegisterItem[],
   stats: NearMissRegisterStats,
   currentDate: string,
+  dateRangeLabel?: string,
 ): string {
   let md = `# CRANFIELD GLASS CHRISTCHURCH
 ## Near Miss - Accident Safety Register
 
 **Generated:** ${currentDate}  
-**Near misses in register:** ${items.length}
+${dateRangeLabel ? `**Period covered:** ${dateRangeLabel}  \n` : ''}**Near misses in register:** ${items.length}
 
 ---
 
@@ -653,14 +659,19 @@ export async function generateNearMissRegisterWordDoc(
   items: NearMissRegisterItem[],
   stats: NearMissRegisterStats,
   currentDate: string,
+  dateRangeLabel?: string,
 ): Promise<Buffer> {
   const children: any[] = [];
 
   children.push(
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: "CRANFIELD GLASS CHRISTCHURCH", bold: true, size: 44, color: "1F2937" })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: "Near Miss - Accident Safety Register", bold: true, size: 30, color: "EA580C" })] }),
-    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 240 }, children: [new TextRun({ text: `Generated ${currentDate}  ·  ${items.length} near miss${items.length === 1 ? "" : "es"}`, size: 20, color: "6B7280", italics: true })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: dateRangeLabel ? 40 : 240 }, children: [new TextRun({ text: `Generated ${currentDate}  ·  ${items.length} near miss${items.length === 1 ? "" : "es"}`, size: 20, color: "6B7280", italics: true })] }),
   );
+
+  if (dateRangeLabel) {
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 240 }, children: [new TextRun({ text: `Period covered: ${dateRangeLabel}`, size: 20, color: "6B7280", italics: true })] }));
+  }
 
   children.push(new Paragraph({
     spacing: { after: 200 },

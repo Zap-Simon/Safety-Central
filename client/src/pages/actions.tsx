@@ -9,6 +9,7 @@ import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Down
 import { format } from "date-fns";
 import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
+import { getDateGroupKey } from "@shared/dateUtils";
 
 interface ActionableItem {
   id: string;
@@ -57,6 +58,8 @@ export default function Actions() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [isExportingRegister, setIsExportingRegister] = useState<string>('');
+  const [registerDateFrom, setRegisterDateFrom] = useState<string>('');
+  const [registerDateTo, setRegisterDateTo] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
   const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
   const [loadingActivity, setLoadingActivity] = useState<string>('');
@@ -514,13 +517,26 @@ export default function Actions() {
   // same export engine so it matches the meeting minutes / Actions report look.
   const nearMissItems = meetingItems.filter(item => item.type === 'Near Miss');
 
+  // Near misses falling inside the optional From/To date band (by the date the near
+  // miss was submitted/reported). Empty band = every near miss. Both the inputs and
+  // getDateGroupKey produce a NZ-aligned yyyy-mm-dd key, so a plain string compare is
+  // inclusive of both ends and immune to the viewer's local timezone.
+  const registerItems = nearMissItems.filter(item => {
+    if (!registerDateFrom && !registerDateTo) return true;
+    const key = getDateGroupKey(item.submittedDate);
+    if (key === 'unknown-meeting') return false;
+    if (registerDateFrom && key < registerDateFrom) return false;
+    if (registerDateTo && key > registerDateTo) return false;
+    return true;
+  });
+
   const exportRegister = async (format: 'html' | 'csv' | 'markdown' | 'word') => {
     setIsExportingRegister(format);
     try {
       const response = await fetch(`/api/generate-near-miss-register-${format}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: nearMissItems }),
+        body: JSON.stringify({ items: registerItems, dateFrom: registerDateFrom || undefined, dateTo: registerDateTo || undefined }),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -1159,13 +1175,58 @@ export default function Actions() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-gray-600">
-              Export a complete register of all {nearMissItems.length} near miss{nearMissItems.length !== 1 ? 'es' : ''},
-              each with its full investigation, risk assessment and sign-off.
+              Export a register of your near misses, each with its full investigation,
+              risk assessment and sign-off.
             </p>
+
+            <div className="rounded-md border border-gray-200 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-700">Date range (optional)</span>
+                {(registerDateFrom || registerDateTo) && (
+                  <button
+                    type="button"
+                    onClick={() => { setRegisterDateFrom(''); setRegisterDateTo(''); }}
+                    className="text-xs text-orange-600 hover:underline"
+                    data-testid="button-clear-register-dates"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1 text-xs text-gray-500">
+                  From
+                  <input
+                    type="date"
+                    value={registerDateFrom}
+                    max={registerDateTo || undefined}
+                    onChange={(e) => setRegisterDateFrom(e.target.value)}
+                    className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    data-testid="input-register-date-from"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs text-gray-500">
+                  To
+                  <input
+                    type="date"
+                    value={registerDateTo}
+                    min={registerDateFrom || undefined}
+                    onChange={(e) => setRegisterDateTo(e.target.value)}
+                    className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    data-testid="input-register-date-to"
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-gray-500" data-testid="text-register-count">
+                {registerItems.length} near miss{registerItems.length !== 1 ? 'es' : ''}
+                {(registerDateFrom || registerDateTo) ? ' in this range' : ' (all dates)'} will be included.
+              </p>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                disabled={!!isExportingRegister || registerItems.length === 0}
                 onClick={() => exportRegister('html')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >
@@ -1177,7 +1238,7 @@ export default function Actions() {
               </Button>
               <Button
                 variant="outline"
-                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                disabled={!!isExportingRegister || registerItems.length === 0}
                 onClick={() => exportRegister('word')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >
@@ -1189,7 +1250,7 @@ export default function Actions() {
               </Button>
               <Button
                 variant="outline"
-                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                disabled={!!isExportingRegister || registerItems.length === 0}
                 onClick={() => exportRegister('csv')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >
@@ -1201,7 +1262,7 @@ export default function Actions() {
               </Button>
               <Button
                 variant="outline"
-                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                disabled={!!isExportingRegister || registerItems.length === 0}
                 onClick={() => exportRegister('markdown')}
                 className="flex flex-col items-center gap-2 h-auto py-4"
               >

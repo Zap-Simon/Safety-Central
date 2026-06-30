@@ -2145,9 +2145,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }));
   };
 
+  // Build a human-friendly "Period covered" label for the register exports from an
+  // optional from/to date band (yyyy-mm-dd). Returns undefined when no band is set.
+  const buildNearMissRangeLabel = (dateFrom?: string, dateTo?: string): string | undefined => {
+    const fmt = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+    const from = dateFrom ? fmt(dateFrom) : '';
+    const to = dateTo ? fmt(dateTo) : '';
+    if (from && to) return `${from} – ${to}`;
+    if (from) return `From ${from}`;
+    if (to) return `Up to ${to}`;
+    return undefined;
+  };
+
   app.post('/api/generate-near-miss-register-html', async (req, res) => {
     try {
-      const { items } = req.body;
+      const { items, dateFrom, dateTo } = req.body;
       if (!Array.isArray(items)) {
         return res.status(400).json({ error: 'No near misses provided' });
       }
@@ -2155,7 +2167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enriched = await enrichNearMissForRegister(items);
       const stats = computeNearMissRegisterStats(enriched);
       const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
-      const htmlContent = generateNearMissRegisterHTML(enriched, stats, currentDate);
+      const htmlContent = generateNearMissRegisterHTML(enriched, stats, currentDate, buildNearMissRangeLabel(dateFrom, dateTo));
 
       const shareId = 'nmregister-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       if (!(global as any).htmlCache) (global as any).htmlCache = {};
@@ -2201,7 +2213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/generate-near-miss-register-markdown', async (req, res) => {
     try {
-      const { items } = req.body;
+      const { items, dateFrom, dateTo } = req.body;
       if (!Array.isArray(items)) {
         return res.status(400).json({ error: 'No near misses provided' });
       }
@@ -2209,7 +2221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enriched = await enrichNearMissForRegister(items);
       const stats = computeNearMissRegisterStats(enriched);
       const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
-      const markdown = generateNearMissRegisterMarkdown(enriched, stats, currentDate);
+      const markdown = generateNearMissRegisterMarkdown(enriched, stats, currentDate, buildNearMissRangeLabel(dateFrom, dateTo));
       const filename = `Cranfield-Glass-Near-Miss-Register-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.md`;
 
       res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
@@ -2223,7 +2235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/generate-near-miss-register-word', async (req, res) => {
     try {
-      const { items } = req.body;
+      const { items, dateFrom, dateTo } = req.body;
       if (!Array.isArray(items)) {
         return res.status(400).json({ error: 'No near misses provided' });
       }
@@ -2231,7 +2243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enriched = await enrichNearMissForRegister(items);
       const stats = computeNearMissRegisterStats(enriched);
       const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
-      const wordBuffer = await generateNearMissRegisterWordDoc(enriched, stats, currentDate);
+      const wordBuffer = await generateNearMissRegisterWordDoc(enriched, stats, currentDate, buildNearMissRangeLabel(dateFrom, dateTo));
       const filename = `Cranfield-Glass-Near-Miss-Register-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.docx`;
 
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
