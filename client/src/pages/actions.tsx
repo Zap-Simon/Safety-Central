@@ -152,18 +152,29 @@ export default function Actions() {
     .filter(name => !FORMER_EMPLOYEES.some(ex => name.toLowerCase().includes(ex.toLowerCase())))
     .sort();
 
-  const actionItems = meetingItems.filter(item => {
-    const hasActionData = !!(
-      item.actionPriority || 
-      item.actionStatus || 
-      item.actionAssignedTo || 
-      item.actionStartDate || 
-      item.actionDueDate || 
-      item.actionNotes ||
-      item.status === 'Actioned'
-    );
-    return hasActionData;
-  });
+  // True when an item has any action-management data attached (assigned, prioritised,
+  // given a status / notes / dates, or explicitly marked "Actioned" in SharePoint).
+  const hasActionData = (item: ActionableItem) => !!(
+    item.actionPriority ||
+    item.actionStatus ||
+    item.actionAssignedTo ||
+    item.actionStartDate ||
+    item.actionDueDate ||
+    item.actionNotes ||
+    item.status === 'Actioned'
+  );
+
+  // Every Near Miss stays on this page as a permanent safety record, even when no
+  // action was ever raised. An "old" near miss with no action taken is shown as a
+  // closed record — visible for the register, but kept out of the live workload.
+  const isNearMissRecord = (item: ActionableItem) =>
+    item.type === 'Near Miss' && !hasActionData(item);
+
+  // Actionable items PLUS every near miss (so the full near-miss register is always
+  // present on the page, not just the ones that became tracked actions).
+  const actionItems = meetingItems.filter(item =>
+    item.type === 'Near Miss' || hasActionData(item)
+  );
 
   // A finished/archived action is one that's either fully Completed or sitting in
   // "Ready to Close" awaiting formal closure. These are kept out of the live
@@ -190,8 +201,9 @@ export default function Actions() {
     // opened from Meeting Minutes still surfaces as its single focused card.
     if (focusedItemId) return item.id === focusedItemId;
 
-    // Outside the focused deep-link, closed items never show as live/open actions.
-    if (isClosedItem(item)) return false;
+    // Outside the focused deep-link, closed items never show as live/open actions —
+    // except Near Misses, which always stay visible as a permanent safety record.
+    if (isClosedItem(item) && item.type !== 'Near Miss') return false;
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -204,7 +216,9 @@ export default function Actions() {
       if (!matchesSearch) return false;
     }
 
-    if (filterStatus !== 'all') {
+    // The status toggle governs actionable items. Near Misses bypass it so the full
+    // register stays visible regardless of the open / archived filter.
+    if (filterStatus !== 'all' && item.type !== 'Near Miss') {
       const itemStatus = item.actionStatus || 'Not Started';
       const isArchived = isArchivedStatus(itemStatus);
       // "open" = live actions you still need to manage (hides anything finished).
@@ -435,7 +449,7 @@ export default function Actions() {
 
   const stats = {
     total: filteredItems.length,
-    open: filteredItems.filter(i => !isArchivedStatus(i.actionStatus)).length,
+    open: filteredItems.filter(i => !isArchivedStatus(i.actionStatus) && !isNearMissRecord(i)).length,
     completed: filteredItems.filter(i => i.actionStatus === 'Completed').length,
     overdue: filteredItems.filter(i => {
       if (!i.actionDueDate || isArchivedStatus(i.actionStatus)) return false;
@@ -768,14 +782,20 @@ export default function Actions() {
                     <div className="flex items-center justify-between gap-1 mb-2">
                       {getTypeBadge(item.type)}
                       <div className="flex items-center gap-1">
-                        {item.type === 'Near Miss' && (
+                        {item.type === 'Near Miss' && !isNearMissRecord(item) && (
                           <Badge className="h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium bg-orange-600 text-white flex items-center gap-0.5">
                             <ClipboardList className="h-2.5 w-2.5" />Investigate
                           </Badge>
                         )}
-                        <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
-                          {item.actionStatus || 'Not Started'}
-                        </Badge>
+                        {isNearMissRecord(item) ? (
+                          <Badge variant="outline" className="h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 border-gray-200">
+                            Closed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className={`h-5 px-1.5 py-0 leading-none rounded-full text-[10px] font-medium ${getStatusColor(item.actionStatus)}`}>
+                            {item.actionStatus || 'Not Started'}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 

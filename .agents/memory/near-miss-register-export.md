@@ -25,3 +25,24 @@ and shareable-URL/htmlCache pattern.
 
 **How to apply:** keep the 4 formats in lockstep (see meeting-export-lockstep.md). Risk
 palette: Extreme #000, High #ef4444, Moderate #eab308 (black text), Low #22c55e.
+
+## Actions page shows ALL near misses (not just actioned ones)
+
+The Actions page (`actions.tsx`) is otherwise a worklist that hides items with no
+action data, but Near Misses are an exception: EVERY near miss shows as a permanent
+safety record. `actionItems` includes `item.type === 'Near Miss' || hasActionData(item)`.
+
+- `isNearMissRecord(item)` = near miss with no action data ("old" ones). These render a
+  grey **"Closed"** badge (no "Investigate" badge) and are excluded from the live
+  `stats.open` count (they have no due date/priority so they're already out of
+  overdue/highPriority).
+- Near misses BYPASS the open/archived status toggle (`filterStatus`) and the
+  closed-item hide rule, so the full register is always on the page. Non-near-miss
+  worklist behaviour (closed hidden, status toggle, deep-link focus) is unchanged.
+
+**Why:** the source SharePoint list returns all near misses fine (no filtering bug) —
+the app reads them LIVE, no sync needed; the user wanted the page itself to mirror the
+register, with old ones marked closed but still visible for the record.
+
+**Note:** "Closed" here is display-only; it does NOT write a Closed status back to
+SharePoint. A real bulk write-back would be a separate, confirmed operation.
