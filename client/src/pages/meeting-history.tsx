@@ -182,7 +182,6 @@ export default function MeetingHistory() {
   // Floating add button and note feedback states
   const [showFloatingAdd, setShowFloatingAdd] = useState(false);
   const [recentlySavedNotes, setRecentlySavedNotes] = useState<Set<string>>(new Set());
-  const [floatingMeetingDate, setFloatingMeetingDate] = useState<string>('');
   
   const [isUpdatingAction, setIsUpdatingAction] = useState<string>(''); // item ID being updated
   const [recentlySavedActions, setRecentlySavedActions] = useState<Set<string>>(new Set());
@@ -1689,7 +1688,28 @@ export default function MeetingHistory() {
       }
     });
 
-
+  // Decide which meeting a brand-new idea should be filed under.
+  // Normally it's the nearest upcoming meeting. But once that meeting has been
+  // locked (its attendance/agenda finalised in the meeting), new ideas roll over to
+  // the following week — same weekday, 7 days later — so they land in the next
+  // meeting instead of a closed one. Keeps rolling forward if that week is locked too.
+  const newIdeaTargetDate: string = (() => {
+    const upcoming = groupedByMeetingAndCategory
+      .map(({ meetingDate }) => meetingDate)
+      .filter(d => getMeetingStatus(d).isUpcoming)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    let target = upcoming[0] || '';
+    if (!target) return '';
+    let guard = 0;
+    while (lockedAttendance[normaliseLockDate(target)] && guard < 52) {
+      // Advance one week on the UTC date key so the day never drifts across timezones.
+      const next = new Date(getDateGroupKey(target) + 'T10:00:00.000Z');
+      next.setUTCDate(next.getUTCDate() + 7);
+      target = next.toISOString();
+      guard++;
+    }
+    return target;
+  })();
 
   const toggleItemExpansion = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -1757,27 +1777,13 @@ export default function MeetingHistory() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
       // Show floating button when scrolled down more than 200px
-      const shouldShow = scrollTop > 200;
-      setShowFloatingAdd(shouldShow);
-      
-      // Find the nearest upcoming meeting when showing floating button
-      if (shouldShow && groupedByMeetingAndCategory) {
-        const upcomingMeetings = groupedByMeetingAndCategory.filter(({ meetingDate }) => {
-          const meetingStatus = getMeetingStatus(meetingDate);
-          return meetingStatus.isUpcoming;
-        });
-        
-        if (upcomingMeetings.length > 0) {
-          setFloatingMeetingDate(upcomingMeetings[0].meetingDate);
-        }
-      }
+      setShowFloatingAdd(scrollTop > 200);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [groupedByMeetingAndCategory]);
+  }, []);
 
   // Master controls for categories within expanded meetings
   const expandAllCategories = () => {
@@ -4937,22 +4943,22 @@ export default function MeetingHistory() {
         )}
 
         {/* Floating Add Button with Scroll Detection */}
-        {showFloatingAdd && floatingMeetingDate && !showSignatureCarousel && (
+        {showFloatingAdd && newIdeaTargetDate && !showSignatureCarousel && (
           <div className="fixed bottom-6 right-6 z-50">
             <button
               onClick={() => {
-                setNewIdeaForm(prev => ({ ...prev, meetingDate: floatingMeetingDate }));
+                setNewIdeaForm(prev => ({ ...prev, meetingDate: newIdeaTargetDate }));
                 setShowAddIdeaModal(true);
                 fetchSharePointFormData();
               }}
               className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-4 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95"
-              title={`Add item to ${formatDisplayDate(floatingMeetingDate, 'date-only')} meeting`}
+              title={`Add item to ${formatDisplayDate(newIdeaTargetDate, 'date-only')} meeting`}
             >
               <Plus className="h-6 w-6 transition-transform group-hover:rotate-90" />
             </button>
             {/* Enhanced tooltip */}
             <div className="absolute bottom-full right-0 mb-3 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-              Add to {formatDisplayDate(floatingMeetingDate, 'date-only')}
+              Add to {formatDisplayDate(newIdeaTargetDate, 'date-only')}
               <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </div>
