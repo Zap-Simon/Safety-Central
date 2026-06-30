@@ -433,6 +433,26 @@ export class SharePointListsService {
   }
 
   /**
+   * Convert a "display" meeting date (the date the app shows, e.g. "2026-06-30T10:00:00.000Z"
+   * or "2026-06-30") into the value to STORE in SharePoint's MeetingDate field.
+   *
+   * The read path (processMeetingDate) adds +1 day to every stored value. To make BOTH the app
+   * and the SharePoint Lists UI (New Zealand, UTC+12/+13) show the same date D, we store
+   * NZ-midnight of D, i.e. "(D-1)T12:00:00.000Z":
+   *   - app read: parse "(D-1)T12:00Z", +1 day -> UTC date D  -> shows D
+   *   - Lists UI: "(D-1)T12:00Z" is 00:00 (NZST) / 01:00 (NZDT) on D in NZ -> shows D
+   * 12:00Z is used (not 00:00Z) so the +12/+13 NZ offset never crosses a day boundary.
+   * This matches how the bulk of SharePoint data (from Forms/Power Automate) is already stored.
+   */
+  private formatMeetingDateForWrite(displayDate: string): string {
+    const d = new Date(displayDate);
+    const year = d.getUTCFullYear();
+    const month = d.getUTCMonth();
+    const day = d.getUTCDate();
+    return new Date(Date.UTC(year, month, day - 1, 12, 0, 0)).toISOString();
+  }
+
+  /**
    * Make authenticated SharePoint REST API request
    */
   private async makeSharePointRequest(url: string): Promise<any> {
@@ -552,13 +572,9 @@ export class SharePointListsService {
       const etag = itemData.d.__metadata.etag;
       const entityType = itemData.d.__metadata.type;
       
-      // Format the meeting date for SharePoint (ISO 8601)
-      // IMPORTANT: When reading from SharePoint, processMeetingDate() adds 1 day to compensate
-      // for the timezone offset between the API and the NZ MS Lists UI. So we must subtract
-      // 1 day here before writing, so that when it's read back the +1 day gives the correct date.
-      const dateToWrite = new Date(meetingDate);
-      dateToWrite.setDate(dateToWrite.getDate() - 1);
-      const formattedDate = dateToWrite.toISOString();
+      // Store the meeting date as NZ-midnight so the app's +1-day read and the SharePoint
+      // Lists UI agree (see formatMeetingDateForWrite).
+      const formattedDate = this.formatMeetingDateForWrite(meetingDate);
       
       // Update the item with new meeting date
       const updateResponse = await fetch(updateUrl, {
@@ -700,24 +716,10 @@ export class SharePointListsService {
 
       // Add common fields for all list types
       if (itemData.meetingDate) {
-        // If the date is already in ISO format, use it directly
-        // Otherwise, ensure the date string is interpreted as UTC to avoid timezone shifts
-        let meetingDate;
-        if (itemData.meetingDate.includes('T')) {
-          // Already has time component
-          meetingDate = new Date(itemData.meetingDate);
-        } else {
-          // Just a date string like "2025-07-15", add time to ensure correct date
-          meetingDate = new Date(itemData.meetingDate + 'T10:00:00.000Z');
-        }
-        // IMPORTANT: When reading from SharePoint, processMeetingDate() adds 1 day to
-        // compensate for the timezone offset between the API and the NZ MS Lists UI. So we
-        // must subtract 1 day here before writing (mirroring updateItemMeetingDate), so that
-        // when it's read back the +1 day gives the correct date. Without this, newly created
-        // items show up one day late, and each subsequent add cascades a further day forward.
-        meetingDate.setDate(meetingDate.getDate() - 1);
-        payload['MeetingDate'] = meetingDate.toISOString();
-
+        // Store as NZ-midnight so the app's +1-day read and the SharePoint Lists UI agree
+        // (see formatMeetingDateForWrite). Without this, newly created items show up one day
+        // late, and each subsequent add cascades a further day forward.
+        payload['MeetingDate'] = this.formatMeetingDateForWrite(itemData.meetingDate);
       }
       
       // Add fields specific to each list type
@@ -834,11 +836,9 @@ export class SharePointListsService {
       // Add common fields
       if (updates.title) payload['Title'] = updates.title;
       if (updates.status) payload['Status'] = updates.status;
-      // NOTE: This path writes meetingDate WITHOUT the -1 day compensation used by
-      // createListItem/updateItemMeetingDate. It is currently unused for date edits (the UI
-      // changes dates via /api/sharepoint/move-item-to-meeting -> updateItemMeetingDate). If a
-      // display-date edit is ever routed here, apply the same -1 day compensation first.
-      if (updates.meetingDate) payload['MeetingDate'] = new Date(updates.meetingDate).toISOString();
+      // Meeting date edits use the shared NZ-midnight write format so the app's +1-day read
+      // and the SharePoint Lists UI agree (see formatMeetingDateForWrite).
+      if (updates.meetingDate) payload['MeetingDate'] = this.formatMeetingDateForWrite(updates.meetingDate);
 
       // Add list-specific fields
       if (listType === 'Business Ideas') {
