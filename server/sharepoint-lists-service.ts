@@ -288,18 +288,8 @@ export class SharePointListsService {
         }
       }
       
-      const withContent = items.filter((item: any) => this.hasContent(item, config.contentField));
-      if (listType === 'Near Miss') {
-        const excluded = items.filter((item: any) => !this.hasContent(item, config.contentField));
-        console.log(`[NEARMISS-DIAG] raw from SharePoint: ${items.length}, with content (kept): ${withContent.length}, excluded (empty "${config.contentField}"): ${excluded.length}`);
-        if (items.length > 0) {
-          console.log(`[NEARMISS-DIAG] available field keys on first item: ${Object.keys(items[0]).join(', ')}`);
-        }
-        excluded.slice(0, 15).forEach((item: any) => {
-          console.log(`[NEARMISS-DIAG] EXCLUDED id=${item.ID} title="${item.Title}" ${config.contentField}=${JSON.stringify(item[config.contentField])}`);
-        });
-      }
-      return withContent
+      return items
+        .filter((item: any) => this.hasContent(item, config.contentField))
         .map((item: any) => this.processItem(item, listType, config));
         
     } catch (error) {
