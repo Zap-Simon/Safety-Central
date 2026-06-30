@@ -710,6 +710,12 @@ export class SharePointListsService {
           // Just a date string like "2025-07-15", add time to ensure correct date
           meetingDate = new Date(itemData.meetingDate + 'T10:00:00.000Z');
         }
+        // IMPORTANT: When reading from SharePoint, processMeetingDate() adds 1 day to
+        // compensate for the timezone offset between the API and the NZ MS Lists UI. So we
+        // must subtract 1 day here before writing (mirroring updateItemMeetingDate), so that
+        // when it's read back the +1 day gives the correct date. Without this, newly created
+        // items show up one day late, and each subsequent add cascades a further day forward.
+        meetingDate.setDate(meetingDate.getDate() - 1);
         payload['MeetingDate'] = meetingDate.toISOString();
 
       }
@@ -828,6 +834,10 @@ export class SharePointListsService {
       // Add common fields
       if (updates.title) payload['Title'] = updates.title;
       if (updates.status) payload['Status'] = updates.status;
+      // NOTE: This path writes meetingDate WITHOUT the -1 day compensation used by
+      // createListItem/updateItemMeetingDate. It is currently unused for date edits (the UI
+      // changes dates via /api/sharepoint/move-item-to-meeting -> updateItemMeetingDate). If a
+      // display-date edit is ever routed here, apply the same -1 day compensation first.
       if (updates.meetingDate) payload['MeetingDate'] = new Date(updates.meetingDate).toISOString();
 
       // Add list-specific fields
