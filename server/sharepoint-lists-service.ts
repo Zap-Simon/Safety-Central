@@ -476,6 +476,66 @@ export class SharePointListsService {
   }
 
   /**
+   * Perform a SharePoint MERGE update with correct optimistic-concurrency handling.
+   *
+   * Every update has to send the item's current ETag in the `If-Match` header.
+   * The ETag is read with a fresh GET — and that GET MUST bypass any HTTP cache,
+   * otherwise a stale cached response hands us an old version number and the MERGE
+   * is rejected with a 412 ("The request ETag value '3' does not match the
+   * object's ETag value 'guid,4'"). As a belt-and-braces measure we also retry
+   * once on a 412 by re-reading the latest ETag, which covers a genuine
+   * concurrent edit landing between our read and our write.
+   */
+  private async mergeUpdateItem(
+    updateUrl: string,
+    buildPayload: (entityType: string) => Record<string, any>,
+    errorLabel: string = 'SharePoint update failed'
+  ): Promise<void> {
+    const attempt = async (): Promise<Response> => {
+      // Read the CURRENT etag with caching disabled — a stale (cached) GET is the
+      // root cause of spurious 412 ETag-mismatch errors.
+      const getResponse = await fetch(updateUrl, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose',
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      if (!getResponse.ok) {
+        throw new Error(`Failed to get item for update: ${getResponse.status}`);
+      }
+
+      const itemData = await getResponse.json();
+      const etag = itemData.d.__metadata.etag;
+      const entityType = itemData.d.__metadata.type;
+
+      return fetch(updateUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'If-Match': etag,
+          'X-HTTP-Method': 'MERGE'
+        },
+        body: JSON.stringify(buildPayload(entityType))
+      });
+    };
+
+    let updateResponse = await attempt();
+    if (updateResponse.status === 412) {
+      // The etag we sent was stale; re-read the latest one and try once more.
+      updateResponse = await attempt();
+    }
+
+    if (!updateResponse.ok) {
+      const errorText = await updateResponse.text();
+      throw new Error(`${errorLabel}: ${updateResponse.status} - ${errorText}`);
+    }
+  }
+
+  /**
    * Update SharePoint item title using REST API
    */
   async updateItemTitle(itemId: string, title: string, listType: string): Promise<void> {
@@ -495,44 +555,10 @@ export class SharePointListsService {
     const updateUrl = `${baseUrl}('${config.listTitle}')/items(${numericId})`;
     
     try {
-      // Get item etag for optimistic concurrency
-      const getResponse = await fetch(updateUrl, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose'
-        }
-      });
-      
-      if (!getResponse.ok) {
-        throw new Error(`Failed to get item for update: ${getResponse.status}`);
-      }
-      
-      const itemData = await getResponse.json();
-      const etag = itemData.d.__metadata.etag;
-      const entityType = itemData.d.__metadata.type;
-      
-      // Update the item with new title
-      const updateResponse = await fetch(updateUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose',
-          'If-Match': etag,
-          'X-HTTP-Method': 'MERGE'
-        },
-        body: JSON.stringify({
-          '__metadata': { 'type': entityType },
-          'Title': title
-        })
-      });
-      
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
-        throw new Error(`SharePoint update failed: ${updateResponse.status} - ${errorText}`);
-      }
-      
-      
+      await this.mergeUpdateItem(updateUrl, (entityType) => ({
+        '__metadata': { 'type': entityType },
+        'Title': title
+      }));
     } catch (error) {
       logger.error({ err: error, listType, itemId: numericId }, 'Failed to update SharePoint item');
       throw error;
@@ -559,48 +585,14 @@ export class SharePointListsService {
     const updateUrl = `${baseUrl}('${config.listTitle}')/items(${numericId})`;
     
     try {
-      // Get item etag for optimistic concurrency
-      const getResponse = await fetch(updateUrl, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose'
-        }
-      });
-      
-      if (!getResponse.ok) {
-        throw new Error(`Failed to get item for update: ${getResponse.status}`);
-      }
-      
-      const itemData = await getResponse.json();
-      const etag = itemData.d.__metadata.etag;
-      const entityType = itemData.d.__metadata.type;
-      
       // Store the meeting date as NZ-midnight so the app's +1-day read and the SharePoint
       // Lists UI agree (see formatMeetingDateForWrite).
       const formattedDate = this.formatMeetingDateForWrite(meetingDate);
-      
-      // Update the item with new meeting date
-      const updateResponse = await fetch(updateUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose',
-          'If-Match': etag,
-          'X-HTTP-Method': 'MERGE'
-        },
-        body: JSON.stringify({
-          '__metadata': { 'type': entityType },
-          'MeetingDate': formattedDate
-        })
-      });
-      
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
-        throw new Error(`SharePoint update failed: ${updateResponse.status} - ${errorText}`);
-      }
-      
-      
+
+      await this.mergeUpdateItem(updateUrl, (entityType) => ({
+        '__metadata': { 'type': entityType },
+        'MeetingDate': formattedDate
+      }));
     } catch (error) {
       logger.error({ err: error, listType, itemId: numericId }, 'Failed to update SharePoint item');
       throw error;
@@ -815,78 +807,45 @@ export class SharePointListsService {
     const updateUrl = `${baseUrl}('${config.listTitle}')/items(${numericId})`;
     
     try {
-      // Get item etag for optimistic concurrency
-      const getResponse = await fetch(updateUrl, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose'
+      await this.mergeUpdateItem(updateUrl, (entityType) => {
+        // Build update payload based on list type and updates
+        const payload: any = {
+          '__metadata': { 'type': entityType }
+        };
+
+        // Add common fields
+        if (updates.title) payload['Title'] = updates.title;
+        if (updates.status) payload['Status'] = updates.status;
+        // Meeting date edits use the shared NZ-midnight write format so the app's +1-day read
+        // and the SharePoint Lists UI agree (see formatMeetingDateForWrite).
+        if (updates.meetingDate) payload['MeetingDate'] = this.formatMeetingDateForWrite(updates.meetingDate);
+
+        // Add list-specific fields
+        if (listType === 'Business Ideas') {
+          if (updates.description) payload['BusinessIdea1'] = updates.description;
+          if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
+          if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
+        } else if (listType === 'Safety Ideas') {
+          if (updates.description) payload['SafetyIdea1'] = updates.description;
+          if (updates.meetingNotes !== undefined) payload['Meeting_x0020_Notes1'] = updates.meetingNotes;
+          if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
+        } else if (listType === 'Near Miss') {
+          if (updates.description) payload['Canyoubrieflyexplainwhathappened'] = updates.description;
+          if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
+          if (updates.eventType) payload['EventType'] = updates.eventType;
         }
+
+        // Add action tracking fields (common across all list types)
+        // Note: These field names may need to be adjusted based on actual SharePoint column names
+        if (updates.actionPriority !== undefined) payload['ActionPriority'] = updates.actionPriority;
+        if (updates.actionStatus !== undefined) payload['ActionStatus'] = updates.actionStatus;
+        if (updates.actionAssignedTo !== undefined) payload['ActionAssignedTo'] = updates.actionAssignedTo;
+        if (updates.actionStartDate !== undefined) payload['ActionStartDate'] = updates.actionStartDate ? new Date(updates.actionStartDate).toISOString() : null;
+        if (updates.actionDueDate !== undefined) payload['ActionDueDate'] = updates.actionDueDate ? new Date(updates.actionDueDate).toISOString() : null;
+        if (updates.actionNotes !== undefined) payload['ActionNotes'] = updates.actionNotes;
+
+        return payload;
       });
-      
-      if (!getResponse.ok) {
-        throw new Error(`Failed to get item for update: ${getResponse.status}`);
-      }
-      
-      const itemData = await getResponse.json();
-      const etag = itemData.d.__metadata.etag;
-      const entityType = itemData.d.__metadata.type;
-      
-      // Build update payload based on list type and updates
-      let payload: any = {
-        '__metadata': { 'type': entityType }
-      };
-
-      // Add common fields
-      if (updates.title) payload['Title'] = updates.title;
-      if (updates.status) payload['Status'] = updates.status;
-      // Meeting date edits use the shared NZ-midnight write format so the app's +1-day read
-      // and the SharePoint Lists UI agree (see formatMeetingDateForWrite).
-      if (updates.meetingDate) payload['MeetingDate'] = this.formatMeetingDateForWrite(updates.meetingDate);
-
-      // Add list-specific fields
-      if (listType === 'Business Ideas') {
-        if (updates.description) payload['BusinessIdea1'] = updates.description;
-        if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
-        if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
-      } else if (listType === 'Safety Ideas') {
-        if (updates.description) payload['SafetyIdea1'] = updates.description;
-        if (updates.meetingNotes !== undefined) payload['Meeting_x0020_Notes1'] = updates.meetingNotes;
-        if (updates.ideaType) payload['Idea_x0020_Type'] = updates.ideaType;
-      } else if (listType === 'Near Miss') {
-        if (updates.description) payload['Canyoubrieflyexplainwhathappened'] = updates.description;
-        if (updates.meetingNotes !== undefined) payload['MeetingNotes'] = updates.meetingNotes;
-        if (updates.eventType) payload['EventType'] = updates.eventType;
-      }
-
-      // Add action tracking fields (common across all list types)
-      // Note: These field names may need to be adjusted based on actual SharePoint column names
-      if (updates.actionPriority !== undefined) payload['ActionPriority'] = updates.actionPriority;
-      if (updates.actionStatus !== undefined) payload['ActionStatus'] = updates.actionStatus;
-      if (updates.actionAssignedTo !== undefined) payload['ActionAssignedTo'] = updates.actionAssignedTo;
-      if (updates.actionStartDate !== undefined) payload['ActionStartDate'] = updates.actionStartDate ? new Date(updates.actionStartDate).toISOString() : null;
-      if (updates.actionDueDate !== undefined) payload['ActionDueDate'] = updates.actionDueDate ? new Date(updates.actionDueDate).toISOString() : null;
-      if (updates.actionNotes !== undefined) payload['ActionNotes'] = updates.actionNotes;
-
-      // Update the item
-      const updateResponse = await fetch(updateUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose',
-          'If-Match': etag,
-          'X-HTTP-Method': 'MERGE'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
-        console.error(` SharePoint update failed: ${updateResponse.status} - ${errorText}`);
-        throw new Error(`SharePoint update failed: ${updateResponse.status} - ${errorText}`);
-      }
-      
-      
     } catch (error) {
       logger.error({ err: error, listType, itemId: numericId }, 'Failed to update SharePoint item');
       throw error;
@@ -949,43 +908,14 @@ export class SharePointListsService {
     const updateUrl = `${baseUrl}('${config.listTitle}')/items(${numericId})`;
 
     try {
-      // Get item etag + entity type for the MERGE update
-      const getResponse = await fetch(updateUrl, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose'
-        }
-      });
-
-      if (!getResponse.ok) {
-        throw new Error(`Failed to get item for update: ${getResponse.status}`);
-      }
-
-      const itemData = await getResponse.json();
-      const etag = itemData.d.__metadata.etag;
-      const entityType = itemData.d.__metadata.type;
-
-      const payload: any = {
-        '__metadata': { 'type': entityType },
-        [personFieldId]: userId
-      };
-
-      const updateResponse = await fetch(updateUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose',
-          'If-Match': etag,
-          'X-HTTP-Method': 'MERGE'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!updateResponse.ok) {
-        const errorText = await updateResponse.text();
-        throw new Error(`SharePoint submitter update failed: ${updateResponse.status} - ${errorText}`);
-      }
+      await this.mergeUpdateItem(
+        updateUrl,
+        (entityType) => ({
+          '__metadata': { 'type': entityType },
+          [personFieldId]: userId
+        }),
+        'SharePoint submitter update failed'
+      );
     } catch (error) {
       logger.error({ err: error, listType, itemId: numericId }, 'Failed to update SharePoint item submitter');
       throw error;
@@ -1021,18 +951,19 @@ export class SharePointListsService {
     const sourceUrl = `${fromBaseUrl}('${fromConfig.listTitle}')/items(${numericId})`;
 
     try {
-      // 1. Read the raw source item (and its etag for the later delete)
+      // 1. Read the raw source item. Disable caching so we copy the current
+      // content (a stale cached read could carry an old etag/content).
       const getResponse = await fetch(sourceUrl, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
-          'Accept': 'application/json;odata=verbose'
+          'Accept': 'application/json;odata=verbose',
+          'Cache-Control': 'no-cache'
         }
       });
       if (!getResponse.ok) {
         throw new Error(`Failed to read source item: ${getResponse.status}`);
       }
       const sourceData = (await getResponse.json()).d;
-      const etag = sourceData.__metadata.etag;
 
       // Standardise the fields we want to carry across
       const title = sourceData.Title || '';
@@ -1102,13 +1033,16 @@ export class SharePointListsService {
       }
       const newItemId = (await createResponse.json()).d.ID;
 
-      // 3. Delete the original item now that the copy succeeded
+      // 3. Delete the original item now that the copy succeeded. The content has
+      // already been captured and copied, so removal should not be blocked by a
+      // version bump that happened in between — use If-Match: '*' (match any
+      // version) to avoid a stale-etag 412 leaving a duplicate behind.
       const deleteResponse = await fetch(sourceUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
           'Accept': 'application/json;odata=verbose',
-          'If-Match': etag,
+          'If-Match': '*',
           'X-HTTP-Method': 'DELETE'
         }
       });
