@@ -10,6 +10,7 @@ import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
 import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus, buildReadyToCloseActions, type ReadyToCloseAction } from "./meeting-export-shared";
 import { generateActionsReportHTML, generateActionsCSV, generateActionsMarkdown, generateActionsWordDoc, type ActionExportItem, type ActionsStats } from "./actions-export";
+import { generateNearMissRegisterHTML, generateNearMissRegisterCSV, generateNearMissRegisterMarkdown, generateNearMissRegisterWordDoc, computeNearMissRegisterStats, type NearMissRegisterItem } from "./near-miss-register-export";
 import { db } from "./db";
 import { 
   cardOrdering, 
@@ -2087,6 +2088,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error generating actions Word document:', error);
       res.status(500).json({ error: 'Failed to generate actions Word document' });
+    }
+  });
+
+  // ─── Near Miss Register export ──────────────────────────────────────────────
+  // Turns the Near Miss cards into a single branded register (HTML / CSV /
+  // Markdown / Word) on the same professional foundation the meeting minutes and
+  // Actions report use. Each card is enriched server-side with its full
+  // investigation (event details, risk assessment, hazards, resulting actions,
+  // sign-offs) parsed from the near_miss_investigations table.
+  const enrichNearMissForRegister = async (rawItems: any[]): Promise<NearMissRegisterItem[]> => {
+    if (!Array.isArray(rawItems)) return [];
+    return Promise.all(rawItems.map(async (item) => {
+      const id = String(item.id || '');
+      let investigation: NearMissRegisterItem['investigation'] = null;
+      if (id) {
+        try {
+          const inv = await storage.getNearMissInvestigation(id);
+          if (inv) {
+            const safeParse = (raw: any): any[] => {
+              if (Array.isArray(raw)) return raw;
+              if (typeof raw === 'string' && raw.trim()) {
+                try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; } catch { return []; }
+              }
+              return [];
+            };
+            investigation = {
+              investigatorName: inv.investigatorName,
+              siteJob: inv.siteJob,
+              eventDate: inv.eventDate,
+              eventTime: inv.eventTime,
+              eventType: inv.eventType,
+              involvedPersons: inv.involvedPersons,
+              witnesses: inv.witnesses,
+              eventDescription: inv.eventDescription,
+              contributingFactors: inv.contributingFactors,
+              likelihood: inv.likelihood,
+              consequence: inv.consequence,
+              riskLevel: inv.riskLevel,
+              treatmentGiven: inv.treatmentGiven,
+              hazards: safeParse(inv.hazards),
+              resultingActions: safeParse(inv.resultingActions),
+              investigatorSignature: inv.investigatorSignature,
+              investigatorSignedAt: inv.investigatorSignedAt,
+              directorName: inv.directorName,
+              directorSignature: inv.directorSignature,
+              signedAt: inv.signedAt,
+              status: inv.status,
+            };
+          }
+        } catch (err) {
+          console.warn('Could not load near miss investigation for register export:', err);
+        }
+      }
+      return { ...item, id, investigation } as NearMissRegisterItem;
+    }));
+  };
+
+  app.post('/api/generate-near-miss-register-html', async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No near misses provided' });
+      }
+
+      const enriched = await enrichNearMissForRegister(items);
+      const stats = computeNearMissRegisterStats(enriched);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const htmlContent = generateNearMissRegisterHTML(enriched, stats, currentDate);
+
+      const shareId = 'nmregister-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      if (!(global as any).htmlCache) (global as any).htmlCache = {};
+      (global as any).htmlCache[shareId] = { content: htmlContent, expireAt: Date.now() + (7 * 24 * 60 * 60 * 1000) };
+
+      const now = Date.now();
+      Object.keys((global as any).htmlCache).forEach(key => {
+        if ((global as any).htmlCache[key].expireAt < now) delete (global as any).htmlCache[key];
+      });
+      const cacheKeys = Object.keys((global as any).htmlCache);
+      if (cacheKeys.length > 100) cacheKeys.slice(0, -100).forEach(key => delete (global as any).htmlCache[key]);
+
+      const filename = `Cranfield-Glass-Near-Miss-Register-${currentDate.replace(/\s/g, '-')}.html`;
+      const shareUrl = `${req.protocol}://${req.get('host')}/api/view-html/${shareId}`;
+
+      res.json({ success: true, filename, htmlContent, shareUrl, shareId, message: 'Near miss register generated successfully' });
+    } catch (error) {
+      console.error('Error generating near miss register HTML:', error);
+      res.status(500).json({ error: 'Failed to generate near miss register' });
+    }
+  });
+
+  app.post('/api/generate-near-miss-register-csv', async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No near misses provided' });
+      }
+
+      const enriched = await enrichNearMissForRegister(items);
+      const csv = generateNearMissRegisterCSV(enriched);
+      const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      const filename = `Cranfield-Glass-Near-Miss-Register-${currentDate}.csv`;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send('\uFEFF' + csv);
+    } catch (error) {
+      console.error('Error generating near miss register CSV:', error);
+      res.status(500).json({ error: 'Failed to generate near miss register CSV' });
+    }
+  });
+
+  app.post('/api/generate-near-miss-register-markdown', async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No near misses provided' });
+      }
+
+      const enriched = await enrichNearMissForRegister(items);
+      const stats = computeNearMissRegisterStats(enriched);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const markdown = generateNearMissRegisterMarkdown(enriched, stats, currentDate);
+      const filename = `Cranfield-Glass-Near-Miss-Register-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.md`;
+
+      res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(markdown);
+    } catch (error) {
+      console.error('Error generating near miss register markdown:', error);
+      res.status(500).json({ error: 'Failed to generate near miss register markdown' });
+    }
+  });
+
+  app.post('/api/generate-near-miss-register-word', async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: 'No near misses provided' });
+      }
+
+      const enriched = await enrichNearMissForRegister(items);
+      const stats = computeNearMissRegisterStats(enriched);
+      const currentDate = new Date().toLocaleDateString('en-NZ', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Pacific/Auckland' });
+      const wordBuffer = await generateNearMissRegisterWordDoc(enriched, stats, currentDate);
+      const filename = `Cranfield-Glass-Near-Miss-Register-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.docx`;
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', wordBuffer.length);
+      res.send(wordBuffer);
+    } catch (error) {
+      console.error('Error generating near miss register Word document:', error);
+      res.status(500).json({ error: 'Failed to generate near miss register Word document' });
     }
   });
 

@@ -55,6 +55,8 @@ export default function Actions() {
   const [localActionEdits, setLocalActionEdits] = useState<Record<string, { actionNotes?: string; actionAssignedTo?: string }>>({});
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [isExportingRegister, setIsExportingRegister] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
   const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
   const [loadingActivity, setLoadingActivity] = useState<string>('');
@@ -492,6 +494,43 @@ export default function Actions() {
     }
   };
 
+  // Near Miss Register: EVERY near miss card (not just the ones that became
+  // tracked actions like the Actions report shows) turned into a branded
+  // register, enriched server-side with its full investigation. Built on the
+  // same export engine so it matches the meeting minutes / Actions report look.
+  const nearMissItems = meetingItems.filter(item => item.type === 'Near Miss');
+
+  const exportRegister = async (format: 'html' | 'csv' | 'markdown' | 'word') => {
+    setIsExportingRegister(format);
+    try {
+      const response = await fetch(`/api/generate-near-miss-register-${format}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: nearMissItems }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      if (format === 'html') {
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Failed to generate register');
+        downloadBlob(new Blob([result.htmlContent], { type: 'text/html' }), result.filename || 'Near-Miss-Register.html');
+      } else {
+        const blob = await response.blob();
+        const disposition = response.headers.get('content-disposition');
+        const match = disposition?.match(/filename="(.+)"/);
+        const fallback: Record<string, string> = {
+          csv: 'Near-Miss-Register.csv', markdown: 'Near-Miss-Register.md', word: 'Near-Miss-Register.docx',
+        };
+        downloadBlob(blob, match ? match[1] : fallback[format]);
+      }
+      setShowRegisterModal(false);
+    } catch (error) {
+      console.error(`Failed to export near miss register (${format}):`, error);
+    } finally {
+      setIsExportingRegister('');
+    }
+  };
+
   if (isLoading && !apiResponse) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -547,6 +586,15 @@ export default function Actions() {
               <p className="text-gray-600 mt-1">Track, assign, and manage all health & safety actions</p>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowRegisterModal(true)}
+                className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 hover:text-orange-800"
+                data-testid="button-near-miss-register"
+              >
+                <AlertTriangle className="h-4 w-4" />
+                <span>Near Miss Register</span>
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowExportModal(true)}
@@ -1076,6 +1124,76 @@ export default function Actions() {
             </div>
             <p className="text-xs text-gray-400 text-center">
               Tip: open the HTML report and use your browser's Print to save as PDF.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRegisterModal} onOpenChange={setShowRegisterModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-600" />
+              Near Miss Register
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-gray-600">
+              Export a complete register of all {nearMissItems.length} near miss{nearMissItems.length !== 1 ? 'es' : ''},
+              each with its full investigation, risk assessment and sign-off.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                onClick={() => exportRegister('html')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExportingRegister === 'html'
+                  ? <Loader2 className="h-8 w-8 text-orange-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-orange-600" />}
+                <span className="text-sm font-medium">HTML / PDF</span>
+                <span className="text-xs text-gray-500">Print-ready register</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                onClick={() => exportRegister('word')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExportingRegister === 'word'
+                  ? <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-indigo-600" />}
+                <span className="text-sm font-medium">Word Document</span>
+                <span className="text-xs text-gray-500">Editable .docx</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                onClick={() => exportRegister('csv')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExportingRegister === 'csv'
+                  ? <Loader2 className="h-8 w-8 text-green-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-green-600" />}
+                <span className="text-sm font-medium">CSV Spreadsheet</span>
+                <span className="text-xs text-gray-500">Excel compatible</span>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!!isExportingRegister || nearMissItems.length === 0}
+                onClick={() => exportRegister('markdown')}
+                className="flex flex-col items-center gap-2 h-auto py-4"
+              >
+                {isExportingRegister === 'markdown'
+                  ? <Loader2 className="h-8 w-8 text-gray-600 animate-spin" />
+                  : <FileText className="h-8 w-8 text-gray-600" />}
+                <span className="text-sm font-medium">Markdown</span>
+                <span className="text-xs text-gray-500">Plain text format</span>
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400 text-center">
+              Includes every near miss, even those without a tracked action.
             </p>
           </div>
         </DialogContent>
