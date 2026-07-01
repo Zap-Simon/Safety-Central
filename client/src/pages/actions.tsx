@@ -193,10 +193,21 @@ export default function Actions() {
   // Meeting Minutes can still surface the single closed item for the record.
   const isClosedItem = (item: ActionableItem) => item.status === 'Closed';
 
-  // Live actions still to manage — closed items are excluded from every count so
+  // A Near Miss drops out of the live "open (to manage)" workload once it's been
+  // formally closed from Meeting Minutes, its action is finished (Completed /
+  // Ready to Close), or it never became a tracked action (record-only). It still
+  // shows under the "All" filter as a permanent safety record. This mirrors how
+  // the dashboard "open" count already treats near misses (see stats.open).
+  const isNearMissOutOfWorkload = (item: ActionableItem) =>
+    item.type === 'Near Miss' &&
+    (isClosedItem(item) || isArchivedStatus(item.actionStatus) || isNearMissRecord(item));
+
+  // Live actions still to manage — closed/finished/record items are excluded so
   // the dashboard numbers reflect only open work, consistent with how
   // Completed / Ready-to-Close are kept out of the live workload.
-  const liveActionItems = actionItems.filter(item => !isClosedItem(item));
+  const liveActionItems = actionItems.filter(item =>
+    !isClosedItem(item) && !isNearMissOutOfWorkload(item)
+  );
 
   const filteredItems = actionItems.filter(item => {
     // Deep link from Minutes focuses a single action — show only that card.
@@ -219,11 +230,17 @@ export default function Actions() {
       if (!matchesSearch) return false;
     }
 
-    // The status toggle governs actionable items. Near Misses bypass it so the full
-    // register stays visible regardless of the open / archived filter.
-    if (filterStatus !== 'all' && item.type !== 'Near Miss') {
+    // The status toggle governs the view. Only the "All" filter shows the full
+    // register — every other filter (including the default "Open (to manage)")
+    // hides near misses that are closed, finished, or record-only so they don't
+    // clutter the live workload. They remain a permanent record under "All".
+    if (filterStatus !== 'all') {
       const itemStatus = item.actionStatus || 'Not Started';
-      const isArchived = isArchivedStatus(itemStatus);
+      // For near misses, "finished" also covers formal closure and record-only
+      // items, not just an archived action status.
+      const isArchived = item.type === 'Near Miss'
+        ? isNearMissOutOfWorkload(item)
+        : isArchivedStatus(itemStatus);
       // "open" = live actions you still need to manage (hides anything finished).
       if (filterStatus === 'open' && isArchived) return false;
       // "archived" = finished work (Completed or Ready to Close) kept out of the way.
