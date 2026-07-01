@@ -61,7 +61,11 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: `You write short, plain titles for a glass and glazing company's health & safety and business idea submissions. Write like a tradesperson would talk — direct, practical, no corporate jargon. Use everyday language. Examples of good titles: "Broken step near loading bay", "Near miss with forklift on site", "Need better lighting in workshop", "Glass off-cuts piling up — trip hazard", "Idea to speed up order processing". Bad titles to avoid: "Structural Integrity Compromise", "Operational Efficiency Enhancement", "Workplace Safety Incident Report". Keep it under 10 words.`
+            content: `You write short, plain titles for a glass and glazing company's health & safety and business idea submissions. Write like a tradesperson would talk — direct, practical, no corporate jargon. Use everyday language.
+
+The title MUST describe what actually happened — the hazard, incident, problem, or idea itself. Never make the title just a location, a job/site name, an address, or a person's name. If a location or job is mentioned, it may be added for context but only after the incident (e.g. prefer "Sash dropped on hand at Airedale Courts" over "3b Airedale Courts"). If someone's name appears, describe what happened to or around them, don't use the name as the title.
+
+Examples of good titles: "Broken step near loading bay", "Sash dropped on hand removing screws", "Near miss with forklift on site", "Need better lighting in workshop", "Glass off-cuts piling up — trip hazard", "Idea to speed up order processing". Bad titles to avoid: a bare location like "3b Airedale Courts", just a person's name, "Structural Integrity Compromise", "Operational Efficiency Enhancement", "Workplace Safety Incident Report". Keep it under 10 words.`
           },
           {
             role: "user",
