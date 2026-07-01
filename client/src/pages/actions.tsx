@@ -5,11 +5,12 @@ import MeetingHeader from "@/components/meeting-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList, Loader2 } from "lucide-react";
+import { Calendar, FileText, AlertTriangle, Lightbulb, Shield, CheckCircle, Download, Search, Clock, User, Target, ClipboardList, Loader2, PenLine, X } from "lucide-react";
 import { format } from "date-fns";
 import NearMissInvestigationModal from "@/components/near-miss/NearMissInvestigationModal";
 import ActionStatusWorkflow from "@/components/ActionStatusWorkflow";
 import { getDateGroupKey } from "@shared/dateUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ActionableItem {
   id: string;
@@ -61,6 +62,10 @@ export default function Actions() {
   const [registerDateFrom, setRegisterDateFrom] = useState<string>('');
   const [registerDateTo, setRegisterDateTo] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<ActionableItem | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false);
+  const [titleDraft, setTitleDraft] = useState<string>('');
+  const [isSavingTitle, setIsSavingTitle] = useState<boolean>(false);
+  const { toast } = useToast();
   const [activityLogs, setActivityLogs] = useState<Record<string, ActivityEntry[]>>({});
   const [loadingActivity, setLoadingActivity] = useState<string>('');
   const [investigationItem, setInvestigationItem] = useState<ActionableItem | null>(null);
@@ -401,6 +406,60 @@ export default function Actions() {
     }
   };
 
+
+  const startEditTitle = (item: ActionableItem) => {
+    setTitleDraft(item.title?.trim() || '');
+    setIsEditingTitle(true);
+  };
+
+  const cancelEditTitle = () => {
+    setIsEditingTitle(false);
+    setTitleDraft('');
+  };
+
+  const saveItemTitle = async (item: ActionableItem) => {
+    const newTitle = titleDraft.trim();
+    if (!newTitle) {
+      toast({ title: 'Title needed', description: 'Please enter a title before saving.', variant: 'destructive' });
+      return;
+    }
+    if (newTitle === (item.title?.trim() || '')) {
+      cancelEditTitle();
+      return;
+    }
+    setIsSavingTitle(true);
+    try {
+      const response = await authenticatedFetch('/api/sharepoint/update-item', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item.id,
+          listType: item.type,
+          updates: { title: newTitle }
+        })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        queryClient.setQueryData(['/api/meeting-history'], (old: any) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map((i: any) => (i.id === item.id && i.type === item.type) ? { ...i, title: newTitle } : i)
+          };
+        });
+        setSelectedItem(prev => prev && prev.id === item.id ? { ...prev, title: newTitle } : prev);
+        toast({ title: 'Title updated' });
+        cancelEditTitle();
+        queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+      } else {
+        toast({ title: 'Update failed', description: result.error || 'Failed to update title', variant: 'destructive' });
+      }
+    } catch (error) {
+      console.error('Error updating title:', error);
+      toast({ title: 'Update failed', description: 'Failed to update title', variant: 'destructive' });
+    } finally {
+      setIsSavingTitle(false);
+    }
+  };
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'Not set';
@@ -877,13 +936,58 @@ export default function Actions() {
       {selectedItem && (() => {
         const item = selectedItem;
         return (
-          <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) setSelectedItem(null); }}>
+          <Dialog open={!!selectedItem} onOpenChange={(open) => { if (!open) { setSelectedItem(null); cancelEditTitle(); } }}>
             <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <div className="mb-1">{getTypeBadge(item.type)}</div>
-                <DialogTitle className="leading-snug pr-6">
-                  {item.title || 'Untitled Action'}
-                </DialogTitle>
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-1.5 pr-6">
+                    <DialogTitle className="sr-only">Edit title</DialogTitle>
+                    <input
+                      type="text"
+                      value={titleDraft}
+                      onChange={(e) => setTitleDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); saveItemTitle(item); }
+                        if (e.key === 'Escape') { e.preventDefault(); cancelEditTitle(); }
+                      }}
+                      autoFocus
+                      disabled={isSavingTitle}
+                      className="flex-1 min-w-0 text-base font-semibold text-gray-900 border border-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      data-testid="input-title-detail"
+                    />
+                    <button
+                      onClick={() => saveItemTitle(item)}
+                      disabled={isSavingTitle}
+                      className="inline-flex items-center justify-center h-7 w-7 shrink-0 rounded-md text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 disabled:opacity-60"
+                      title="Save title"
+                      data-testid="button-save-title-detail"
+                    >
+                      {isSavingTitle ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                    </button>
+                    <button
+                      onClick={cancelEditTitle}
+                      disabled={isSavingTitle}
+                      className="inline-flex items-center justify-center h-7 w-7 shrink-0 rounded-md text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 disabled:opacity-60"
+                      title="Cancel"
+                      data-testid="button-cancel-title-detail"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <DialogTitle className="leading-snug pr-6 flex items-start gap-1.5">
+                    <span className="flex-1">{item.title || 'Untitled Action'}</span>
+                    <button
+                      onClick={() => startEditTitle(item)}
+                      className="inline-flex items-center justify-center h-6 w-6 shrink-0 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      title="Edit title"
+                      data-testid="button-edit-title-detail"
+                    >
+                      <PenLine className="h-3.5 w-3.5" />
+                    </button>
+                  </DialogTitle>
+                )}
               </DialogHeader>
 
               <div className="space-y-4 py-2">

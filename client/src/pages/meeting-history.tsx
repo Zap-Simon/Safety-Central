@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CalendarClock, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Calendar, Users, FileText, AlertTriangle, Lightbulb, Shield, Bot, Loader2, LogIn, UserCheck, ExternalLink, ArrowRight, CalendarX, CalendarClock, CheckCircle, CheckCircle2, Plus, Lock, Unlock, PenLine, ClipboardList, Clock, X } from "lucide-react";
 import SignatureCarousel from "@/components/SignatureCarousel";
 import { parseSharePointDate, formatDisplayDate, getDateGroupKey, getMeetingStatus } from "@shared/dateUtils";
 import { meetingRoster } from "@shared/meetingRoster";
@@ -155,6 +155,11 @@ export default function MeetingHistory() {
   // Status update states
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string>(''); // item ID being updated
 
+  // Inline title editing
+  const [editingTitleId, setEditingTitleId] = useState<string>(''); // item ID whose title is being edited
+  const [titleDraft, setTitleDraft] = useState<string>('');
+  const [isSavingTitle, setIsSavingTitle] = useState<boolean>(false);
+
   // Move-between-lists states
   const [isMovingItem, setIsMovingItem] = useState<string>(''); // item ID being moved
   const [moveConfirm, setMoveConfirm] = useState<{ item: MeetingItem; toList: string } | null>(null);
@@ -285,6 +290,53 @@ export default function MeetingHistory() {
       return false;
     } finally {
       setIsUpdatingStatus('');
+    }
+  };
+
+  const startEditTitle = (item: MeetingItem) => {
+    if (isSavingTitle) return;
+    setEditingTitleId(item.id);
+    setTitleDraft(item.title?.trim() || '');
+  };
+
+  const cancelEditTitle = () => {
+    setEditingTitleId('');
+    setTitleDraft('');
+  };
+
+  const saveItemTitle = async (item: MeetingItem) => {
+    const newTitle = titleDraft.trim();
+    if (!newTitle) {
+      showError('Title Needed', 'Please enter a title before saving.');
+      return;
+    }
+    if (newTitle === (item.title?.trim() || '')) {
+      cancelEditTitle();
+      return;
+    }
+    setIsSavingTitle(true);
+    try {
+      const response = await authenticatedFetch('/api/sharepoint/update-item', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item.id,
+          listType: item.type,
+          updates: { title: newTitle }
+        })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        showSuccess('Success', 'Title updated');
+        cancelEditTitle();
+        await queryClient.invalidateQueries({ queryKey: ['/api/meeting-history'] });
+      } else {
+        showError('Update Failed', result.error || 'Failed to update title');
+      }
+    } catch (error) {
+      console.error('Error updating title:', error);
+      showError('Update Failed', 'Failed to update title');
+    } finally {
+      setIsSavingTitle(false);
     }
   };
 
@@ -3188,13 +3240,57 @@ export default function MeetingHistory() {
                                             <div className="flex flex-col gap-3">
                                               {/* Title and Badges Row */}
                                               <div className="flex items-start justify-between gap-2">
-                                                <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2">
-                                                  {item.title && item.title.trim() !== '' ? (
-                                                    <span className="line-clamp-2">{highlightSearchTerm(item.title, searchQuery)}</span>
-                                                  ) : (
-                                                    <span className="text-gray-400 italic">No title</span>
-                                                  )}
-                                                </h4>
+                                                {editingTitleId === item.id ? (
+                                                  <div className="flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                                    <input
+                                                      type="text"
+                                                      value={titleDraft}
+                                                      onChange={(e) => setTitleDraft(e.target.value)}
+                                                      onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') { e.preventDefault(); saveItemTitle(item); }
+                                                        if (e.key === 'Escape') { e.preventDefault(); cancelEditTitle(); }
+                                                      }}
+                                                      autoFocus
+                                                      disabled={isSavingTitle}
+                                                      className="flex-1 min-w-0 text-sm sm:text-base font-semibold text-gray-900 border border-blue-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                                      data-testid={`input-title-${item.id}`}
+                                                    />
+                                                    <button
+                                                      onClick={() => saveItemTitle(item)}
+                                                      disabled={isSavingTitle}
+                                                      className="inline-flex items-center justify-center h-7 w-7 rounded-md text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 disabled:opacity-60"
+                                                      title="Save title"
+                                                      data-testid={`button-save-title-${item.id}`}
+                                                    >
+                                                      {isSavingTitle ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                                    </button>
+                                                    <button
+                                                      onClick={cancelEditTitle}
+                                                      disabled={isSavingTitle}
+                                                      className="inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 disabled:opacity-60"
+                                                      title="Cancel"
+                                                      data-testid={`button-cancel-title-${item.id}`}
+                                                    >
+                                                      <X className="h-3.5 w-3.5" />
+                                                    </button>
+                                                  </div>
+                                                ) : (
+                                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight flex-1 min-w-0 pr-2 flex items-start gap-1.5">
+                                                    {item.title && item.title.trim() !== '' ? (
+                                                      <span className="line-clamp-2">{highlightSearchTerm(item.title, searchQuery)}</span>
+                                                    ) : (
+                                                      <span className="text-gray-400 italic">No title</span>
+                                                    )}
+                                                    <button
+                                                      onClick={() => startEditTitle(item)}
+                                                      className="inline-flex items-center justify-center h-6 w-6 shrink-0 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                                      title="Edit title"
+                                                      data-testid={`button-edit-title-${item.id}`}
+                                                    >
+                                                      <PenLine className="h-3.5 w-3.5" />
+                                                    </button>
+                                                  </h4>
+                                                )}
                                                 <div className="flex flex-wrap gap-1.5 flex-shrink-0">
                                                   {item.ideaType && (
                                                     <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 border-blue-200 whitespace-nowrap">
