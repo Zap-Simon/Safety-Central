@@ -19,6 +19,7 @@ import {
   BorderStyle, WidthType, AlignmentType,
 } from "docx";
 import { PAGEDJS_BASE64 } from "./assets/pagedjs";
+import { documentVersionFooterHTML, documentVersionFooterMarkdown, buildDocumentVersionInfo } from "./meeting-export-shared";
 
 const PAGEDJS_SCRIPT = Buffer.from(PAGEDJS_BASE64, "base64").toString("utf-8");
 
@@ -263,13 +264,13 @@ export function generateNearMissRegisterHTML(
 
     /* Summary dashboard */
     .analytics-dashboard { margin-bottom:22px; background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; page-break-inside:avoid; break-inside:avoid; }
-    .analytics-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 16px; background:#fff7ed; border-bottom:1px solid #fed7aa; }
-    .analytics-heading { display:flex; flex-direction:column; }
-    .analytics-h1 { font-size:13pt; font-weight:bold; color:#1f2937; line-height:1.2; }
-    .analytics-sub { font-size:7.5pt; color:#9ca3af; margin-top:2px; }
-    .analytics-metrics { display:flex; gap:10px; flex-wrap:wrap; }
-    .metric-chip { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:74px; padding:6px 12px; background:#fff; border:1px solid #e5e7eb; border-radius:6px; }
-    .metric-chip-num { font-size:16pt; font-weight:bold; color:#1f2937; line-height:1.1; }
+    .analytics-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap; gap:12px; padding:10px 14px; background:#fff7ed; border-bottom:1px solid #fed7aa; }
+    .analytics-heading { display:flex; flex-direction:column; flex-shrink:0; }
+    .analytics-h1 { font-size:12pt; font-weight:bold; color:#1f2937; line-height:1.2; white-space:nowrap; }
+    .analytics-sub { font-size:7.5pt; color:#9ca3af; margin-top:2px; white-space:nowrap; }
+    .analytics-metrics { display:flex; gap:7px; flex-wrap:nowrap; }
+    .metric-chip { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:0; padding:5px 8px; background:#fff; border:1px solid #e5e7eb; border-radius:6px; }
+    .metric-chip-num { font-size:15pt; font-weight:bold; color:#1f2937; line-height:1.1; }
     .metric-chip-num.accent-orange { color:#ea580c; }
     .metric-chip-num.accent-green { color:#16a34a; }
     .metric-chip-num.accent-red { color:#dc2626; }
@@ -285,15 +286,15 @@ export function generateNearMissRegisterHTML(
 
     /* Overview table */
     .items-table { width:100%; border-collapse:collapse; margin-bottom:28px; border:1px solid #dee2e6; table-layout:fixed; }
-    .items-table th { background:#f8f9fa; padding:9px 10px; text-align:left; font-weight:bold; border:1px solid #dee2e6; font-size:9.5pt; overflow-wrap:anywhere; }
+    .items-table th { background:#f8f9fa; padding:8px 8px; text-align:left; font-weight:bold; border:1px solid #dee2e6; font-size:8.5pt; white-space:nowrap; }
     .items-table td { padding:9px 10px; border:1px solid #dee2e6; vertical-align:top; font-size:9.5pt; overflow-wrap:anywhere; }
     .items-table th:nth-child(1), .items-table td:nth-child(1) { width:4%; }
-    .items-table th:nth-child(2), .items-table td:nth-child(2) { width:34%; }
-    .items-table th:nth-child(3), .items-table td:nth-child(3) { width:13%; }
-    .items-table th:nth-child(4), .items-table td:nth-child(4) { width:13%; }
-    .items-table th:nth-child(5), .items-table td:nth-child(5) { width:11%; }
-    .items-table th:nth-child(6), .items-table td:nth-child(6) { width:13%; }
-    .items-table th:nth-child(7), .items-table td:nth-child(7) { width:12%; }
+    .items-table th:nth-child(2), .items-table td:nth-child(2) { width:30%; }
+    .items-table th:nth-child(3), .items-table td:nth-child(3) { width:14%; white-space:nowrap; }
+    .items-table th:nth-child(4), .items-table td:nth-child(4) { width:12%; }
+    .items-table th:nth-child(5), .items-table td:nth-child(5) { width:10%; }
+    .items-table th:nth-child(6), .items-table td:nth-child(6) { width:16%; }
+    .items-table th:nth-child(7), .items-table td:nth-child(7) { width:14%; }
     .items-table tr { page-break-inside:avoid; break-inside:avoid; }
     .items-table thead { display:table-header-group; }
 
@@ -385,7 +386,7 @@ export function generateNearMissRegisterHTML(
     <div class="section-header">I. Near Miss Register</div>
     ${items.length === 0 ? '<p class="muted">No near misses match the current filters.</p>' : `
     <table class="items-table">
-      <colgroup><col style="width:4%;"><col style="width:34%;"><col style="width:13%;"><col style="width:13%;"><col style="width:11%;"><col style="width:13%;"><col style="width:12%;"></colgroup>
+      <colgroup><col style="width:4%;"><col style="width:30%;"><col style="width:14%;"><col style="width:12%;"><col style="width:10%;"><col style="width:16%;"><col style="width:14%;"></colgroup>
       <thead>
         <tr><th>#</th><th>Event</th><th>Event Date</th><th>Type</th><th>Risk</th><th>Investigation</th><th>Meeting</th></tr>
       </thead>
@@ -407,6 +408,7 @@ export function generateNearMissRegisterHTML(
     window.PagedConfig = { auto: true, after: addPrintButton };
     setTimeout(addPrintButton, 8000);
   </script>
+  ${documentVersionFooterHTML(currentDate)}
   <script>${PAGEDJS_SCRIPT}</script>
 </body>
 </html>`;
@@ -639,6 +641,7 @@ ${dateRangeLabel ? `**Period covered:** ${dateRangeLabel}  \n` : ''}**Near misse
   });
 
   md += `*This document was automatically generated from the Cranfield Glass Health & Safety Management System on ${currentDate}.*\n`;
+  md += documentVersionFooterMarkdown(currentDate);
   return md;
 }
 
@@ -767,6 +770,14 @@ export async function generateNearMissRegisterWordDoc(
       }
     });
   }
+
+  const vinfo = buildDocumentVersionInfo(currentDate);
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 240 },
+    border: { top: { style: BorderStyle.SINGLE, size: 6, color: "E5E7EB", space: 8 } },
+    children: [new TextRun({ text: `Document version ${vinfo.version}  ·  Issued ${vinfo.issued}  ·  Next review ${vinfo.reviewBy}`, size: 16, color: "9CA3AF" })],
+  }));
 
   const doc = new Document({ sections: [{ properties: {}, children }] });
   return await Packer.toBuffer(doc);

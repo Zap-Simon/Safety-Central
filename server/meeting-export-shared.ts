@@ -192,3 +192,41 @@ export function buildReadyToCloseActions(allItems: any[]): ReadyToCloseAction[] 
   }
   return result.sort((a, b) => a.title.localeCompare(b.title));
 }
+
+/**
+ * Document control for quality/compliance. Every human-readable export carries a
+ * version number, the issue date (when it was generated) and a review date one
+ * year on, so any printed or shared copy has a clear "valid until" for the safety
+ * management system. Review date is computed from NZ "today" (Pacific/Auckland)
+ * so it never drifts a day around UTC midnight.
+ */
+export interface DocumentVersionInfo {
+  version: string;
+  issued: string;
+  reviewBy: string;
+}
+
+export function buildDocumentVersionInfo(issuedDate: string, version = "1.0"): DocumentVersionInfo {
+  const nzToday = new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" }); // yyyy-mm-dd
+  const [y, m, d] = nzToday.split("-").map(Number);
+  const reviewBy = new Date(Date.UTC(y + 1, m - 1, d)).toLocaleDateString("en-NZ", {
+    day: "2-digit", month: "long", year: "numeric", timeZone: "UTC",
+  });
+  return { version, issued: issuedDate, reviewBy };
+}
+
+/** Inline-styled "Document control" footer for any HTML/PDF export. */
+export function documentVersionFooterHTML(issuedDate: string, version = "1.0"): string {
+  const info = buildDocumentVersionInfo(issuedDate, version);
+  return `<div class="doc-control" style="margin-top:24px;padding-top:10px;border-top:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:6px 24px;justify-content:center;font-size:8.5pt;color:#6b7280;">`
+    + `<span><strong>Document version:</strong> ${info.version}</span>`
+    + `<span><strong>Issued:</strong> ${info.issued}</span>`
+    + `<span><strong>Next review:</strong> ${info.reviewBy}</span>`
+    + `</div>`;
+}
+
+/** "Document control" footer line for any Markdown export. */
+export function documentVersionFooterMarkdown(issuedDate: string, version = "1.0"): string {
+  const info = buildDocumentVersionInfo(issuedDate, version);
+  return `\n**Document version:** ${info.version}  ·  **Issued:** ${info.issued}  ·  **Next review:** ${info.reviewBy}\n`;
+}

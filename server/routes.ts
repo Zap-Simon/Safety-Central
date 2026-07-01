@@ -8,7 +8,7 @@ import { findRosterMember, allRosterMembers } from "../shared/meetingRoster";
 import { generateMeetingWordDoc } from "./word-generator";
 import { OpenAIService } from "./openai-service";
 import { MarkdownMeetingGenerator } from "./markdown-generator";
-import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus, buildReadyToCloseActions, type ReadyToCloseAction } from "./meeting-export-shared";
+import { buildAgendaSubmissionText, buildActionRequiredLines, actionRequiredPlainText, getDisplayItemStatus, buildReadyToCloseActions, documentVersionFooterHTML, type ReadyToCloseAction } from "./meeting-export-shared";
 import { generateActionsReportHTML, generateActionsCSV, generateActionsMarkdown, generateActionsWordDoc, type ActionExportItem, type ActionsStats } from "./actions-export";
 import { generateNearMissRegisterHTML, generateNearMissRegisterCSV, generateNearMissRegisterMarkdown, generateNearMissRegisterWordDoc, computeNearMissRegisterStats, type NearMissRegisterItem } from "./near-miss-register-export";
 import { db } from "./db";
@@ -6662,6 +6662,7 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
       // user a Print button so the document remains usable.
       setTimeout(addPrintButton, 8000);
     </script>
+    ${documentVersionFooterHTML(currentDate)}
     <script>${PAGEDJS_SCRIPT}</script>
 </body>
 </html>

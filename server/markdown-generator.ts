@@ -5,7 +5,7 @@
  * for PDF export with navigation bookmarks (similar to Typora approach)
  */
 
-import { buildActionRequiredLines, getDisplayItemStatus, type ReadyToCloseAction } from "./meeting-export-shared";
+import { buildActionRequiredLines, getDisplayItemStatus, documentVersionFooterMarkdown, type ReadyToCloseAction } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -181,7 +181,7 @@ Date: _________________________
 ---
 
 *This document was automatically generated from the Cranfield Glass Health & Safety Management System on ${currentDate}.*
-
+${documentVersionFooterMarkdown(currentDate)}
 `;
 
     return markdown;

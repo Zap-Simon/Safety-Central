@@ -19,6 +19,7 @@ import {
   BorderStyle, WidthType, AlignmentType,
 } from "docx";
 import { PAGEDJS_BASE64 } from "./assets/pagedjs";
+import { documentVersionFooterHTML, documentVersionFooterMarkdown, buildDocumentVersionInfo } from "./meeting-export-shared";
 
 const PAGEDJS_SCRIPT = Buffer.from(PAGEDJS_BASE64, "base64").toString("utf-8");
 
@@ -406,6 +407,7 @@ export function generateActionsReportHTML(
     window.PagedConfig = { auto: true, after: addPrintButton };
     setTimeout(addPrintButton, 8000);
   </script>
+  ${documentVersionFooterHTML(currentDate)}
   <script>${PAGEDJS_SCRIPT}</script>
 </body>
 </html>`;
@@ -622,6 +624,7 @@ export function generateActionsMarkdown(
   });
 
   md += `*This document was automatically generated from the Cranfield Glass Health & Safety Management System on ${currentDate}.*\n`;
+  md += documentVersionFooterMarkdown(currentDate);
   return md;
 }
 
@@ -744,6 +747,14 @@ export async function generateActionsWordDoc(
       }
     });
   }
+
+  const vinfo = buildDocumentVersionInfo(currentDate);
+  children.push(new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 240 },
+    border: { top: { style: BorderStyle.SINGLE, size: 6, color: "E5E7EB", space: 8 } },
+    children: [new TextRun({ text: `Document version ${vinfo.version}  ·  Issued ${vinfo.issued}  ·  Next review ${vinfo.reviewBy}`, size: 16, color: "9CA3AF" })],
+  }));
 
   const doc = new Document({ sections: [{ properties: {}, children }] });
   return await Packer.toBuffer(doc);

@@ -1,7 +1,7 @@
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, BorderStyle, WidthType, HeadingLevel, AlignmentType } from "docx";
-import { buildActionRequiredLines, isEmptyActionPlaceholder, getDisplayItemStatus, buildReadyToCloseActions, type ActionLine, type ReadyToCloseAction } from "./meeting-export-shared";
+import { buildActionRequiredLines, isEmptyActionPlaceholder, getDisplayItemStatus, buildReadyToCloseActions, buildDocumentVersionInfo, type ActionLine, type ReadyToCloseAction } from "./meeting-export-shared";
 
 interface MeetingItem {
   id: string;
@@ -614,6 +614,15 @@ export class AdvancedWordTemplateEngine {
 
     // Attendance Table
     sections.push(this.createProfessionalAttendanceTable(data));
+
+    // Document control footer (version / issued / next review)
+    const vinfo = buildDocumentVersionInfo(data.currentDate);
+    sections.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 400 },
+      border: { top: { style: BorderStyle.SINGLE, size: 6, color: "E5E7EB", space: 8 } },
+      children: [new TextRun({ text: `Document version ${vinfo.version}  ·  Issued ${vinfo.issued}  ·  Next review ${vinfo.reviewBy}`, size: 16, color: "9CA3AF" })],
+    }));
 
     // Create document
     const doc = new Document({
