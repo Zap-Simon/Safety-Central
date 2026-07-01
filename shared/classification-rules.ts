@@ -16,6 +16,7 @@ export const CATEGORY_NAMES = [
   "Near Miss",
   "Safety Observation",
   "Improvement Idea",
+  "Chemical Register",
   "Business Improvement",
   "Supply Request",
   "Near Miss Meeting Agenda Item",
@@ -84,6 +85,19 @@ export const CATEGORY_RULES: CategoryRule[] = [
     followUpQuestions: [
       "Which area or process does this improve?",
       "What is the expected benefit?",
+    ],
+  },
+  {
+    name: "Chemical Register",
+    listTarget: "safety-ideas",
+    listLabel: "Safety Ideas List",
+    aiDescription:
+      "a new chemical, hazardous substance, or product being brought on site, purchased, or trialled (e.g. acetone, solvents, thinners, adhesives, silicones, sealants, paints, cleaners, aerosols, gases) that must be reviewed and added to the chemical / hazardous substances register",
+    followUpQuestions: [
+      "What is the product or chemical name?",
+      "What quantity and container size?",
+      "Where will it be stored and used?",
+      "Is a Safety Data Sheet (SDS) available?",
     ],
   },
   {

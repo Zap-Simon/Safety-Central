@@ -221,6 +221,8 @@ Given a staff member's free-text description, classify it into exactly one of th
 Categories and their SharePoint list targets:
 ${categoryLines}
 
+When the submission mentions bringing in, buying, receiving, trialling, or starting to use a chemical, hazardous substance, or product (e.g. acetone, solvents, thinners, adhesives, silicones, sealants, paints, cleaners, aerosols, gases, lubricants), classify it as "Chemical Register" so it can be reviewed and added to the chemical / hazardous substances register. Examples: "Purchased a drum of acetone", "We're trialling a new adhesive from a supplier", "Got a new solvent-based cleaner in the workshop" → "Chemical Register". Note: a pure ordering/restock request for supplies that are NOT chemicals is still "Supply Request".
+
 When the submission is something to raise or discuss at the next H&S meeting (an agenda item), pick the agenda category that matches the TOPIC, not the format:
 - "Near Miss Meeting Agenda Item" when it's about a specific incident, accident, or near-miss event/investigation.
 - "Safety Meeting Agenda Item" when it's about a safety topic such as the safety/hazard register, PPE, hazards, or safety processes. Example: "Talk about the updates to our safety hazard register, how it works and continuous improvement" → "Safety Meeting Agenda Item".

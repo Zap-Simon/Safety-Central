@@ -23,6 +23,7 @@ import {
   Cart24Regular,
   Chat24Regular,
   QuestionCircle24Regular,
+  Beaker24Regular,
   CheckmarkCircle24Filled,
   Send20Regular,
   ChevronRight20Regular,
@@ -176,6 +177,12 @@ const CATEGORY_META: Record<
     fg: tokens.colorPaletteGreenForeground1,
     bg: tokens.colorPaletteGreenBackground1,
     border: tokens.colorPaletteGreenBorder1,
+  },
+  "Chemical Register": {
+    icon: <Beaker24Regular />,
+    fg: tokens.colorPalettePurpleForeground2,
+    bg: tokens.colorPalettePurpleBackground2,
+    border: tokens.colorPalettePurpleBorderActive,
   },
   "Business Improvement": {
     icon: <Lightbulb24Regular />,

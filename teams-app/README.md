@@ -144,7 +144,7 @@ flowchart TD
 
    | Field | Meaning |
    |-------|---------|
-   | `category` | One of: *Near Miss*, *Safety Observation*, *Improvement Idea*, *Business Improvement*, *Supply Request*, *Near Miss Meeting Agenda Item*, *Safety Meeting Agenda Item*, *Business Meeting Agenda Item*, *Other* |
+   | `category` | One of: *Near Miss*, *Safety Observation*, *Improvement Idea*, *Chemical Register*, *Business Improvement*, *Supply Request*, *Near Miss Meeting Agenda Item*, *Safety Meeting Agenda Item*, *Business Meeting Agenda Item*, *Other* |
    | `listTarget` | The destination bucket: `near-miss`, `safety-ideas`, or `business-ideas` |
    | `confidence` | `0.0`–`1.0` — how sure the AI is |
    | `reasoning` | A short plain-English explanation (shown for transparency) |
@@ -161,6 +161,7 @@ flowchart TD
    | Near Miss | `near-miss` | Near Miss – Accident Safety Register |
    | Safety Observation | `safety-ideas` | Safety Ideas |
    | Improvement Idea | `safety-ideas` | Safety Ideas |
+   | Chemical Register | `safety-ideas` | Safety Ideas |
    | Business Improvement | `business-ideas` | Business Ideas |
    | Supply Request | `business-ideas` | Business Ideas |
    | Near Miss Meeting Agenda Item | `near-miss` | Near Miss – Accident Safety Register |
