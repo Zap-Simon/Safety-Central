@@ -521,14 +521,22 @@ export default function Actions() {
   // miss was submitted/reported). Empty band = every near miss. Both the inputs and
   // getDateGroupKey produce a NZ-aligned yyyy-mm-dd key, so a plain string compare is
   // inclusive of both ends and immune to the viewer's local timezone.
-  const registerItems = nearMissItems.filter(item => {
-    if (!registerDateFrom && !registerDateTo) return true;
-    const key = getDateGroupKey(item.submittedDate);
-    if (key === 'unknown-meeting') return false;
-    if (registerDateFrom && key < registerDateFrom) return false;
-    if (registerDateTo && key > registerDateTo) return false;
-    return true;
-  });
+  const registerItems = nearMissItems
+    .filter(item => {
+      if (!registerDateFrom && !registerDateTo) return true;
+      const key = getDateGroupKey(item.submittedDate);
+      if (key === 'unknown-meeting') return false;
+      if (registerDateFrom && key < registerDateFrom) return false;
+      if (registerDateTo && key > registerDateTo) return false;
+      return true;
+    })
+    // Most recently submitted near miss first. The server preserves the order it
+    // receives, so this client-side sort is what drives the register's row order.
+    .sort((a, b) => {
+      const aTime = a.submittedDate ? new Date(a.submittedDate).getTime() : 0;
+      const bTime = b.submittedDate ? new Date(b.submittedDate).getTime() : 0;
+      return bTime - aTime;
+    });
 
   const exportRegister = async (format: 'html' | 'csv' | 'markdown' | 'word') => {
     setIsExportingRegister(format);
