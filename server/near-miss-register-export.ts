@@ -200,12 +200,11 @@ export function generateNearMissRegisterHTML(
   const typeBreakdown = countBy(items, (i) => eventTypeOf(i));
   const riskBreakdown = countBy(items, (i) => i.investigation?.riskLevel || "Not assessed");
 
-  const overviewRows = items.map((item, index) => {
+  const overviewRows = items.map((item) => {
     const state = investigationState(item);
     const risk = item.investigation?.riskLevel;
     return `
       <tr>
-        <td style="text-align:center;">${index + 1}</td>
         <td>
           <div class="nm-title">${esc(item.title || "Near Miss")}</div>
           <div class="muted"><strong>By:</strong> ${esc(item.submittedBy || "Unknown")}</div>
@@ -218,7 +217,7 @@ export function generateNearMissRegisterHTML(
       </tr>`;
   }).join("");
 
-  const detailBlocks = items.map((item, index) => renderDetailBlock(item, index)).join("");
+  const detailBlocks = items.map((item) => renderDetailBlock(item)).join("");
 
   return `
 <!DOCTYPE html>
@@ -288,13 +287,12 @@ export function generateNearMissRegisterHTML(
     .items-table { width:100%; border-collapse:collapse; margin-bottom:28px; border:1px solid #dee2e6; table-layout:fixed; }
     .items-table th { background:#f8f9fa; padding:8px 8px; text-align:left; font-weight:bold; border:1px solid #dee2e6; font-size:8.5pt; white-space:nowrap; }
     .items-table td { padding:9px 10px; border:1px solid #dee2e6; vertical-align:top; font-size:9.5pt; overflow-wrap:anywhere; }
-    .items-table th:nth-child(1), .items-table td:nth-child(1) { width:4%; }
-    .items-table th:nth-child(2), .items-table td:nth-child(2) { width:30%; }
-    .items-table th:nth-child(3), .items-table td:nth-child(3) { width:14%; white-space:nowrap; }
-    .items-table th:nth-child(4), .items-table td:nth-child(4) { width:12%; }
-    .items-table th:nth-child(5), .items-table td:nth-child(5) { width:10%; }
-    .items-table th:nth-child(6), .items-table td:nth-child(6) { width:16%; }
-    .items-table th:nth-child(7), .items-table td:nth-child(7) { width:14%; }
+    .items-table th:nth-child(1), .items-table td:nth-child(1) { width:34%; }
+    .items-table th:nth-child(2), .items-table td:nth-child(2) { width:14%; white-space:nowrap; }
+    .items-table th:nth-child(3), .items-table td:nth-child(3) { width:12%; }
+    .items-table th:nth-child(4), .items-table td:nth-child(4) { width:10%; }
+    .items-table th:nth-child(5), .items-table td:nth-child(5) { width:16%; }
+    .items-table th:nth-child(6), .items-table td:nth-child(6) { width:14%; }
     .items-table tr { page-break-inside:avoid; break-inside:avoid; }
     .items-table thead { display:table-header-group; }
 
@@ -386,9 +384,9 @@ export function generateNearMissRegisterHTML(
     <div class="section-header">I. Near Miss Register</div>
     ${items.length === 0 ? '<p class="muted">No near misses match the current filters.</p>' : `
     <table class="items-table">
-      <colgroup><col style="width:4%;"><col style="width:30%;"><col style="width:14%;"><col style="width:12%;"><col style="width:10%;"><col style="width:16%;"><col style="width:14%;"></colgroup>
+      <colgroup><col style="width:34%;"><col style="width:14%;"><col style="width:12%;"><col style="width:10%;"><col style="width:16%;"><col style="width:14%;"></colgroup>
       <thead>
-        <tr><th>#</th><th>Event</th><th>Event Date</th><th>Type</th><th>Risk</th><th>Investigation</th><th>Meeting</th></tr>
+        <tr><th>Event</th><th>Event Date</th><th>Type</th><th>Risk</th><th>Investigation</th><th>Meeting</th></tr>
       </thead>
       <tbody>${overviewRows}</tbody>
     </table>`}
@@ -414,7 +412,7 @@ export function generateNearMissRegisterHTML(
 </html>`;
 }
 
-function renderDetailBlock(item: NearMissRegisterItem, index: number): string {
+function renderDetailBlock(item: NearMissRegisterItem): string {
   const inv = item.investigation;
   const state = investigationState(item);
   const risk = inv?.riskLevel;
@@ -481,7 +479,7 @@ function renderDetailBlock(item: NearMissRegisterItem, index: number): string {
   <div class="nm-block">
     <div class="nm-head">
       <div>
-        <div class="nm-block-title">${index + 1}. ${esc(item.title || "Near Miss")}</div>
+        <div class="nm-block-title">${esc(item.title || "Near Miss")}</div>
         <div class="muted">${esc(eventTypeOf(item))} &middot; Submitted by ${esc(item.submittedBy || "Unknown")}${item.submittedDate ? ` &middot; ${esc(fmtDate(item.submittedDate))}` : ""}</div>
       </div>
       <div style="text-align:right;white-space:nowrap;">
@@ -583,14 +581,14 @@ ${dateRangeLabel ? `**Period covered:** ${dateRangeLabel}  \n` : ''}**Near misse
 
 ## Register Overview
 
-| # | Event | Event Date | Type | Risk | Investigation | Meeting |
-| --- | --- | --- | --- | --- | --- | --- |
+| Event | Event Date | Type | Risk | Investigation | Meeting |
+| --- | --- | --- | --- | --- | --- |
 `;
 
   const cell = (v: unknown) => String(v ?? "").replace(/\|/g, "\\|").replace(/\n+/g, " ");
-  items.forEach((item, i) => {
+  items.forEach((item) => {
     const state = investigationState(item);
-    md += `| ${i + 1} | ${cell(item.title || "Near Miss")} | ${cell(fmtDate(item.investigation?.eventDate) || fmtDate(item.submittedDate))} | ${cell(eventTypeOf(item))} | ${cell(item.investigation?.riskLevel || "—")} | ${cell(state.label)} | ${cell(meetingStatusLabel(item))} |\n`;
+    md += `| ${cell(item.title || "Near Miss")} | ${cell(fmtDate(item.investigation?.eventDate) || fmtDate(item.submittedDate))} | ${cell(eventTypeOf(item))} | ${cell(item.investigation?.riskLevel || "—")} | ${cell(state.label)} | ${cell(meetingStatusLabel(item))} |\n`;
   });
 
   if (items.length === 0) {
@@ -600,9 +598,9 @@ ${dateRangeLabel ? `**Period covered:** ${dateRangeLabel}  \n` : ''}**Near misse
 
   md += `\n---\n\n## Near Miss Details\n\n`;
 
-  items.forEach((item, i) => {
+  items.forEach((item) => {
     const inv = item.investigation;
-    md += `### ${i + 1}. ${item.title || "Near Miss"}\n\n`;
+    md += `### ${item.title || "Near Miss"}\n\n`;
     md += `**Event type:** ${eventTypeOf(item)}  \n`;
     md += `**Submitted by:** ${item.submittedBy || "Unknown"}  \n`;
     md += `**Meeting status:** ${meetingStatusLabel(item)}  \n`;
@@ -689,8 +687,7 @@ export async function generateNearMissRegisterWordDoc(
     const headerRow = new TableRow({
       tableHeader: true,
       children: [
-        wordCell("#", { header: true, width: 5 }),
-        wordCell("Event", { header: true, width: 33 }),
+        wordCell("Event", { header: true, width: 38 }),
         wordCell("Event Date", { header: true, width: 14 }),
         wordCell("Type", { header: true, width: 14 }),
         wordCell("Risk", { header: true, width: 12 }),
@@ -698,11 +695,10 @@ export async function generateNearMissRegisterWordDoc(
       ],
     });
 
-    const rows = items.map((item, i) => {
+    const rows = items.map((item) => {
       const state = investigationState(item);
       return new TableRow({
         children: [
-          wordCell(String(i + 1)),
           wordCell(item.title || "Near Miss"),
           wordCell(fmtDate(item.investigation?.eventDate) || fmtDate(item.submittedDate) || ""),
           wordCell(eventTypeOf(item)),
@@ -725,9 +721,9 @@ export async function generateNearMissRegisterWordDoc(
       new TextRun({ text: value, size: 20, color: "4B5563" }),
     ] });
 
-    items.forEach((item, i) => {
+    items.forEach((item) => {
       const inv = item.investigation;
-      children.push(new Paragraph({ spacing: { before: 160, after: 60 }, keepNext: true, children: [new TextRun({ text: `${i + 1}. ${item.title || "Near Miss"}`, bold: true, size: 24, color: "111827" })] }));
+      children.push(new Paragraph({ spacing: { before: 160, after: 60 }, keepNext: true, children: [new TextRun({ text: `${item.title || "Near Miss"}`, bold: true, size: 24, color: "111827" })] }));
 
       children.push(field("Event type", eventTypeOf(item)));
       children.push(field("Submitted by", item.submittedBy || "Unknown"));
