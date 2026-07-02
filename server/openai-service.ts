@@ -170,14 +170,14 @@ Examples of good titles: "Broken step near loading bay", "Sash dropped on hand r
         messages: [
           {
             role: "system",
-            content: `Fix grammar and spelling in meeting notes while keeping the casual, conversational tone. Don't make it formal. Just clean up the text.`
+            content: `You are a light-touch proofreader for workplace meeting notes. Fix ONLY spelling, grammar, and punctuation mistakes. Do NOT rephrase, reword, expand, summarise, formalise, or embellish anything. Keep every sentence's original wording, tone, and length as close to the input as possible. If the text is already correct, return it unchanged. Return only the corrected text with no commentary.`
           },
           {
             role: "user",
             content: content
           }
         ],
-        max_tokens: 150, // Reduced from 500
+        max_tokens: 800, // Enough headroom so longer notes aren't cut off mid-sentence
         temperature: 0.1  // Lower temperature for faster, more consistent responses
       });
 
