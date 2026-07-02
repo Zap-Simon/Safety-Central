@@ -766,7 +766,7 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
 
               <div>
                 <label className="label-sm mb-2 block">Hazard Register</label>
-                <p className="text-xs text-gray-500 mb-2">Add individual hazards identified during the investigation:</p>
+                <p className="text-xs text-gray-500 mb-2">Link the hazards involved from the Operational Hazard Register — new hazards can be added to the register as you go:</p>
                 <HazardTable rows={data.hazards} onChange={rows => update("hazards", rows)} />
               </div>
 

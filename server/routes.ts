@@ -28,6 +28,7 @@ import {
 } from "@shared/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { getExcelData, listExcelFiles } from "./sharepoint-excel-service.js";
+import { registerHazardRegisterRoutes } from "./hazard-register-routes";
 import { PAGEDJS_BASE64 } from "./assets/pagedjs";
 
 // Decode the bundled Paged.js polyfill once. Inlined into the meeting-minutes
@@ -38,6 +39,8 @@ const PAGEDJS_SCRIPT = Buffer.from(PAGEDJS_BASE64, "base64")
   .replace(/<\/script>/gi, "<\\/script>");
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Operational Hazard Register — kept in its own module to stop this file growing
+  registerHazardRegisterRoutes(app);
 
 
   // SECURITY: Remove CORS OPTIONS handler - not needed for same-origin requests
@@ -7671,13 +7674,29 @@ Existing actions: ${context.existing || ''}`;
         return `<tr><td style="padding:6px;font-size:9pt;white-space:nowrap;font-weight:500;">${l}</td>${cells}</tr>`;
       }).join('');
 
+      // Hazard label + control cell mirror the register export (near-miss-register-export.ts)
+      // so the single investigation report and the full register stay in lockstep.
+      const hazardLabelHTML = (h: any): string => {
+        if (h.hazardRefId) return `<span style="font-family:monospace;font-size:9pt;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:3px;padding:1px 4px;">${esc(h.hazardRefId)}</span> ${esc(h.hazard)}`;
+        if (h.unregistered) return `${esc(h.hazard)} <span style="font-size:8pt;color:#b45309;">(not in register)</span>`;
+        return esc(h.hazard);
+      };
+      const hazardControlHTML = (h: any): string => {
+        const lines: string[] = [];
+        if (h.registeredControls) lines.push(`<div><strong>Registered controls:</strong> ${esc(h.registeredControls)}</div>`);
+        if (h.controlFailure) lines.push(`<div><strong>Why controls fell short:</strong> ${esc(h.controlFailure)}</div>`);
+        if (h.correctiveActions) lines.push(`<div><strong>Corrective actions:</strong> ${esc(h.correctiveActions)}</div>`);
+        if (lines.length === 0 && h.control) lines.push(esc(h.control));
+        return lines.join('') || '—';
+      };
+
       const hazardRows = hazards.length > 0 ? hazards.map((h: any) => `
         <tr style="border-bottom:1px solid #e5e7eb;">
-          <td style="padding:8px;font-size:10pt;">${esc(h.hazard)}</td>
+          <td style="padding:8px;font-size:10pt;">${hazardLabelHTML(h)}</td>
           <td style="padding:8px;font-size:10pt;text-align:center;">${esc(h.likelihood)}</td>
           <td style="padding:8px;font-size:10pt;text-align:center;">${esc(h.consequence)}</td>
           <td style="padding:8px;text-align:center;"><span style="background:${riskColor(h.risk)};color:${riskTextColor(h.risk)};font-weight:bold;padding:3px 8px;border-radius:4px;font-size:9pt;">${esc(h.risk)}</span></td>
-          <td style="padding:8px;font-size:10pt;">${esc(h.control)}</td>
+          <td style="padding:8px;font-size:10pt;">${hazardControlHTML(h)}</td>
         </tr>`).join('') : `<tr><td colspan="5" style="padding:10px;text-align:center;color:#9ca3af;font-style:italic;">No hazards recorded</td></tr>`;
 
       const actionRows = resultingActions.length > 0 ? resultingActions.map((a: any) => `

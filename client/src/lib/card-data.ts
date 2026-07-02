@@ -99,6 +99,15 @@ export const defaultCardOrder: CardData[] = [
     href: "/actions",
   },
   {
+    id: "hazard-register",
+    title: "Hazard Register",
+    description: "Operational hazards & controls",
+    icon: Shield,
+    iconColor: "text-orange-600",
+    backgroundColor: "bg-orange-100",
+    href: "/hazard-register",
+  },
+  {
     id: "health-safety-policy",
     title: "Health & Safety Policy",
     description: "Official signed policy document",

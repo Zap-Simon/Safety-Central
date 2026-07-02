@@ -30,7 +30,31 @@ export interface NearMissHazard {
   likelihood?: string;
   consequence?: string;
   risk?: string;
-  control?: string;
+  control?: string;             // legacy free-text control (old investigations)
+  hazardRefId?: string;         // Operational Hazard Register ID, e.g. "CG-HZ-001A"
+  category?: string;
+  registeredControls?: string;  // register controls snapshot at link time
+  controlFailure?: string;      // why the existing controls failed / fell short
+  correctiveActions?: string;   // corrective / additional controls required
+  unregistered?: boolean;       // free-typed hazard not added to the register
+}
+
+/** "CG-HZ-001A — Lacerations from broken glass" (plus a not-in-register flag). */
+export function hazardLabel(h: NearMissHazard): string {
+  const name = h.hazard || "—";
+  if (h.hazardRefId) return `${h.hazardRefId} — ${name}`;
+  if (h.unregistered) return `${name} (not in register)`;
+  return name;
+}
+
+/** Plain-text control summary shared by CSV / Markdown / Word so all formats agree. */
+export function hazardControlText(h: NearMissHazard): string {
+  const parts: string[] = [];
+  if (h.registeredControls) parts.push(`Registered controls: ${h.registeredControls}`);
+  if (h.controlFailure) parts.push(`Why controls fell short: ${h.controlFailure}`);
+  if (h.correctiveActions) parts.push(`Corrective actions: ${h.correctiveActions}`);
+  if (parts.length === 0 && h.control) parts.push(h.control);
+  return parts.join(" | ") || "—";
 }
 
 export interface NearMissResultingAction {
@@ -420,17 +444,26 @@ function renderDetailBlock(item: NearMissRegisterItem): string {
   const hazards = inv?.hazards || [];
   const actions = inv?.resultingActions || [];
 
+  const hazardControlCell = (h: NearMissHazard): string => {
+    const lines: string[] = [];
+    if (h.registeredControls) lines.push(`<div><strong>Registered controls:</strong> ${esc(h.registeredControls)}</div>`);
+    if (h.controlFailure) lines.push(`<div><strong>Why controls fell short:</strong> ${esc(h.controlFailure)}</div>`);
+    if (h.correctiveActions) lines.push(`<div><strong>Corrective actions:</strong> ${esc(h.correctiveActions)}</div>`);
+    if (lines.length === 0 && h.control) lines.push(esc(h.control));
+    return lines.join("") || "—";
+  };
+
   const hazardTable = hazards.length > 0 ? `
     <div class="nm-sub-title">Hazards Identified</div>
     <table class="sub-table">
-      <thead><tr><th style="width:34%;">Hazard</th><th style="width:14%;">Likelihood</th><th style="width:14%;">Consequence</th><th style="width:12%;">Risk</th><th style="width:26%;">Control</th></tr></thead>
+      <thead><tr><th style="width:30%;">Hazard</th><th style="width:12%;">Likelihood</th><th style="width:12%;">Consequence</th><th style="width:10%;">Risk</th><th style="width:36%;">Controls &amp; corrective actions</th></tr></thead>
       <tbody>
         ${hazards.map((h) => `<tr>
-          <td>${esc(h.hazard) || "—"}</td>
+          <td>${esc(hazardLabel(h))}</td>
           <td>${esc(h.likelihood) || "—"}</td>
           <td>${esc(h.consequence) || "—"}</td>
           <td>${h.risk ? `<span class="risk-badge" style="background:${riskBg(h.risk)};color:${riskFg(h.risk)};">${esc(h.risk)}</span>` : "—"}</td>
-          <td>${esc(h.control) || "—"}</td>
+          <td>${hazardControlCell(h)}</td>
         </tr>`).join("")}
       </tbody>
     </table>` : "";
@@ -514,7 +547,7 @@ export function generateNearMissRegisterCSV(items: NearMissRegisterItem[]): stri
     const inv = item.investigation;
     const state = investigationState(item);
     const hazards = (inv?.hazards || [])
-      .map((h) => `${h.hazard || ""} (${h.risk || "—"}; control: ${h.control || "—"})`)
+      .map((h) => `${hazardLabel(h)} (${h.risk || "—"}; ${hazardControlText(h)})`)
       .join(" • ");
     const actions = (inv?.resultingActions || [])
       .map((a) => `${a.description || ""} → ${a.assignedTo || "Unassigned"} [${a.completed ? "Done" : "Pending"}]`)
@@ -623,7 +656,7 @@ ${dateRangeLabel ? `**Period covered:** ${dateRangeLabel}  \n` : ''}**Near misse
       }
       if (inv.treatmentGiven) md += `- Treatment given: ${inv.treatmentGiven}\n`;
       (inv.hazards || []).forEach((h) => {
-        md += `- Hazard: ${h.hazard || "—"} (${h.risk || "—"}; control: ${h.control || "—"})\n`;
+        md += `- Hazard: ${hazardLabel(h)} (${h.risk || "—"}; ${hazardControlText(h)})\n`;
       });
       (inv.resultingActions || []).forEach((a) => {
         md += `- Action: ${a.description || "—"} → ${a.assignedTo || "Unassigned"} [${a.completed ? "Done" : "Pending"}]\n`;
@@ -749,7 +782,7 @@ export async function generateNearMissRegisterWordDoc(
         (inv.hazards || []).forEach((h) => {
           children.push(new Paragraph({ spacing: { after: 20 }, bullet: { level: 0 }, children: [
             new TextRun({ text: `Hazard: `, bold: true, size: 18, color: "374151" }),
-            new TextRun({ text: `${h.hazard || "—"} (${h.risk || "—"}; control: ${h.control || "—"})`, size: 18, color: "4B5563" }),
+            new TextRun({ text: `${hazardLabel(h)} (${h.risk || "—"}; ${hazardControlText(h)})`, size: 18, color: "4B5563" }),
           ] }));
         });
         (inv.resultingActions || []).forEach((a) => {

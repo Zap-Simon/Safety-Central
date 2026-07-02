@@ -7,6 +7,7 @@ import AuthWrapper from "@/components/auth-wrapper";
 import Home from "@/pages/home";
 import MeetingHistory from "@/pages/meeting-history";
 import Actions from "@/pages/actions";
+import HazardRegister from "@/pages/hazard-register";
 import StaffTraining from "@/pages/staff-training";
 import EquipmentMaintenance from "@/pages/equipment-maintenance";
 import TeamsIntegrationPlan from "@/pages/teams-integration-plan";
@@ -167,6 +168,7 @@ function MainRouter() {
         <Route path="/" component={Home} />
         <Route path="/meeting-history" component={MeetingHistory} />
         <Route path="/actions" component={Actions} />
+        <Route path="/hazard-register" component={HazardRegister} />
         <Route path="/staff-training" component={StaffTraining} />
         <Route path="/equipment-maintenance" component={EquipmentMaintenance} />
         <Route path="/teams-integration-plan" component={TeamsIntegrationPlan} />

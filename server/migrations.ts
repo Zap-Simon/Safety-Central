@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "./db";
-import { actionItems, appMigrations } from "@shared/schema";
+import { actionItems, appMigrations, hazards } from "@shared/schema";
+import { HAZARD_REGISTER_SEED } from "./hazard-register-seed";
 import { log } from "./vite";
 
 // One-time data migrations that run on server startup. Each is keyed and recorded
@@ -35,6 +36,18 @@ export async function runStartupMigrations() {
         )
         .returning({ id: actionItems.id });
       return `${updated.length} Near Miss item(s) reset to In Progress`;
+    });
+
+    // Seed the Operational Hazard Register from the one-time spreadsheet import.
+    // The app database is the live register from here on — new hazards are added
+    // through the app, so this only ever runs once per database.
+    await runOnce("hazard-register-seed-v1", async () => {
+      const inserted = await db
+        .insert(hazards)
+        .values(HAZARD_REGISTER_SEED.map((h) => ({ ...h, source: "register" })))
+        .onConflictDoNothing({ target: hazards.hazardId })
+        .returning({ id: hazards.id });
+      return `${inserted.length} hazard(s) seeded into the Operational Hazard Register`;
     });
   } catch (error) {
     // Don't crash the server if a migration fails — log it so it can be retried

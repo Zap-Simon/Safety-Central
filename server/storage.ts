@@ -65,7 +65,10 @@ import {
   type InsertNearMissInvestigation,
   investigationProgressNotes,
   type InvestigationProgressNote,
-  type InsertInvestigationProgressNote
+  type InsertInvestigationProgressNote,
+  hazards,
+  type Hazard,
+  type InsertHazard
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
@@ -245,6 +248,12 @@ export interface IStorage {
   // Shared app settings (simple key-value store)
   getAppSetting(key: string): Promise<string | null>;
   setAppSetting(key: string, value: string | null): Promise<void>;
+
+  // Operational Hazard Register methods
+  getAllHazards(): Promise<Hazard[]>;
+  getHazardByHazardId(hazardId: string): Promise<Hazard | undefined>;
+  createHazard(data: InsertHazard): Promise<Hazard>;
+  updateHazard(id: number, data: Partial<InsertHazard>): Promise<Hazard>;
 }
 
 
@@ -1233,6 +1242,30 @@ export class DatabaseStorage implements IStorage {
       .insert(appSettings)
       .values({ key, value })
       .onConflictDoUpdate({ target: appSettings.key, set: { value } });
+  }
+
+  // Operational Hazard Register methods
+  async getAllHazards(): Promise<Hazard[]> {
+    return await db.select().from(hazards).orderBy(hazards.hazardId);
+  }
+
+  async getHazardByHazardId(hazardId: string): Promise<Hazard | undefined> {
+    const [row] = await db.select().from(hazards).where(eq(hazards.hazardId, hazardId));
+    return row || undefined;
+  }
+
+  async createHazard(data: InsertHazard): Promise<Hazard> {
+    const [row] = await db.insert(hazards).values(data).returning();
+    return row;
+  }
+
+  async updateHazard(id: number, data: Partial<InsertHazard>): Promise<Hazard> {
+    const [row] = await db
+      .update(hazards)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(hazards.id, id))
+      .returning();
+    return row;
   }
 }
 

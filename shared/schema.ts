@@ -712,3 +712,37 @@ export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 // Enhanced equipment authorization type with module references
 export type EquipmentAuthorizationNew = typeof equipmentAuthorizations.$inferSelect;
 export type InsertEquipmentAuthorizationNew = z.infer<typeof insertEquipmentAuthorizationSchemaNew>;
+
+// ─── Operational Hazard Register — the app is the live register ───────────────
+// Seeded once from the Cranfield Glass Operational Hazard Register spreadsheet.
+// Near Miss investigations link their hazard rows to entries here by hazardId
+// (e.g. "CG-HZ-001A"), so investigators match existing hazards first and only
+// genuinely new hazards get added.
+export const hazards = pgTable("hazards", {
+  id: serial("id").primaryKey(),
+  hazardId: text("hazard_id").notNull().unique(),        // e.g. CG-HZ-001A
+  category: text("category").notNull(),                  // e.g. Glass Handling
+  riskHarm: text("risk_harm").notNull(),                 // Risk / harm if uncontrolled
+  initialRisk: text("initial_risk").notNull().default(""),   // L / M / H
+  controlType: text("control_type").notNull().default(""),   // e.g. Minimisation
+  controls: text("controls").notNull().default(""),          // Controls / method
+  residualRisk: text("residual_risk").notNull().default(""), // L / M / H
+  reviewTrigger: text("review_trigger").notNull().default(""),
+  nextReview: text("next_review").notNull().default(""),     // ISO date string
+  training: text("training").notNull().default(""),          // Primary training / competency
+  aroflowGroup: text("aroflo_group").notNull().default(""),  // AroFlo template group
+  identified: text("identified").notNull().default(""),      // ISO date string
+  source: text("source").notNull().default("register"),      // "register" | "investigation"
+  archived: boolean("archived").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertHazardSchema = createInsertSchema(hazards).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Hazard = typeof hazards.$inferSelect;
+export type InsertHazard = z.infer<typeof insertHazardSchema>;
