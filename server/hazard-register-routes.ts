@@ -2,11 +2,47 @@ import type { Express } from "express";
 import { z } from "zod";
 import { storage } from "./storage";
 import { insertHazardSchema } from "@shared/schema";
+import { resolveDownstreamToken } from "./teams-obo-auth";
 
 // ─── Operational Hazard Register routes ──────────────────────────────────────
-// The app database is the live hazard register. These endpoints operate on the
-// app's own database only (no SharePoint), so like the neighbouring near-miss
-// investigation endpoints they are open to any signed-in user of the app.
+// The app database is the live hazard register. Reads are open (like the other
+// register/list endpoints); WRITES are identity-checked server-side via the
+// caller's Bearer token (Graph /me), matching the order-admin pattern:
+//   - creating a hazard requires any signed-in user (investigators add mid-investigation)
+//   - editing / archiving requires a hazard admin (allowlist below)
+
+// Hazard admins — who may edit or archive register entries. Same allowlist style
+// as ORDER_ADMINS: entries match the caller's email (UPN) or display name.
+// Set HAZARD_ADMINS (comma-separated) to override; falls back to ORDER_ADMINS.
+const HAZARD_ADMINS = (process.env.HAZARD_ADMINS || process.env.ORDER_ADMINS || "Simon Hubbard")
+  .split(",")
+  .map((n) => n.trim().toLowerCase())
+  .filter(Boolean);
+
+/** Resolve the caller's identity from their Bearer token via Graph /me (cannot be spoofed client-side). */
+async function resolveCaller(authHeader: string | undefined): Promise<{ displayName: string; email: string } | null> {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  try {
+    const token = await resolveDownstreamToken(authHeader, "graph");
+    const meRes = await fetch("https://graph.microsoft.com/v1.0/me?$select=userPrincipalName,displayName", {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+    });
+    if (!meRes.ok) return null;
+    const me = await meRes.json();
+    const email = (me.userPrincipalName || "").toLowerCase().trim();
+    if (!email) return null;
+    return { displayName: me.displayName || email, email };
+  } catch {
+    return null;
+  }
+}
+
+function isHazardAdmin(caller: { displayName: string; email: string }): boolean {
+  return (
+    HAZARD_ADMINS.includes(caller.email.trim().toLowerCase()) ||
+    HAZARD_ADMINS.includes(caller.displayName.trim().toLowerCase())
+  );
+}
 
 // Hazard IDs look like "CG-HZ-003B": a zero-padded number shared by every
 // hazard in the same category, plus a letter suffix per hazard.
@@ -68,9 +104,28 @@ export function registerHazardRegisterRoutes(app: Express): void {
     }
   });
 
-  // POST /api/hazards — add a new hazard to the register
+  // GET /api/hazards/is-admin — can the Bearer token holder edit register entries?
+  app.get("/api/hazards/is-admin", async (req, res) => {
+    try {
+      const caller = await resolveCaller(req.headers.authorization);
+      res.json({
+        success: true,
+        isAdmin: caller !== null && isHazardAdmin(caller),
+        displayName: caller?.displayName || null,
+      });
+    } catch (error) {
+      console.error("Hazard admin check error:", error);
+      res.status(500).json({ success: false, error: "Failed to check admin status" });
+    }
+  });
+
+  // POST /api/hazards — add a new hazard to the register (any signed-in user)
   app.post("/api/hazards", async (req, res) => {
     try {
+      const caller = await resolveCaller(req.headers.authorization);
+      if (!caller) {
+        return res.status(401).json({ success: false, error: "Sign in to add hazards to the register" });
+      }
       const parsed = insertHazardSchema
         .extend({
           hazardId: z.string().trim().optional(),
@@ -114,9 +169,16 @@ export function registerHazardRegisterRoutes(app: Express): void {
     }
   });
 
-  // PUT /api/hazards/:id — update / archive a hazard
+  // PUT /api/hazards/:id — update / archive a hazard (hazard admins only)
   app.put("/api/hazards/:id", async (req, res) => {
     try {
+      const caller = await resolveCaller(req.headers.authorization);
+      if (!caller) {
+        return res.status(401).json({ success: false, error: "Sign in to edit register entries" });
+      }
+      if (!isHazardAdmin(caller)) {
+        return res.status(403).json({ success: false, error: "Only hazard register admins can edit entries" });
+      }
       const id = parseInt(req.params.id, 10);
       if (isNaN(id)) {
         return res.status(400).json({ success: false, error: "Invalid hazard id" });

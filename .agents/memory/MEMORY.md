@@ -41,4 +41,4 @@
 - [Export table colgroup/CSS width lockstep](export-table-colgroup-lockstep.md) — fixed-layout export tables set widths in BOTH <colgroup> and CSS nth-child; colgroup wins, so editing only CSS does nothing — change both.
 - [Export document versioning](export-document-versioning.md) — all human-readable exports (HTML/MD/Word) carry version/issued/next-review via shared helpers in meeting-export-shared.ts; CSV excluded.
 - [AI billing & "Other" fallback signature](ai-billing-fallback-signature.md) — user chose personal OPENAI_API_KEY (Replit integration kept as fallback); everything classifying as "Other" = API failing, not a prompt bug.
-- [Operational Hazard Register linking](hazard-register-linking.md) — hazardId is the immutable link key; investigation hazard rows snapshot register controls; legacy free-text rows must keep rendering; hazard shape changes touch UI + all 4 export formats + single report.
+- [Operational Hazard Register linking](hazard-register-linking.md) — hazardId is the immutable link key; hazard rows snapshot controls at link time; legacy free-text rows must keep rendering.

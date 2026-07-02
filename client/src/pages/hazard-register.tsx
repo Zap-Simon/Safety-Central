@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { authService } from "@/auth/authService";
 import {
   ArrowLeft, Search, Plus, Pencil, ShieldCheck, Archive, ArchiveRestore, Loader2, TriangleAlert,
 } from "lucide-react";
@@ -76,13 +77,28 @@ export default function HazardRegister() {
   });
   const all = resp?.data || [];
 
+  // Only hazard admins may edit / archive register entries (server-enforced too)
+  const { data: adminResp } = useQuery<{ success: boolean; isAdmin: boolean }>({
+    queryKey: ["/api/hazards/is-admin"],
+    queryFn: async () => {
+      const token = await authService.getAccessToken();
+      const res = await fetch("/api/hazards/is-admin", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return { success: false, isAdmin: false };
+      return res.json();
+    },
+  });
+  const isAdmin = adminResp?.isAdmin === true;
+
   const saveMutation = useMutation({
     mutationFn: async (payload: HazardFormState) => {
       const isUpdate = payload.id !== undefined;
       const { id, hazardId, ...fields } = payload;
+      const token = await authService.getAccessToken();
       const res = await fetch(isUpdate ? `/api/hazards/${id}` : "/api/hazards", {
         method: isUpdate ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(
           isUpdate
             ? fields
@@ -110,9 +126,10 @@ export default function HazardRegister() {
 
   const archiveMutation = useMutation({
     mutationFn: async ({ id, archived }: { id: number; archived: boolean }) => {
+      const token = await authService.getAccessToken();
       const res = await fetch(`/api/hazards/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ archived }),
       });
       const body = await res.json().catch(() => null);
@@ -321,21 +338,23 @@ export default function HazardRegister() {
                             <div className="text-[11px] text-gray-400 mt-1">Training: {h.training}</div>
                           )}
                         </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-gray-400 hover:text-gray-700" onClick={() => openEdit(h)}>
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-gray-400 hover:text-gray-700"
-                            disabled={archiveMutation.isPending}
-                            onClick={() => archiveMutation.mutate({ id: h.id, archived: !h.archived })}
-                            title={h.archived ? "Restore hazard" : "Archive hazard"}
-                          >
-                            {h.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
-                          </Button>
-                        </div>
+                        {isAdmin && (
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-gray-400 hover:text-gray-700" onClick={() => openEdit(h)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-gray-400 hover:text-gray-700"
+                              disabled={archiveMutation.isPending}
+                              onClick={() => archiveMutation.mutate({ id: h.id, archived: !h.archived })}
+                              title={h.archived ? "Restore hazard" : "Archive hazard"}
+                            >
+                              {h.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Search, ShieldCheck, AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
 import { LIKELIHOODS_LIST, CONSEQUENCES_LIST, getRiskLevelForCell } from "./riskUtils";
+import { authService } from "@/auth/authService";
 import type { Hazard } from "@shared/schema";
 
 // A hazard row inside a near-miss investigation. Extended additively — legacy
@@ -163,9 +164,10 @@ export default function HazardTable({ rows, onChange, readOnly = false }: Hazard
 
     setIsAdding(true);
     try {
+      const token = await authService.getAccessToken();
       const res = await fetch("/api/hazards", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           category: newCategory.trim(),
           riskHarm: desc,
