@@ -172,6 +172,19 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
           hazards: typeof existingData.hazards === "string" ? JSON.parse(existingData.hazards) : existingData.hazards || [],
           resultingActions: typeof existingData.resultingActions === "string" ? JSON.parse(existingData.resultingActions) : existingData.resultingActions || [],
         });
+        // Persist the backfilled date straight away so saved investigations
+        // (and their exports) pick it up without needing a manual re-save.
+        // Completed investigations are immutable server-side, so skip those.
+        if (!existingData.eventDate && prefilledEventDate && existingData.id && existingData.status !== "Complete") {
+          authenticatedFetch(`/api/near-miss-investigations/${existingData.id}`, {
+            method: "PUT",
+            body: JSON.stringify({ eventDate: prefilledEventDate }),
+          }).then(res => {
+            if (res.ok) {
+              queryClient.invalidateQueries({ queryKey: ["/api/near-miss-investigations", item.id] });
+            }
+          }).catch(e => console.error("Event date backfill failed:", e));
+        }
       }
       setLoaded(true);
     }
@@ -632,7 +645,8 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
       <DialogContent className="max-w-3xl max-h-[92vh] flex flex-col overflow-hidden p-0">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-600 to-red-700 text-white px-5 py-4 flex-shrink-0">
-          <div className="flex items-start justify-between gap-3">
+          {/* pr-8 keeps the status badge clear of the dialog's absolute-positioned close (X) button */}
+          <div className="flex items-start justify-between gap-3 pr-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-6 w-6 mt-0.5 flex-shrink-0" />
               <div>
