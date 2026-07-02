@@ -6280,6 +6280,18 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
             page-break-inside: avoid;
             break-inside: avoid;
         }
+
+        /* Exception: very long items (e.g. a detailed near-miss write-up) can be
+           taller than the space left under the section header — keeping such a row
+           whole would push it entirely to the next page and leave the "II. Meeting
+           Minutes" heading stranded above an empty table. Rows flagged as long are
+           allowed to split so the text starts right under the header and continues
+           on the following page (the thead repeats there automatically). */
+        .items-table tr.row-splittable,
+        .items-table tr.row-splittable td {
+            page-break-inside: auto;
+            break-inside: auto;
+        }
         
         /* Repeat the column header at the top of every page the table spans. */
         .items-table thead {
@@ -6565,8 +6577,18 @@ function generateMeetingMinutesHTML(filteredData: any[], meetingDate: string, cu
                 }
               }
 
+              // Estimate the tallest cell in this row. A very long submission or
+              // discussion makes the row taller than the space left under the
+              // "II. Meeting Minutes" header; such rows must be allowed to split
+              // across pages (see .row-splittable) or the whole row gets pushed to
+              // the next page, stranding the header above an empty table.
+              const actionColumnChars = buildActionRequiredLines(item)
+                .reduce((sum, line) => sum + (line.label ? line.label.length + 2 : 0) + (line.value || '').length, 0);
+              const longestCellChars = Math.max(submissionText.length, meetingDiscussion.length, actionColumnChars);
+              const rowSplitClass = longestCellChars > 1200 ? ' class="row-splittable"' : '';
+
               return `
-                <tr>
+                <tr${rowSplitClass}>
                     <td>
                         <div class="type-badge" style="background-color: ${typeColor};">${item.type}</div>
                         <div class="agenda-item">${item.title || `${item.type} Item`}</div>
