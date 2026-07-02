@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import { actionItems, appMigrations, hazards } from "@shared/schema";
 import { HAZARD_REGISTER_SEED } from "./hazard-register-seed";
@@ -41,6 +41,21 @@ export async function runStartupMigrations() {
     // Seed the Operational Hazard Register from the one-time spreadsheet import.
     // The app database is the live register from here on — new hazards are added
     // through the app, so this only ever runs once per database.
+    //
+    // Schema note: like every table in this app, `hazards` is created by
+    // `npm run db:push` — run automatically by the deployment build command
+    // (.replit [deployment].build) before the server starts. If this seed ever
+    // runs against a database that hasn't been pushed yet, skip gracefully; the
+    // runOnce key is only recorded on success, so it retries on the next boot.
+    const hazardsTableExists = await db.execute(
+      sql`SELECT to_regclass('public.hazards') IS NOT NULL AS exists`,
+    );
+    if (!(hazardsTableExists.rows?.[0] as { exists?: boolean } | undefined)?.exists) {
+      console.warn(
+        'Skipping hazard register seed: "hazards" table not found — run `npm run db:push` (the deploy build does this automatically).',
+      );
+      return;
+    }
     await runOnce("hazard-register-seed-v1", async () => {
       const inserted = await db
         .insert(hazards)
