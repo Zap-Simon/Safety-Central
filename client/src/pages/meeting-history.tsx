@@ -119,6 +119,9 @@ export default function MeetingHistory() {
   const [selectedDestinationDate, setSelectedDestinationDate] = useState<string>('');
   const [showRescheduleMeetingModal, setShowRescheduleMeetingModal] = useState(false);
   const [rescheduleMeetingSourceDate, setRescheduleMeetingSourceDate] = useState<string>('');
+  // True when the reschedule modal is editing the auto-scheduled (planned) next
+  // meeting, which has no items yet — saving just stores the planned date.
+  const [rescheduleIsPlanned, setRescheduleIsPlanned] = useState(false);
   const [rescheduleTargetDate, setRescheduleTargetDate] = useState<string>('');
   const [isRescheduling, setIsRescheduling] = useState(false);
 
@@ -1083,6 +1086,15 @@ export default function MeetingHistory() {
     }
   }, [locksResponse]);
 
+  // Planned next-meeting date (YYYY-MM-DD) — used when no upcoming meeting exists
+  // so the auto-created next meeting can be given a user-chosen date. Stored
+  // server-side so every user sees the same planned meeting.
+  const { data: plannedDateResponse } = useQuery({
+    queryKey: ['/api/planned-meeting-date'],
+    queryFn: () => fetch('/api/planned-meeting-date').then(res => res.json()),
+  });
+  const plannedMeetingDate: string | null = plannedDateResponse?.date || null;
+
   // Mutations for updating meeting locks and attendance
   const updateMeetingLockMutation = useMutation({
     mutationFn: async ({ meetingDate, isLocked }: { meetingDate: string, isLocked: boolean }) => {
@@ -1742,6 +1754,59 @@ export default function MeetingHistory() {
       }
     });
 
+  // Auto-schedule the next meeting when none is upcoming. Ready to Close and
+  // due On Hold items surface at the NEXT meeting for group sign-off — if every
+  // meeting is in the past they'd have nowhere to land, so we create the next
+  // weekly meeting automatically: one week after the most recent meeting
+  // (rolled forward until it's in the future). The date can be changed via the
+  // header pencil and is saved server-side so everyone sees the same meeting.
+  const syntheticNextMeeting: string | null = (() => {
+    if (searchQuery) return null;
+    if (groupedByMeetingAndCategory.length === 0) return null;
+    const hasUpcoming = groupedByMeetingAndCategory.some(({ meetingDate }) => getMeetingStatus(meetingDate).isUpcoming);
+    if (hasUpcoming) return null;
+
+    const todayKey = getDateGroupKey(new Date());
+    const needsNextMeeting = groupedByMeetingAndCategory.some(({ categorized: c }) =>
+      (Object.values(c).flat() as MeetingItem[]).some(item =>
+        item.actionStatus === 'Ready to Close' ||
+        (item.actionStatus === 'On Hold' && !!item.reconsiderDate && getDateGroupKey(item.reconsiderDate) <= todayKey)
+      )
+    );
+    if (!needsNextMeeting) return null;
+
+    // Prefer the saved planned date while it's still in the future.
+    if (plannedMeetingDate && getMeetingStatus(plannedMeetingDate).isUpcoming) {
+      return `${plannedMeetingDate}T10:00:00.000Z`;
+    }
+
+    // Default: one week after the most recent meeting, same weekday, rolled
+    // forward week by week until the date is upcoming. Skip non-date buckets
+    // (e.g. "unknown-meeting") — they can't seed a real date.
+    const latestKey = groupedByMeetingAndCategory
+      .map(({ meetingDate }) => getDateGroupKey(meetingDate))
+      .filter(key => /^\d{4}-\d{2}-\d{2}$/.test(key))
+      .sort()
+      .at(-1);
+    if (!latestKey) return null;
+    const next = new Date(latestKey + 'T10:00:00.000Z');
+    if (isNaN(next.getTime())) return null;
+    let guard = 0;
+    do {
+      next.setUTCDate(next.getUTCDate() + 7);
+      guard++;
+    } while (!getMeetingStatus(next.toISOString()).isUpcoming && guard < 105);
+    return next.toISOString();
+  })();
+
+  if (syntheticNextMeeting) {
+    groupedByMeetingAndCategory.unshift({
+      meetingDate: syntheticNextMeeting,
+      categorized: { 'Safety Ideas': [], 'Business Ideas': [], 'Near Miss': [] },
+      totalItems: 0,
+    });
+  }
+
   // Decide which meeting a brand-new idea should be filed under.
   // Normally it's the nearest upcoming meeting. But once that meeting has been
   // locked (its attendance/agenda finalised in the meeting), new ideas roll over to
@@ -2386,6 +2451,10 @@ export default function MeetingHistory() {
   };
 
   const handleRescheduleMeeting = (meetingDate: string) => {
+    // The auto-scheduled next meeting has no items in SharePoint — changing its
+    // date just updates the shared planned-meeting-date setting.
+    const isPlanned = !!syntheticNextMeeting && getDateGroupKey(meetingDate) === getDateGroupKey(syntheticNextMeeting);
+    setRescheduleIsPlanned(isPlanned);
     setRescheduleMeetingSourceDate(meetingDate);
     setRescheduleTargetDate(new Date(meetingDate).toISOString().split('T')[0]);
     setShowRescheduleMeetingModal(true);
@@ -2393,6 +2462,30 @@ export default function MeetingHistory() {
 
   const executeRescheduleMeeting = async () => {
     if (!rescheduleMeetingSourceDate || !rescheduleTargetDate) return;
+
+    // Auto-scheduled next meeting: save the planned date server-side (shared
+    // across users) instead of rewriting SharePoint items — there are none yet.
+    if (rescheduleIsPlanned) {
+      try {
+        setShowRescheduleMeetingModal(false);
+        const response = await fetch('/api/planned-meeting-date', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: rescheduleTargetDate })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to save planned meeting date');
+        }
+        queryClient.invalidateQueries({ queryKey: ['/api/planned-meeting-date'] });
+        const formattedDate = new Date(`${rescheduleTargetDate}T10:00:00.000Z`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        showSuccess('Meeting Date Updated', `The next meeting is now planned for ${formattedDate}.`);
+      } catch (error) {
+        console.error('Error saving planned meeting date:', error);
+        showError('Update Failed', 'Failed to save the planned meeting date. Please try again.');
+      }
+      return;
+    }
 
     const targetDate = new Date(rescheduleTargetDate);
 
@@ -3575,26 +3668,26 @@ export default function MeetingHistory() {
 
                   {/* Completed Actions - Group Review container */}
                   {(() => {
-                    const isUpcomingMeeting = getMeetingStatus(meetingDate).isUpcoming;
+                    // Ready to Close items surface ONLY at the single nearest upcoming
+                    // meeting (mirrors the On Hold container below) — they need group
+                    // sign-off at the NEXT meeting, so past meetings and later future
+                    // meetings never show them. When no upcoming meeting exists, the
+                    // auto-scheduled next meeting (syntheticNextMeeting) hosts them.
+                    const nextUpcomingKey = groupedByMeetingAndCategory
+                      .map(({ meetingDate: d }) => getDateGroupKey(d))
+                      .filter(key => getMeetingStatus(key).isUpcoming)
+                      .sort()[0];
+                    const isNextMeeting = !!nextUpcomingKey && getDateGroupKey(meetingDate) === nextUpcomingKey;
+                    if (!isNextMeeting) return null;
 
-                    // For the upcoming meeting, gather "Ready to Close" items from ALL meeting
-                    // groups (past and present) — they need group sign-off at the next meeting
-                    // regardless of which meeting they were originally submitted to.
-                    // For past meetings, only show items that belong to that meeting.
-                    let readyToCloseItems: MeetingItem[];
-                    if (isUpcomingMeeting) {
-                      const seen = new Set<string>();
-                      readyToCloseItems = groupedByMeetingAndCategory.flatMap(({ categorized: c }) =>
-                        (Object.values(c).flat() as MeetingItem[]).filter(item => item.actionStatus === 'Ready to Close')
-                      ).filter(item => {
-                        if (seen.has(item.id)) return false;
-                        seen.add(item.id);
-                        return true;
-                      });
-                    } else {
-                      const allMeetingItems = Object.values(categorized).flat() as MeetingItem[];
-                      readyToCloseItems = allMeetingItems.filter(item => item.actionStatus === 'Ready to Close');
-                    }
+                    const seen = new Set<string>();
+                    const readyToCloseItems: MeetingItem[] = groupedByMeetingAndCategory.flatMap(({ categorized: c }) =>
+                      (Object.values(c).flat() as MeetingItem[]).filter(item => item.actionStatus === 'Ready to Close')
+                    ).filter(item => {
+                      if (seen.has(item.id)) return false;
+                      seen.add(item.id);
+                      return true;
+                    });
 
                     if (readyToCloseItems.length === 0) return null;
                     const containerKey = `${meetingDate}-ready-to-close`;
@@ -3942,7 +4035,9 @@ export default function MeetingHistory() {
             <div className="space-y-4">
               <div className="text-sm text-gray-600">
                 Change the date for <span className="font-medium">{rescheduleMeetingSourceDate ? formatDate(rescheduleMeetingSourceDate) : ''}</span>.
-                All items on this meeting date will be updated in SharePoint.
+                {rescheduleIsPlanned
+                  ? ' This meeting was scheduled automatically and has no items yet — the new date will be saved as the planned next meeting.'
+                  : ' All items on this meeting date will be updated in SharePoint.'}
               </div>
 
               <div className="space-y-2">
@@ -3963,11 +4058,13 @@ export default function MeetingHistory() {
                 )}
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <div className="text-xs text-amber-800">
-                  <strong><i className="fas fa-exclamation-triangle mr-1"></i>This will update all items on this meeting date in SharePoint, including closed items.</strong>
+              {!rescheduleIsPlanned && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <div className="text-xs text-amber-800">
+                    <strong><i className="fas fa-exclamation-triangle mr-1"></i>This will update all items on this meeting date in SharePoint, including closed items.</strong>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <Button

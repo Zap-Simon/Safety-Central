@@ -117,6 +117,15 @@ export const appMigrations = pgTable("app_migrations", {
   appliedAt: timestamp("applied_at").notNull().defaultNow(),
 });
 
+// Small shared key-value settings store (e.g. the planned date of the next
+// meeting when no upcoming meeting exists yet). Shared across all users.
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,

@@ -26,6 +26,18 @@ or `isSameDay` (local).** A reconsider date is stored as a `YYYY-MM-DD` string; 
 the NZ/UTC boundary. Staying on the UTC key basis matches how items are grouped. (Companion:
 meeting-date-grouping-consistency.md.)
 
+# Auto-scheduled ("synthetic") next meeting
+When NO upcoming meeting group exists but items need review (any Ready to Close, or On Hold
+whose reconsiderDate is due), meeting-history unshifts a placeholder upcoming group so the
+aggregation containers have a home: default date = latest real meeting + 7 days rolled forward
+until upcoming, overridable by a shared server-side planned date (GET/POST
+/api/planned-meeting-date, app_settings KV table). The header reschedule pencil detects the
+synthetic meeting and saves the planned date instead of rewriting SharePoint items.
+**Rules:** skip synthetic creation in search mode; when seeding the default date, filter group
+keys to `^\d{4}-\d{2}-\d{2}$` first — the "unknown-meeting" bucket otherwise produces an
+Invalid Date that throws at render. Planned-date endpoints are deliberately unauthenticated,
+matching the meeting-locks convention.
+
 # On Hold deferral data
 `actionItems.reconsiderDate` (text ISO date) holds the revisit date. It round-trips through
 POST /api/action-items (normalize empty→null) and the /api/meeting-history merge block, same as

@@ -20,6 +20,7 @@ import {
   staffModuleProgress,
   orderItems,
   nearMissInvestigations,
+  appSettings,
   type User, 
   type InsertUser,
   type MeetingLock,
@@ -240,6 +241,10 @@ export interface IStorage {
   createOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   updateOrderItemStatus(id: number, status: string, orderedBy?: string): Promise<OrderItem>;
   clearActiveOrderItems(): Promise<number>;
+
+  // Shared app settings (simple key-value store)
+  getAppSetting(key: string): Promise<string | null>;
+  setAppSetting(key: string, value: string | null): Promise<void>;
 }
 
 
@@ -1211,6 +1216,23 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orderItems.status, "active"))
       .returning({ id: orderItems.id });
     return rows.length;
+  }
+
+  // Shared app settings (simple key-value store)
+  async getAppSetting(key: string): Promise<string | null> {
+    const [row] = await db.select().from(appSettings).where(eq(appSettings.key, key));
+    return row?.value ?? null;
+  }
+
+  async setAppSetting(key: string, value: string | null): Promise<void> {
+    if (value === null || value === '') {
+      await db.delete(appSettings).where(eq(appSettings.key, key));
+      return;
+    }
+    await db
+      .insert(appSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({ target: appSettings.key, set: { value } });
   }
 }
 

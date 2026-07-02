@@ -2849,6 +2849,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Planned next-meeting date — used when no upcoming meeting exists yet so the
+  // meeting history can auto-schedule the next weekly meeting and let the user
+  // adjust its date. Shared across all users (stored in app_settings).
+  app.get('/api/planned-meeting-date', async (req, res) => {
+    try {
+      const date = await storage.getAppSetting('plannedMeetingDate');
+      res.json({ success: true, date });
+    } catch (error) {
+      console.error('Error fetching planned meeting date:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch planned meeting date' });
+    }
+  });
+
+  app.post('/api/planned-meeting-date', async (req, res) => {
+    try {
+      const { date } = req.body || {};
+      if (date !== null && date !== undefined && date !== '') {
+        // Expect a plain YYYY-MM-DD date string.
+        if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return res.status(400).json({ success: false, error: 'Invalid date format, expected YYYY-MM-DD' });
+        }
+        await storage.setAppSetting('plannedMeetingDate', date);
+      } else {
+        await storage.setAppSetting('plannedMeetingDate', null);
+      }
+      res.json({ success: true, date: date || null });
+    } catch (error) {
+      console.error('Error saving planned meeting date:', error);
+      res.status(500).json({ success: false, error: 'Failed to save planned meeting date' });
+    }
+  });
+
   app.get('/api/meeting-locks/:meetingDate', async (req, res) => {
     try {
       const meetingDate = normaliseLockDate(decodeURIComponent(req.params.meetingDate));
