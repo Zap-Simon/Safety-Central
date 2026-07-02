@@ -1419,6 +1419,7 @@ export default function Actions() {
             description: investigationItem.description || "",
             secondaryDescription: investigationItem.secondaryDescription,
             submittedBy: investigationItem.submittedBy || "",
+            submittedDate: investigationItem.submittedDate || "",
             meetingDate: investigationItem.meetingDate || "",
             meetingNotes: investigationItem.meetingNotes,
             actionNotes: investigationItem.actionNotes,

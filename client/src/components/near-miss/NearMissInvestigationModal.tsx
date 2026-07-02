@@ -10,6 +10,7 @@ import { getRiskLevelForCell } from "./riskUtils";
 import { authService } from "@/auth/authService";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { getDateGroupKey } from "@shared/dateUtils";
 
 interface NearMissItem {
   id: string;
@@ -17,6 +18,7 @@ interface NearMissItem {
   description: string;
   secondaryDescription?: string;
   submittedBy: string;
+  submittedDate?: string;
   meetingDate: string;
   meetingNotes?: string;
   actionNotes?: string;
@@ -103,13 +105,19 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Pre-fill the Date of Event from when the near miss was submitted (the best
+  // available estimate of when it happened). Uses the same UTC date key as the
+  // rest of the app so it matches the displayed "Submitted" date exactly.
+  const submittedKey = getDateGroupKey(item.submittedDate || null);
+  const prefilledEventDate = /^\d{4}-\d{2}-\d{2}$/.test(submittedKey) ? submittedKey : "";
+
   const empty: InvestigationData = {
     nearMissItemId: item.id,
     itemTitle: item.title || "",
     meetingDate: item.meetingDate || "",
     investigatorName: "Simon Hubbard",
     siteJob: "",
-    eventDate: "",
+    eventDate: prefilledEventDate,
     eventTime: "",
     eventType: item.ideaType || "Near Miss",
     involvedPersons: item.submittedBy || "",
@@ -158,6 +166,9 @@ export default function NearMissInvestigationModal({ item, open, onClose }: Prop
       if (existingData) {
         setData({
           ...existingData,
+          // Older drafts saved before the event date was pre-filled may have it
+          // blank — fill it from the submitted date so it never starts empty.
+          eventDate: existingData.eventDate || prefilledEventDate,
           hazards: typeof existingData.hazards === "string" ? JSON.parse(existingData.hazards) : existingData.hazards || [],
           resultingActions: typeof existingData.resultingActions === "string" ? JSON.parse(existingData.resultingActions) : existingData.resultingActions || [],
         });
