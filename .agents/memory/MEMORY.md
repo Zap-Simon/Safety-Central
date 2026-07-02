@@ -39,4 +39,4 @@
 - [Near miss visibility on Actions page](near-miss-actions-workload.md) — near misses are permanent records but closed/finished/record-only ones must be hidden from "Open (to manage)"; only "All" shows them. Never blanket-bypass the status filter for near misses.
 - [Export table colgroup/CSS width lockstep](export-table-colgroup-lockstep.md) — fixed-layout export tables set widths in BOTH <colgroup> and CSS nth-child; colgroup wins, so editing only CSS does nothing — change both.
 - [Export document versioning](export-document-versioning.md) — all human-readable exports (HTML/MD/Word) carry version/issued/next-review via shared helpers in meeting-export-shared.ts; CSV excluded.
-- [AI billing & "Other" fallback signature](ai-billing-fallback-signature.md) — OpenAI billed via Replit AI Integrations env vars (2 client sites); everything classifying as "Other" = API failing, not a prompt bug.
+- [AI billing & "Other" fallback signature](ai-billing-fallback-signature.md) — user chose personal OPENAI_API_KEY (Replit integration kept as fallback); everything classifying as "Other" = API failing, not a prompt bug.
