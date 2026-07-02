@@ -111,7 +111,7 @@ export default function MeetingHistory() {
   const [showMergeConfirmation, setShowMergeConfirmation] = useState(false);
   const [mergeConfirmationData, setMergeConfirmationData] = useState<{
     currentMeetingDate: string;
-    nextMeetingDate: Date;
+    nextMeetingDate: Date | null;
     itemCount: number;
     movableItemCount: number;
     formattedNextDate: string;
@@ -166,7 +166,7 @@ export default function MeetingHistory() {
 
   // Move single item to next meeting states
   const [isMovingToMeeting, setIsMovingToMeeting] = useState<string>(''); // item ID being moved to another meeting
-  const [moveToMeetingConfirm, setMoveToMeetingConfirm] = useState<{ item: MeetingItem; targetDate: string; formatted: string } | null>(null);
+  const [moveToMeetingConfirm, setMoveToMeetingConfirm] = useState<{ item: MeetingItem; targetDate: string; formatted: string; manual?: boolean } | null>(null);
 
   // Change-submitter states
   const [isUpdatingSubmitter, setIsUpdatingSubmitter] = useState<string>(''); // item ID being updated
@@ -381,11 +381,13 @@ export default function MeetingHistory() {
     return after || null;
   };
 
-  // Open the confirmation modal for moving a single item to the next meeting
+  // Open the confirmation modal for moving a single item to the next meeting.
+  // When there's no upcoming meeting scheduled, open the modal in "pick a date"
+  // mode (targetDate empty) so the user can choose a new meeting date instead.
   const requestMoveItemToNextMeeting = (item: MeetingItem) => {
     const targetDate = getNextMeetingDateForItem(item);
     if (!targetDate) {
-      showError('No Upcoming Meeting', 'There is no later scheduled meeting to move this item to. Please create an upcoming meeting first.');
+      setMoveToMeetingConfirm({ item, targetDate: '', formatted: '', manual: true });
       return;
     }
     const formatted = new Date(targetDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -394,7 +396,7 @@ export default function MeetingHistory() {
 
   // Update a single item's meeting date in SharePoint, then optimistically update the cache
   const executeMoveItemToNextMeeting = async () => {
-    if (!moveToMeetingConfirm) return;
+    if (!moveToMeetingConfirm?.targetDate) return;
     const { item, targetDate } = moveToMeetingConfirm;
     const targetDateKey = targetDate.split('T')[0];
 
@@ -2289,16 +2291,27 @@ export default function MeetingHistory() {
       const upcomingMeetings = meetingDates.filter(d => getMeetingStatus(d).isUpcoming);
       const nextGreenMeeting = upcomingMeetings.at(-1);
 
+      // Count movable items (not closed) vs total items
+      const movableStatus = getMeetingMovableStatus(categorized);
+
       if (!nextGreenMeeting) {
-        showError('No Upcoming Meeting', 'There is no upcoming meeting to move items to. Please create a scheduled meeting first.');
+        // No upcoming meeting scheduled yet — let the user pick a new meeting
+        // date instead of blocking. The chosen date is written to SharePoint,
+        // which effectively creates the new meeting.
+        setSelectedDestinationDate('');
+        setMergeConfirmationData({
+          currentMeetingDate,
+          nextMeetingDate: null,
+          itemCount: movableStatus.totalCount,
+          movableItemCount: movableStatus.movableCount,
+          formattedNextDate: ''
+        });
+        setShowMergeConfirmation(true);
         return;
       }
 
       const nextMeetingDate = new Date(nextGreenMeeting);
       const formattedNextDate = nextMeetingDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-      
-      // Count movable items (not closed) vs total items
-      const movableStatus = getMeetingMovableStatus(categorized);
 
       // Set destination date to the next green meeting
       setSelectedDestinationDate(nextGreenMeeting.split('T')[0]);
@@ -4006,21 +4019,42 @@ export default function MeetingHistory() {
                 <>
                   <div className="text-sm text-gray-600">
                     Move <span className="font-semibold text-blue-600">{mergeConfirmationData.movableItemCount}</span> <span className="font-medium">Submitted</span> item{mergeConfirmationData.movableItemCount !== 1 ? 's' : ''} from{' '}
-                    <span className="font-medium">{formatDate(mergeConfirmationData.currentMeetingDate)}</span> to the next scheduled meeting.
+                    <span className="font-medium">{formatDate(mergeConfirmationData.currentMeetingDate)}</span> to {mergeConfirmationData.nextMeetingDate ? 'the next scheduled meeting' : 'a new meeting date'}.
                     {mergeConfirmationData.movableItemCount < mergeConfirmationData.itemCount && (
                       <span className="text-gray-500 italic"> ({mergeConfirmationData.itemCount - mergeConfirmationData.movableItemCount} item{mergeConfirmationData.itemCount - mergeConfirmationData.movableItemCount !== 1 ? 's' : ''} with other statuses will remain)</span>
                     )}
                   </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Calendar className="h-4 w-4 text-white" />
+                  {mergeConfirmationData.nextMeetingDate ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Calendar className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-green-700 font-medium uppercase tracking-wide">Next Meeting</div>
+                        <div className="text-sm font-semibold text-green-900">{mergeConfirmationData.formattedNextDate}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-xs text-green-700 font-medium uppercase tracking-wide">Next Meeting</div>
-                      <div className="text-sm font-semibold text-green-900">{mergeConfirmationData.formattedNextDate}</div>
+                  ) : (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                      <div className="text-xs text-amber-800">
+                        There's no upcoming meeting scheduled yet. Choose a date for the next meeting — the items will be moved to it in SharePoint.
+                      </div>
+                      <input
+                        type="date"
+                        value={selectedDestinationDate}
+                        min={new Date(new Date(mergeConfirmationData.currentMeetingDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                        onChange={(e) => setSelectedDestinationDate(e.target.value)}
+                        className="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-900"
+                        data-testid="input-new-meeting-date"
+                      />
+                      {selectedDestinationDate && (
+                        <div className="text-xs text-amber-900 font-medium">
+                          New meeting: {new Date(selectedDestinationDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                   
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="text-xs text-blue-800">
@@ -4039,6 +4073,7 @@ export default function MeetingHistory() {
                     </Button>
                     <Button 
                       onClick={executeMerge}
+                      disabled={!selectedDestinationDate}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <ArrowRight className="h-4 w-4 mr-2" />
@@ -4410,11 +4445,33 @@ export default function MeetingHistory() {
               </div>
             </DialogHeader>
             <div className="space-y-4 pb-2">
-              <p className="text-sm text-gray-600 text-center">
-                {moveToMeetingConfirm && (
-                  <>This will move <span className="font-medium">{moveToMeetingConfirm.item.title?.trim() || 'this item'}</span> to the meeting on <span className="font-medium">{moveToMeetingConfirm.formatted}</span> and update SharePoint.</>
-                )}
-              </p>
+              {moveToMeetingConfirm && (!moveToMeetingConfirm.manual ? (
+                <p className="text-sm text-gray-600 text-center">
+                  This will move <span className="font-medium">{moveToMeetingConfirm.item.title?.trim() || 'this item'}</span> to the meeting on <span className="font-medium">{moveToMeetingConfirm.formatted}</span> and update SharePoint.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600 text-center">
+                    There's no upcoming meeting scheduled yet. Choose a date for the next meeting and <span className="font-medium">{moveToMeetingConfirm.item.title?.trim() || 'this item'}</span> will be moved to it in SharePoint.
+                  </p>
+                  <input
+                    type="date"
+                    min={new Date(new Date(moveToMeetingConfirm.item.meetingDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const formatted = value ? new Date(value).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+                      setMoveToMeetingConfirm(prev => prev ? { ...prev, targetDate: value, formatted } : prev);
+                    }}
+                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white text-gray-900"
+                    data-testid="input-item-new-meeting-date"
+                  />
+                  {moveToMeetingConfirm.formatted && (
+                    <p className="text-xs text-indigo-700 font-medium text-center">
+                      New meeting: {moveToMeetingConfirm.formatted}
+                    </p>
+                  )}
+                </div>
+              ))}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -4426,7 +4483,7 @@ export default function MeetingHistory() {
                 </Button>
                 <Button
                   onClick={() => executeMoveItemToNextMeeting()}
-                  disabled={!!isMovingToMeeting}
+                  disabled={!!isMovingToMeeting || !moveToMeetingConfirm?.targetDate}
                   className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11"
                 >
                   {isMovingToMeeting ? 'Moving…' : 'Move'}
